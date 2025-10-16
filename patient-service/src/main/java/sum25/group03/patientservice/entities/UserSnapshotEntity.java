@@ -2,6 +2,9 @@ package sum25.group03.patientservice.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import sum25.group03.patientservice.enums.UserSnapshotGender;
+import sum25.group03.patientservice.enums.UserSnapshotRole;
+import sum25.group03.patientservice.enums.UserSnapshotStatus;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -14,7 +17,9 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "user_snapshot")
+@Table(name = "user_snapshot", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "external_user_id")
+})
 public class UserSnapshotEntity implements Serializable {
 
     @Id
@@ -25,7 +30,8 @@ public class UserSnapshotEntity implements Serializable {
     private Long externalUserId;
 
     @Column(name = "role", nullable = false)
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private UserSnapshotRole role;
 
     @Column(name = "username", length = 100, nullable = false)
     private String username;
@@ -43,7 +49,8 @@ public class UserSnapshotEntity implements Serializable {
     private String phoneNumber;
 
     @Column(name = "status")
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private UserSnapshotStatus status;
 
     @Column(name = "address", nullable = false)
     private String address;
@@ -52,7 +59,8 @@ public class UserSnapshotEntity implements Serializable {
     private LocalDate dateOfBirth;
 
     @Column(name = "gender", length = 10, nullable = false)
-    private String gender;
+    @Enumerated(EnumType.STRING)
+    private UserSnapshotGender gender;
 
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
