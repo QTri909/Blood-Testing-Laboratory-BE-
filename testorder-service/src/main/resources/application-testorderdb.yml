@@ -16,7 +16,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # change to 'update' or 'none' if you prefer different behavior
+      ddl-auto: create-drop # change to 'update' or 'none' if you prefer different behavior
       naming:
         physical-strategy: "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl"
     properties:

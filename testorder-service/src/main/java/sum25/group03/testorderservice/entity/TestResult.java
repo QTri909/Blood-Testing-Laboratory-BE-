@@ -1,0 +1,57 @@
+package sum25.group03.testorderservice.entity;
+
+import jakarta.persistence.*;
+import lombok.*;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Entity
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "test_result")
+public class TestResult {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "test_order_id", nullable = false)
+    private TestOrder testOrder;
+
+    @Column(name = "instrument_id", nullable = false)
+    private Long instrumentId; // ID InstrumentService
+
+    @Column(name = "parameter_latest_snapshot_id", nullable = false)
+    private Long parameterSnapshotId; // ID ParameterService
+
+    @Column(name = "flag_status", nullable = false)
+    private String flagStatus;
+
+    @Column(name = "status", nullable = false)
+    private String status;
+
+    @Column(nullable = false)
+    private Double value;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @ManyToMany
+    @JoinTable(
+            name = "test_result_reagent_used",
+            joinColumns = @JoinColumn(name = "test_result_id"),
+            inverseJoinColumns = @JoinColumn(name = "reagent_used_id")
+    )
+    private List<ReagentUsed> reagentsUsed;
+
+    @OneToMany(mappedBy = "testResult")
+    private List<Comment> comments;
+}
