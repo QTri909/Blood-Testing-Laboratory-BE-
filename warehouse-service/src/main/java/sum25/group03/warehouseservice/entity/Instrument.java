@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -40,10 +41,11 @@ public class Instrument {
     private String location;
 
     @Column(name = "status", nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private InstrumentStatus status;
 
-    @Column(name = "active", nullable = false)
-    private boolean active;
+    @Column(name = "notes", nullable = true, columnDefinition = "TEXT")
+    private String notes;
 
     @CreationTimestamp
     @Column(name = "deactivated_at", nullable = false)
@@ -51,9 +53,6 @@ public class Instrument {
 
     @Column(name = "deactivated_by", nullable = false)
     private int deactivatedBy;
-
-    @Column(name = "deactivation_reason", nullable = false, columnDefinition = "TEXT")
-    private String deactivationReason;
 
     @Column(name = "auto_delete_scheduled_at", nullable = false)
     private LocalDate autoDeleteScheduledAt;
@@ -72,9 +71,6 @@ public class Instrument {
 
     @Column(name = "next_maintenance_date", nullable = false)
     private LocalDate nextMaintenanceDate;
-
-    @Column(name = "deleted", nullable = false)
-    private boolean deleted;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)

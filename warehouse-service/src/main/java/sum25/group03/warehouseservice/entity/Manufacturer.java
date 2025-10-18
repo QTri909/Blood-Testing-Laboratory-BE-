@@ -33,18 +33,6 @@ public class Manufacturer {
     @Column(name = "email", nullable = false)
     private String email;
 
-    @Column(name = "quality_certifications", nullable = false)
-    private String qualityCertifications;
-
-    @Column(name = "viet_name_distributor", nullable = false)
-    private Long vietNameDistributor;
-
-    @Column(name = "warranty_policy", nullable = false)
-    private Long warrantyPolicy;
-
     @OneToMany(mappedBy = "manufacturer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Instrument> instruments;
-
-    @OneToMany(mappedBy = "manufacturer", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ManufacturerHasCertificate> manufacturerHasCertificates;
 }

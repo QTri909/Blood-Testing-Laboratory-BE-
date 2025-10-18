@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,9 +23,6 @@ public class Reagents {
     @Column(name = "reagent_id")
     private Long reagentId;
 
-    @Column(name = "reagent_code", nullable = false)
-    private String reagentCode;
-
     @Column(name = "reagent_name", nullable = false)
     private String reagentName;
 
@@ -33,9 +31,6 @@ public class Reagents {
 
     @Column(name = "cas_number", nullable = false)
     private String casNumber;
-
-    @Column(name = "iot_number", nullable = false)
-    private String iotNumber;
 
     @Column(name = "quantity", nullable = false)
     private int quantity;
@@ -46,11 +41,12 @@ public class Reagents {
     @Column(name = "expiration_date", nullable = false)
     private LocalDate expirationDate;
 
-    @Column(name = "storage_temperature", nullable = false)
-    private String storageTemperature;
+    @Column(name = "storage_conditions", nullable = false)
+    private String storageConditions;
 
     @Column(name = "status", nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private ReagentStatus status;
 
     @Column(name = "in_use", nullable = false)
     private boolean inUse;
@@ -65,12 +61,6 @@ public class Reagents {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDate updatedAt;
-
-    @Column(name = "total_quantity_remaining", nullable = false)
-    private BigDecimal totalQuantityRemaining;
-
-    @Column(name = "manufacturer", nullable = false)
-    private String manufacturer;
 
     @Column(name = "batch_number", nullable = false)
     private String batchNumber;

@@ -21,20 +21,17 @@ public class Configurations {
     @Column(name = "configuration_value", nullable = false, columnDefinition = "TEXT")
     private String configurationValue;
 
-    @Column(name = "configuration_type", nullable = false)
-    private String configurationType;
-
     @Column(name = "configuration_category", nullable = false)
     private String configurationCategory;
-
-    @Column(name = "configuration_data_type", nullable = false)
-    private String configurationDataType;
 
     @Column(name = "instrument_type", nullable = false)
     private String instrumentType;
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
+    
+    @Column(name = "unit", nullable = false)
+    private String unit;
 
     @Column(name = "active", nullable = false)
     private boolean active;
