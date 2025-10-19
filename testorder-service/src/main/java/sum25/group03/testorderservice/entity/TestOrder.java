@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import sum25.group03.testorderservice.TestType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -46,6 +47,10 @@ public class TestOrder {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "test_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TestType testType;
 
     // Relationships
     @OneToMany(mappedBy = "testOrder", cascade = CascadeType.ALL)
