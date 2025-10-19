@@ -6,6 +6,7 @@ import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -21,6 +22,9 @@ public class MedicalRecordEntity implements Serializable {
     @Id
     @Column(name = "record_id")
     private Long recordId;
+
+    @Column(name = "record_code", unique = true)
+    private UUID recordCode;
 
     @Column(name = "patient_id", nullable = false)
     private Long patientId;

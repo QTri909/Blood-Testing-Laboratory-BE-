@@ -1,4 +1,9 @@
 -- ==============================
+-- 0. Ensure the pgcrypto extension exists
+-- ==============================
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- ==============================
 -- 1. Create user_snapshot
 -- ==============================
 CREATE TABLE user_snapshot (
@@ -20,7 +25,7 @@ CREATE TABLE user_snapshot (
 );
 
 -- ==============================
--- 2. Create medical_record
+-- 2. Create medical_record (with record_code)
 -- ==============================
 CREATE TABLE medical_record (
                                 assigned_user bigint,
@@ -31,7 +36,9 @@ CREATE TABLE medical_record (
                                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
                                 updated_by bigint,
                                 visit_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                PRIMARY KEY (record_id)
+                                record_code UUID DEFAULT gen_random_uuid() NOT NULL,
+                                PRIMARY KEY (record_id),
+                                UNIQUE (record_code)
 );
 
 -- ==============================

@@ -11,6 +11,11 @@ public class BusinessLogicException extends RuntimeException {
     private String customCode;
     private String reason;
 
+    public BusinessLogicException(String message) {
+        super(message);
+        this.reason = "BUSINESS_LOGIC_VIOLATION";
+    }
+
     public BusinessLogicException(String message, String reason) {
         super(message);
         this.reason = Objects.requireNonNullElse(reason, "BUSINESS_LOGIC_VIOLATION");
