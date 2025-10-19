@@ -1,7 +1,7 @@
 
 spring:
   datasource:
-    url: ${PATIENT_DB_URL:jdbc:postgresql://localhost:5432/patientdb}
+    url: ${PATIENT_DB_URL:jdbc:postgresql://localhost:5433/patientdb}
     username: ${PATIENT_DB_USERNAME:postgres}
     password: ${PATIENT_DB_PASSWORD:12345}
     driver-class-name: "org.postgresql.Driver"
@@ -16,29 +16,25 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update # change to 'update' or 'none' if you prefer different behavior
+      ddl-auto: none # change to 'update' or 'none' if you prefer different behavior
       naming:
         physical-strategy: "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl"
     properties:
       hibernate:
         dialect: "org.hibernate.dialect.PostgreSQLDialect"
-    show-sql: false
+        format_sql: true
+    show-sql: true
     open-in-view: false
-
-  flyway:
-    enabled: true
-    locations: classpath:db/migration/patient
-    baseline-on-migrate: true
 
   sql:
     init:
       mode: never
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: [health, info]
-  health:
-    db:
-      enabled: true
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: [health, info]
+#  health:
+#    db:
+#      enabled: true
