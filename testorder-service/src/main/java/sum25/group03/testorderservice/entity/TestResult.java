@@ -2,6 +2,7 @@ package sum25.group03.testorderservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import sum25.group03.testorderservice.enums.TestType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,6 +44,10 @@ public class TestResult {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "test_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TestType testType;
 
     @ManyToMany
     @JoinTable(

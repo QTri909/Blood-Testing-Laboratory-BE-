@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice;
+package sum25.group03.testorderservice.enums;
 
 public enum TestType {
     // ---------------- Hematology ----------------
