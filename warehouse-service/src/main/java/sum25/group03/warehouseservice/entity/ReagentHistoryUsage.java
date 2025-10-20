@@ -18,25 +18,25 @@ public class ReagentHistoryUsage {
     @Column(name = "reagent_history_usage_id")
     private Long reagentHistoryUsageId;
 
-    @Column(name = "quantity_used", nullable = false)
+    @Column(name = "quantity_used", nullable = true)
     private long quantityUsed;
 
-    @Column(name = "unit", nullable = false)
+    @Column(name = "unit", nullable = true)
     private String unit;
 
-    @Column(name = "usage_type", nullable = false)
+    @Column(name = "usage_type", nullable = true)
     private String usageType;
 
-    @Column(name = "test_order_id", nullable = false)
+    @Column(name = "test_order_id", nullable = true)
     private long testOrderId;
 
-    @Column(name = "used_by", nullable = false)
+    @Column(name = "used_by", nullable = true)
     private int usedBy;
 
-    @Column(name = "used_at", nullable = false)
+    @Column(name = "used_at", nullable = true)
     private LocalDate usedAt;
 
-    @Column(name = "notes", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "notes", nullable = true, columnDefinition = "TEXT")
     private String notes;
 
     @ManyToOne(fetch = FetchType.LAZY)

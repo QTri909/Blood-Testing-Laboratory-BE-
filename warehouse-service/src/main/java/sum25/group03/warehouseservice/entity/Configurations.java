@@ -1,12 +1,18 @@
 package sum25.group03.warehouseservice.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Builder
 @Entity
 @Table(name = "configurations")
 public class Configurations {
@@ -53,6 +59,6 @@ public class Configurations {
     @Column(name = "updated_by", nullable = false)
     private int updatedBy;
 
-    @OneToMany(mappedBy = "configuration", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Instrument> instruments;
+    @OneToOne(mappedBy = "configuration")
+    private Instrument instrument;
 }

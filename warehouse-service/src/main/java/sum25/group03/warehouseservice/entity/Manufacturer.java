@@ -33,6 +33,6 @@ public class Manufacturer {
     @Column(name = "email", nullable = false)
     private String email;
 
-    @OneToMany(mappedBy = "manufacturer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "manufacturer")
     private List<Instrument> instruments;
 }

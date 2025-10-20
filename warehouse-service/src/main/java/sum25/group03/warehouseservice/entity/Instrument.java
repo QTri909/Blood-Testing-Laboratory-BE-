@@ -7,6 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -31,7 +32,7 @@ public class Instrument {
     @Column(name = "instrument_type", nullable = false)
     private String instrumentType;
 
-    @Column(name = "serial_number", nullable = false)
+    @Column(name = "serial_number", nullable = false, unique = true)
     private String serialNumber;
 
     @Column(name = "firmware_version", nullable = false)
@@ -54,22 +55,22 @@ public class Instrument {
     @Column(name = "deactivated_by", nullable = false)
     private int deactivatedBy;
 
-    @Column(name = "auto_delete_scheduled_at", nullable = false)
+    @Column(name = "auto_delete_scheduled_at", nullable = true)
     private LocalDate autoDeleteScheduledAt;
 
     @Column(name = "installation_date", nullable = false)
     private LocalDate installationDate;
 
-    @Column(name = "last_calibration_date", nullable = false)
+    @Column(name = "last_calibration_date", nullable = true)
     private LocalDate lastCalibrationDate;
 
-    @Column(name = "next_calibration_date", nullable = false)
+    @Column(name = "next_calibration_date", nullable = true)
     private LocalDate nextCalibrationDate;
 
-    @Column(name = "last_maintenance_date", nullable = false)
+    @Column(name = "last_maintenance_date", nullable = true)
     private LocalDate lastMaintenanceDate;
 
-    @Column(name = "next_maintenance_date", nullable = false)
+    @Column(name = "next_maintenance_date", nullable = true)
     private LocalDate nextMaintenanceDate;
 
     @CreationTimestamp
@@ -86,11 +87,11 @@ public class Instrument {
     @Column(name = "updated_by", nullable = false)
     private int updatedBy;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "configuration_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY, cascade =  {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "configuration_id", nullable = true)
     private Configurations configuration;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "manufacturer_id", nullable = false)
     private Manufacturer manufacturer;
 
