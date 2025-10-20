@@ -98,4 +98,10 @@ public class Instrument {
     @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReagentHistoryUsage> reagentHistoryUsages;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "raw_test_results_id", nullable = true)
+    private RawTestResults rawTestResults;
+
+    @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<InstalledReagent> installedReagents;
 }

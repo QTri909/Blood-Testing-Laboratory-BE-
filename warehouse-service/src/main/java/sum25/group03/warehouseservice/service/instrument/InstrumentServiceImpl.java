@@ -4,17 +4,15 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import sum25.group03.warehouseservice.dto.internal.ConfigIdAndReagentDTO;
 import sum25.group03.warehouseservice.dto.internal.ConfigurationDTO;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
 import sum25.group03.warehouseservice.entity.*;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.InstrumentMapper;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
-import sum25.group03.warehouseservice.repository.ReagentUsageRepo;
 import sum25.group03.warehouseservice.service.configuration.ConfigurationService;
 import sum25.group03.warehouseservice.service.reagent.ReagentService;
-import sum25.group03.warehouseservice.service.reagentusage.ReagentUsageService;
+import sum25.group03.warehouseservice.service.installedreagent.InstalledReagentService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,10 +23,11 @@ public class InstrumentServiceImpl implements InstrumentService {
     private final InstrumentRepo instrumentRepo;
     private final InstrumentMapper instrumentMapper;
     private final ConfigurationService configurationService;
-    private final ReagentUsageService reagentUsageService;
+    private final InstalledReagentService installedReagentService;
     private final ReagentService reagentService;
     @PersistenceContext
     private EntityManager entityManager;
+
     public boolean isEmptyConfig(Long configId) {
         return configId == null;
     }
@@ -44,7 +43,7 @@ public class InstrumentServiceImpl implements InstrumentService {
             Configurations configRef = mapConfigurations(configurationDTO);
             instrument.setConfiguration(configRef);
         }
-        List<Long> reagentIds = reagentUsageService.findIdsByInstrumentId(cloneFromInstrumentId);
+        List<Long> reagentIds = installedReagentService.findIdsByInstrumentId(cloneFromInstrumentId);
         if (!reagentIds.isEmpty()) {
             List<ReagentHistoryUsage> reagentUsages = getReagentUsageReferences(
                     reagentIds,
@@ -78,11 +77,11 @@ public class InstrumentServiceImpl implements InstrumentService {
     @Override
     public void addInstrumentToWarehouse(InstrumentReq instrument) {
         Instrument newInstrument = instrumentMapper.toEntity(instrument);
-        // Check instrument serial number duplication
+        // Check an instrument serial number duplication
         if(isDuplicateSerialNumber(newInstrument.getSerialNumber())) {
             throw new NotFoundException("Instrument with serial number " + newInstrument.getSerialNumber() + " already exists");
         }
-        // Clone from existing instrument
+        // Clone from an existing instrument
         if(instrument.getCloneFromInstrumentId() != null) {
             getConfigAndReagentByInstrument(newInstrument, instrument.getCloneFromInstrumentId());
             instrumentRepo.save(newInstrument);

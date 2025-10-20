@@ -9,11 +9,11 @@ import sum25.group03.warehouseservice.entity.ReagentHistoryUsage;
 import java.util.List;
 
 @Repository
-public interface ReagentUsageRepo extends JpaRepository<ReagentHistoryUsage, Long> {
+public interface InstalledReagentRepo extends JpaRepository<ReagentHistoryUsage, Long> {
 
     @Query("""
         SELECT ru.reagent.reagentId
-        FROM ReagentHistoryUsage ru
+        FROM InstalledReagent ru
         JOIN Instrument i ON ru.instrument.instrumentId = i.instrumentId
         WHERE ru.instrument.instrumentId = :id
    """)

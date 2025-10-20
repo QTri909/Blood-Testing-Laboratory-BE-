@@ -44,6 +44,12 @@ public class Reagents {
     @Column(name = "storage_conditions", nullable = false)
     private String storageConditions;
 
+    @Column(name = "total_quantity_remaining", nullable = true)
+    private BigDecimal totalQuantityRemaining;
+
+    @Column(name = "lot_number", nullable = false)
+    private String lotNumber;
+
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private ReagentStatus status;
@@ -70,4 +76,7 @@ public class Reagents {
 
     @OneToMany(mappedBy = "reagent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReagentHistorySupply> reagentHistorySupplies;
+
+    @OneToMany(mappedBy = "reagent", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<InstalledReagent> installedReagents;
 }
