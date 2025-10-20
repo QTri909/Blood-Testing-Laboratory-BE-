@@ -2,6 +2,9 @@ package sum25.group03.testorderservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import sum25.group03.testorderservice.enums.ReagentStatus;
 
 import java.time.LocalDateTime;
 
@@ -24,12 +27,14 @@ public class ReagentUsed {
     @Column(name = "slot_number")
     private String slotNumber;
 
-    @Column(name = "used_volume", precision = 8)
-    private Double usedVolume;
+    @Column(name = "quantity", nullable = false)
+    private Integer quantity;
 
+    @CreationTimestamp
     @Column(name = "used_at")
     private LocalDateTime usedAt;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 }

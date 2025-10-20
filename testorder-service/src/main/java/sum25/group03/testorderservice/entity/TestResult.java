@@ -2,6 +2,7 @@ package sum25.group03.testorderservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import sum25.group03.testorderservice.enums.TestResultStatus;
 import sum25.group03.testorderservice.enums.TestType;
 
 import java.time.LocalDateTime;
@@ -34,7 +35,8 @@ public class TestResult {
     private String flagStatus;
 
     @Column(name = "status", nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private TestResultStatus status;
 
     @Column(nullable = false)
     private Double value;
@@ -48,6 +50,13 @@ public class TestResult {
     @Column(name = "test_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private TestType testType;
+
+    @ManyToOne(
+            fetch = FetchType.LAZY, // Lazy loading for better performance
+            optional = false // Make the relationship mandatory
+    )
+    @JoinColumn(name = "parameter_id", nullable = false)
+    private Parameter parameter;
 
     @ManyToMany
     @JoinTable(

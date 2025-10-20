@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import sum25.group03.testorderservice.enums.TestOrderStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,27 +26,29 @@ public class TestOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "external_medical_record_id")
+    @Column(name = "external_medical_record_id", nullable = false)
     private Long externalMedicalRecordId;
 
     @Column(name = "patient_id", nullable = false)
-    private Long patientId; //PatientService
+    private Long patientId; // User Id ( IAMService)
 
     @Column(name = "created_by", nullable = false)
-    private Long createdBy; // user ID ( UserService)
+    private Long createdBy; // user ID ( IAMService)
 
     @Column(name = "run_by")
-    private Long runBy; // user ID ( UserService)
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    private Long runBy; // user ID ( IAMService)
 
     @Column(name = "run_date")
     private LocalDate runDate;
 
-    @Column(nullable = false)
-    private Integer status;
+    @Enumerated(EnumType.STRING)
+    private TestOrderStatus status;
 
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 

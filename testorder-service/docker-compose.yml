@@ -1,0 +1,17 @@
+
+version: '4'
+services:
+  postgres:
+    image: postgres:15.5
+    container_name: postgres_test_order_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: testorder_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - test_order_volume:/var/lib/postgresql/data
+
+volumes:
+  test_order_volume:

@@ -2,6 +2,9 @@ package sum25.group03.testorderservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import sum25.group03.testorderservice.enums.CommentStatus;
 
 import java.time.LocalDateTime;
 
@@ -32,9 +35,14 @@ public class Comment {
     @Column(name = "comment_text", nullable = false, columnDefinition = "TEXT")
     private String commentText;
 
+    @Enumerated(EnumType.STRING)
+    private CommentStatus status;
+
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 }
