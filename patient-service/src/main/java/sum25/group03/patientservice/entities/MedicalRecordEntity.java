@@ -73,4 +73,19 @@ public class MedicalRecordEntity implements Serializable {
 
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ClinicalNoteEntity> clinicalNotes;
+
+    @Override
+    public String toString() {
+        return "MedicalRecordEntity{" +
+                "recordId=" + recordId +
+                ", recordCode=" + recordCode +
+                ", patientId=" + patientId +
+                ", assignedUser=" + assignedUser +
+                ", visitDate=" + visitDate +
+                ", createdBy=" + createdBy +
+                ", updatedBy=" + updatedBy +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }
