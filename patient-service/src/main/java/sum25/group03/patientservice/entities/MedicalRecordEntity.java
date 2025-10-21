@@ -44,6 +44,7 @@ public class MedicalRecordEntity implements Serializable {
     @JoinColumn(name = "assigned_user", referencedColumnName = "external_user_id", insertable = false, updatable = false)
     private UserSnapshotEntity assignedUserDetails;
 
+    @CreationTimestamp
     @Column(name = "visit_date", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime visitDate;
 

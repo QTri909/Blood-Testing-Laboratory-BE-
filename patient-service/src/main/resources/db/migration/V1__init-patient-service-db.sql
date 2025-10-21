@@ -7,19 +7,9 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- 1. Create user_snapshot
 -- ==============================
 CREATE TABLE user_snapshot (
-                               date_of_birth date NOT NULL,
-                               external_user_id bigint NOT NULL,
                                id bigint NOT NULL,
+                               external_user_id bigint NOT NULL,
                                last_updated timestamp(6) NOT NULL,
-                               gender varchar(10) NOT NULL CHECK (gender IN ('MALE','FEMALE')),
-                               phone_number varchar(15),
-                               first_name varchar(50),
-                               last_name varchar(50),
-                               email varchar(100),
-                               username varchar(100) NOT NULL,
-                               address varchar(255) NOT NULL,
-                               role varchar(255) NOT NULL CHECK (role IN ('ROLE_DOCTOR','ROLE_PATIENT','ROLE_ADMIN','ROLE_SUPERVISOR')),
-                               status varchar(255) CHECK (status IN ('ACTIVE','INACTIVE','DELETED')),
                                PRIMARY KEY (id),
                                UNIQUE (external_user_id)
 );

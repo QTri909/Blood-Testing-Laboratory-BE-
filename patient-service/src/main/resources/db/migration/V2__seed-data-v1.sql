@@ -4,13 +4,19 @@
 
 -- 1️⃣ User snapshots
 INSERT INTO user_snapshot (
-    id, external_user_id, date_of_birth, last_updated, gender,
-    phone_number, first_name, last_name, email, username, address, role, status
+    id, external_user_id, last_updated
 ) VALUES
-      (1, 101, '1980-01-01', CURRENT_TIMESTAMP, 'MALE', '1234567890', 'John', 'Doe', 'john.doe@example.com', 'johndoe', '123 Main St', 'ROLE_DOCTOR', 'ACTIVE'),
-      (2, 102, '1990-02-02', CURRENT_TIMESTAMP, 'FEMALE', '0987654321', 'Jane', 'Smith', 'jane.smith@example.com', 'janesmith', '456 Oak St', 'ROLE_PATIENT', 'ACTIVE'),
-      (3, 103, '1975-03-03', CURRENT_TIMESTAMP, 'MALE', '5551234567', 'Admin', 'User', 'admin@example.com', 'adminuser', '789 Pine St', 'ROLE_ADMIN', 'ACTIVE'),
-      (4, 104, '1985-04-04', CURRENT_TIMESTAMP, 'FEMALE', '7778889999', 'Alice', 'Brown', 'alice.brown@example.com', 'aliceb', '321 Cedar St', 'ROLE_DOCTOR', 'ACTIVE');
+      (1, 101, CURRENT_TIMESTAMP),
+      (2, 102, CURRENT_TIMESTAMP),
+      (3, 103, CURRENT_TIMESTAMP),
+      (4, 104, CURRENT_TIMESTAMP),
+      (5, 105, CURRENT_TIMESTAMP),
+      (6, 106, CURRENT_TIMESTAMP),
+      (7, 107, CURRENT_TIMESTAMP),
+      (8, 108, CURRENT_TIMESTAMP),
+      (9, 109, CURRENT_TIMESTAMP),
+      (10, 110, CURRENT_TIMESTAMP),
+      (11, 111, CURRENT_TIMESTAMP);
 
 -- 2️⃣ Medical records (with record_code)
 INSERT INTO medical_record (
