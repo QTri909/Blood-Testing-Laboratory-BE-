@@ -19,6 +19,7 @@ public class ClinicalNoteEntity implements Serializable {
 
     @Id
     @Column(name = "note_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long noteId;
 
     @Column(name = "record_id", nullable = false)
