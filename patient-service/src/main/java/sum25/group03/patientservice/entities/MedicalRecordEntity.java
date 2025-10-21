@@ -2,6 +2,9 @@ package sum25.group03.patientservice.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -23,7 +26,8 @@ public class MedicalRecordEntity implements Serializable {
     @Column(name = "record_id")
     private Long recordId;
 
-    @Column(name = "record_code", unique = true)
+    @UuidGenerator
+    @Column(name = "record_code", unique = true, nullable = false, updatable = false)
     private UUID recordCode;
 
     @Column(name = "patient_id", nullable = false)
@@ -57,9 +61,11 @@ public class MedicalRecordEntity implements Serializable {
     @JoinColumn(name = "updated_by", referencedColumnName = "external_user_id", insertable = false, updatable = false)
     private UserSnapshotEntity updatedByUser;
 
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime updatedAt;
 
