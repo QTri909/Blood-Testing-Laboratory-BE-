@@ -1,7 +1,7 @@
 
 version: '4'
 services:
-  postgres:
+  postgres-testorder-service:
     image: postgres:15.5
     container_name: postgres_test_order_db
     environment:

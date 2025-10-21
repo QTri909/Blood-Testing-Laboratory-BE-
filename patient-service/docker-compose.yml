@@ -1,7 +1,7 @@
 
 version: '4'
 services:
-  postgres:
+  postgres-patient-service:
     image: postgres:15.5
     container_name: postgres_patient_db
     environment:
@@ -12,6 +12,5 @@ services:
       - "5433:5432"
     volumes:
       - patient_volume:/var/lib/postgresql/data
-
 volumes:
   patient_volume:
