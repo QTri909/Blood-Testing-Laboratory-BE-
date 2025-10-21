@@ -1,6 +1,7 @@
 package sum25.group03.monitoringservice.service;
 
 import org.springframework.stereotype.Service;
+import sum25.group03.monitoringservice.kafka.MockProducer;
 import sum25.group03.monitoringservice.model.EventLog;
 import sum25.group03.monitoringservice.model.RawTestResult;
 
@@ -11,10 +12,18 @@ import java.util.Optional;
 public class MonitoringService {
     private final EventLogService eventLogService;
     private final RawTestResultService rawTestResultService;
-    public MonitoringService(EventLogService eventLogService, RawTestResultService rawTestResultService) {
+    // mock producer
+    private final MockProducer mockProducer;
+    public MonitoringService(EventLogService eventLogService, RawTestResultService rawTestResultService, MockProducer mockProducer) {
         this.eventLogService = eventLogService;
         this.rawTestResultService = rawTestResultService;
+        this.mockProducer = mockProducer;
     }
+    // send mock
+    public void sendMessage(){
+        mockProducer.sendMockEvent();
+    }
+
     // Event logs
     public EventLog addEventLog(EventLog eventLog) {
         return eventLogService.addEventLog(eventLog);

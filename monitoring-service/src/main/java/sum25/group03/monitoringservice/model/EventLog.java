@@ -25,5 +25,5 @@ public class EventLog {
     private String operator;
     private Instant createdAt;
 
-    private Map<String, Object> payload;
+    private Map<String, Object> data;
 }

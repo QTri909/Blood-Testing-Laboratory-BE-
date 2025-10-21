@@ -17,6 +17,12 @@ public class MonitoringController {
         this.monitoringService = monitoringService;
     }
 
+    @GetMapping("/send")
+    public ResponseEntity<String> sendMessage(){
+        monitoringService.sendMessage();
+        return ResponseEntity.ok().body("success");
+    }
+
     @GetMapping
     public ResponseEntity<List<EventLog>> getEventLogs(){
         List<EventLog> eventLogs = monitoringService.getAllEventLogs();
