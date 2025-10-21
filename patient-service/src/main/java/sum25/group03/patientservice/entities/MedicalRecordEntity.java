@@ -24,6 +24,7 @@ public class MedicalRecordEntity implements Serializable {
 
     @Id
     @Column(name = "record_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long recordId;
 
     @UuidGenerator

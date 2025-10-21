@@ -24,6 +24,7 @@ public class UserSnapshotEntity implements Serializable {
 
     @Id
     @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "external_user_id", nullable = false)
