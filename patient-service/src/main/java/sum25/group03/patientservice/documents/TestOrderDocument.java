@@ -1,6 +1,7 @@
 package sum25.group03.patientservice.documents;
 
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -24,10 +25,10 @@ public class TestOrderDocument {
     private Long patientId;
     private Long createdBy;
     private Long runBy;
-    private String createdAt;
-    private String updatedAt;
     private String runDate;
     private String status;
+    private String createdAt;
+    private String updatedAt;
 
     @Field(name = "recentAuditEntries")
     @DBRef(lazy = true) // only store references to AuditEntryDocument
