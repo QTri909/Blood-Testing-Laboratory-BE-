@@ -11,14 +11,13 @@ import sum25.group03.warehouseservice.entity.Configurations;
 public interface ConfigRepo extends JpaRepository<Configurations, Long> {
     @Query("""
         SELECT new sum25.group03.warehouseservice.dto.internal.ConfigurationDTO(
-            c.configurationKey,
-            c.configurationValue,
-            c.configurationCategory,
-            c.instrumentType,
-            c.description,
-            c.unit,
+            c.sampleVolume,
+            c.maxConcurrentSamples,
+            c.supportedTests,
             c.configType,
-            c.active
+            c.parameterSettings,
+            c.description,
+            c.sampleVolumeUnit
         )
         FROM Configurations c
         JOIN Instrument i ON c.configurationId = i.configurations.configurationId

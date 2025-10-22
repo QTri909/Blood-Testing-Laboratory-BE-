@@ -6,7 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import sum25.group03.warehouseservice.entity.enums.ConfigType;
 
-
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -23,27 +23,27 @@ public class Configurations {
     @Column(name = "configuration_id")
     private Long configurationId;
 
-    @Column(name = "configuration_key", nullable = false, unique = true)
-    private String configurationKey;
+    @Column(name = "sample_volume", nullable = false)
+    private BigDecimal sampleVolume;
 
-    @Column(name = "configuration_value", nullable = false, columnDefinition = "TEXT")
-    private String configurationValue;
+    @Column(name = "max_concurrent_samples", nullable = false)
+    private int maxConcurrentSamples;
 
-    @Column(name = "configuration_category", nullable = false)
-    private String configurationCategory;
+    @Column(name = "supported_tests", nullable = false)
+    private String supportedTests;
 
     @Column(name = "config_type", nullable = false)
     @Enumerated(EnumType.STRING)
     private ConfigType configType;
 
-    @Column(name = "instrument_type", nullable = false)
-    private String instrumentType;
+    @Column(name = "parameter_settings", nullable = false)
+    private String parameterSettings;
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
-
-    @Column(name = "unit", nullable = false)
-    private String unit;
+    
+    @Column(name = "sample_volume_unit", nullable = false)
+    private String sampleVolumeUnit;
 
     @Column(name = "active", nullable = false)
     private boolean active;
