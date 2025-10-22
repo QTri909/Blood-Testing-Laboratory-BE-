@@ -10,5 +10,4 @@ import sum25.group03.warehouseservice.entity.Instrument;
 public interface InstrumentViewService {
     Page<InstrumentResponse> getAllInstruments(Pageable pageable);
     Page<InstrumentResponse> searchInstruments(String name, String code, String status, Pageable pageable);
-    InstrumentStatusResponse getInstrumentStatus(Long id);
 }

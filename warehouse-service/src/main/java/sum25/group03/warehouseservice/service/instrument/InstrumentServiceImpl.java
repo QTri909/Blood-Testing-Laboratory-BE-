@@ -9,6 +9,7 @@ import sum25.group03.warehouseservice.dto.internal.ConfigurationDTO;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
 import sum25.group03.warehouseservice.entity.*;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
+import sum25.group03.warehouseservice.entity.enums.OperationalStatus;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.InstrumentMapper;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
@@ -82,6 +83,9 @@ public class InstrumentServiceImpl implements InstrumentService {
     @Override
     public void addInstrumentToWarehouse(InstrumentReq instrument) {
         Instrument newInstrument = instrumentMapper.toEntity(instrument);
+        if (newInstrument.getOperationalStatus() == null) {
+            newInstrument.setOperationalStatus(OperationalStatus.READY);
+        }
         // Check an instrument serial number duplication
         if(isDuplicateSerialNumber(newInstrument.getSerialNumber())) {
             throw new NotFoundException("Instrument with serial number " + newInstrument.getSerialNumber() + " already exists");

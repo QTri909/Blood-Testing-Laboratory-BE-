@@ -53,17 +53,6 @@ public class InstrumentViewServiceImpl implements InstrumentViewService {
         }
     }
 
-    @Override
-    public InstrumentStatusResponse getInstrumentStatus(Long id) {
-        Instrument instrument = instrumentRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Instrument not found with id: " + id));
-        return new InstrumentStatusResponse(
-                instrument.getInstrumentId(),
-                instrument.getInstrumentName(),
-                instrument.getStatus()
-        );
-    }
-
     private InstrumentStatus convertToStatus(String status) {
         try {
             return InstrumentStatus.valueOf(status.trim().toUpperCase());

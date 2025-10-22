@@ -1,10 +1,11 @@
 package sum25.group03.warehouseservice.service.instrumentStatus;
 
-import sum25.group03.warehouseservice.entity.enums.OperationalStatus;
+import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
 
 public interface InstrumentStatusService {
     void activateInstrument(Long id, String username);
     void deactivateInstrument(Long id, String username);
     void deleteInstrument(Long id, String username);
-    OperationalStatus checkInstrumentStatus(Long id);
+    InstrumentStatusResponse checkInstrumentStatus(Long id);
+    void autoCleanupExpiredInstruments();
 }

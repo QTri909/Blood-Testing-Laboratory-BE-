@@ -3,6 +3,7 @@ package sum25.group03.warehouseservice.service.instrumentStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
 import sum25.group03.warehouseservice.entity.Instrument;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 import sum25.group03.warehouseservice.entity.enums.OperationalStatus;
@@ -10,6 +11,7 @@ import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +41,7 @@ public class InstrumentStatusServiceImpl implements InstrumentStatusService {
             return;
         }
         instrument.setStatus(InstrumentStatus.INACTIVE);
-        instrument.setAutoDeleteScheduledAt(LocalDate.now());
+        instrument.setAutoDeleteScheduledAt(LocalDate.now().plusMonths(3));
         instrument.setUpdatedAt(LocalDate.now());
         instrumentRepo.save(instrument);
         log.info("User '{}' deactivated instrument {}", username, id);
@@ -59,19 +61,49 @@ public class InstrumentStatusServiceImpl implements InstrumentStatusService {
     }
 
     @Override
-    public OperationalStatus checkInstrumentStatus(Long id) {
+    public InstrumentStatusResponse checkInstrumentStatus(Long id) {
         Instrument instrument = getInstrumentOrThrow(id);
+        OperationalStatus currentStatus = instrument.getOperationalStatus();
+        String message = "Instrument is currently in " + currentStatus + " state.";
+
         if (instrument.getOperationalStatus() == OperationalStatus.ERROR) {
             boolean fixed = performAutoRecheck(instrument);
+
             if (fixed) {
                 instrument.setOperationalStatus(OperationalStatus.READY);
+                message = "Instrument has recovered from ERROR and is now READY.";
                 log.info("Instrument {} recovered to READY state after recheck.", id);
             } else {
                 log.warn("Instrument {} remains in ERROR state after recheck.", id);
+                message = "Instrument remains in ERROR state after recheck. Please contact maintenance team.";
             }
             instrumentRepo.save(instrument);
+            currentStatus = instrument.getOperationalStatus();
         }
-        return instrument.getOperationalStatus();
+        return InstrumentStatusResponse.builder()
+                .instrumentId(instrument.getInstrumentId())
+                .instrumentName(instrument.getInstrumentName())
+                .status(currentStatus)
+                .message(message)
+                .checkedAt(LocalDate.now())
+                .build();
+    }
+
+    @Override
+    public void autoCleanupExpiredInstruments() {
+        LocalDate now = LocalDate.now();
+        List<Instrument> expired = instrumentRepo.findByStatusAndAutoDeleteScheduledAtBefore(InstrumentStatus.INACTIVE, now);
+        if(expired.isEmpty()){
+            log.info("No instruments found for auto-deletion.");
+            return;
+        }
+        for(Instrument instrument : expired){
+            instrument.setStatus(InstrumentStatus.DELETED);
+            instrument.setAutoDeleteScheduledAt(null);
+            instrument.setUpdatedAt(now);
+            instrumentRepo.save(instrument);
+            log.info("Instrument {} automatically deleted after 3 months", instrument.getInstrumentId());
+        }
     }
 
     private boolean performAutoRecheck(Instrument instrument) {

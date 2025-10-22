@@ -45,8 +45,4 @@ public class InstrumentViewController {
                 instrumentViewService.searchInstruments(name, code, status, pageable)));
     }
 
-    @GetMapping("/{id}/status")
-    public ResponseEntity<InstrumentStatusResponse> getInstrumentStatus(@PathVariable Long id) {
-        return ResponseEntity.ok(instrumentViewService.getInstrumentStatus(id));
-    }
 }

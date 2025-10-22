@@ -23,13 +23,13 @@ spring:
 #      validation-timeout: 5000
 #      connection-test-query: SELECT 1
     url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
-    username: postgres.utosgzbzcjenqzpruter
+    username: postgres.fbzcbprlsaavorceymyp
     password: 123456
     driver-class-name: org.postgresql.Driver
 
   jpa:
       hibernate:
-        ddl-auto: update
+        ddl-auto: create
       show-sql: true
       properties:
         hibernate:

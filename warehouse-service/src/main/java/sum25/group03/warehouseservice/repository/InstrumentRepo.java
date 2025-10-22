@@ -33,4 +33,6 @@ public interface InstrumentRepo extends JpaRepository<Instrument,Long> {
 
     @Query("SELECT i FROM Instrument i WHERE i.status = 'DELETED' AND i.updatedAt < :threshold")
     List<Instrument> findInactiveBefore(LocalDate threshold);
+
+    List<Instrument> findByStatusAndAutoDeleteScheduledAtBefore(InstrumentStatus status, LocalDate date);
 }

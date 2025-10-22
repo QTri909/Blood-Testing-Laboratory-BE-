@@ -2,7 +2,9 @@ package sum25.group03.warehouseservice.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
 import sum25.group03.warehouseservice.dto.response.MessageResponse;
 import sum25.group03.warehouseservice.entity.enums.OperationalStatus;
 import sum25.group03.warehouseservice.service.instrumentStatus.InstrumentStatusService;
@@ -10,8 +12,6 @@ import sum25.group03.warehouseservice.service.instrumentStatus.InstrumentStatusS
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
-
-import static sum25.group03.warehouseservice.entity.enums.OperationalStatus.*;
 
 @RestController
 @RequestMapping("/api/v1/scheduler")
@@ -35,29 +35,25 @@ public class SchedulerController {
         return ResponseEntity.ok(new MessageResponse("Instrument deactivated successfully"));
     }
 
-    @PostMapping("/cleanup")
-    public ResponseEntity<String> triggerCleanup() {
-        instrumentStatusService.autoDeleteInactiveInstruments();
+    @PostMapping("/{id}/delete")
+    public ResponseEntity<String> triggerCleanup(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-User", defaultValue = "system") String username
+    ) {
+        instrumentStatusService.deleteInstrument(id, username);
         return ResponseEntity.ok("Cleanup job executed manually!");
     }
 
     @GetMapping("/{id}/status")
-    public ResponseEntity<Map<String, Object>> checkStatus(@PathVariable Long id) {
-        OperationalStatus status = instrumentStatusService.checkInstrumentStatus(id);
-        Map<String, Object> response = new HashMap<>();
-
-        response.put("instrumentId", id);
-        response.put("status", status);
-        response.put("timestamp", LocalDateTime.now());
-
-        String message = switch (status) {
-            case READY -> "Thiết bị đã sẵn sàng.";
-            case PROCESSING -> "Thiết bị đang xử lý.";
-            case MAINTENANCE -> "Thiết bị đang bảo trì.";
-            case ERROR -> "Thiết bị vẫn đang gặp lỗi, vui lòng kiểm tra chi tiết.";
-        };
-        response.put("message", message);
-
+    public ResponseEntity<InstrumentStatusResponse> checkStatus(@PathVariable Long id) {
+        InstrumentStatusResponse response = instrumentStatusService.checkInstrumentStatus(id);
         return ResponseEntity.ok(response);
+    }
+
+    @Scheduled(cron = "0 0 0 * * *") // at 00:00 midnight
+    @PostMapping("/cleanup")
+    public ResponseEntity<String> cleanupExpiredInstruments() {
+        instrumentStatusService.autoCleanupExpiredInstruments();
+        return ResponseEntity.ok("Auto cleanup executed successfully.");
     }
 }
