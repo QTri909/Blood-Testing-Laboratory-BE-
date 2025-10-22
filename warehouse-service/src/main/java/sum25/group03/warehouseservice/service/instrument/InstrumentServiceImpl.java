@@ -3,21 +3,16 @@ package sum25.group03.warehouseservice.service.instrument;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.internal.ConfigurationDTO;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
 import sum25.group03.warehouseservice.entity.*;
-import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
-import sum25.group03.warehouseservice.entity.enums.OperationalStatus;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.InstrumentMapper;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
 import sum25.group03.warehouseservice.service.config.ConfigService;
 import sum25.group03.warehouseservice.service.reagent.ReagentService;
 import sum25.group03.warehouseservice.service.reagentusage.ReagentUsageService;
-
-import java.time.LocalDate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,9 +78,6 @@ public class InstrumentServiceImpl implements InstrumentService {
     @Override
     public void addInstrumentToWarehouse(InstrumentReq instrument) {
         Instrument newInstrument = instrumentMapper.toEntity(instrument);
-        if (newInstrument.getOperationalStatus() == null) {
-            newInstrument.setOperationalStatus(OperationalStatus.READY);
-        }
         // Check an instrument serial number duplication
         if(isDuplicateSerialNumber(newInstrument.getSerialNumber())) {
             throw new NotFoundException("Instrument with serial number " + newInstrument.getSerialNumber() + " already exists");

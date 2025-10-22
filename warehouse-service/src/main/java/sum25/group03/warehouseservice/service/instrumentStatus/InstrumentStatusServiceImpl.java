@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
 import sum25.group03.warehouseservice.entity.Instrument;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
-import sum25.group03.warehouseservice.entity.enums.OperationalStatus;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
 
