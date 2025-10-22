@@ -5,9 +5,15 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+
 import java.time.LocalDate;
 import java.util.List;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
+@Builder
 @Entity
 @Table(name = "configurations")
 public class Configurations {
@@ -30,7 +36,7 @@ public class Configurations {
 
     @Column(name = "description", nullable = false, columnDefinition = "TEXT")
     private String description;
-    
+
     @Column(name = "unit", nullable = false)
     private String unit;
 

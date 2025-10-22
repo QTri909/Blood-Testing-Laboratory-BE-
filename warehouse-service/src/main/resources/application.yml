@@ -1,21 +1,28 @@
 spring:
-  application:
-    name: warehouse-service
+  profiles:
+    active: dev
+  config:
+    activate:
+      on-profile: dev
+  devtools:
+    add-properties: true
   datasource:
-    url: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${DB_NAME}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+    username: postgres.fbzcbprlsaavorceymyp
+    password: 123456
     driver-class-name: org.postgresql.Driver
-
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      idle-timeout: 30000
+      max-lifetime: 60000
+      connection-timeout: 20000
+      validation-timeout: 5000
+      connection-test-query: SELECT 1
   jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-
-server:
-  port: 8081
+    show-sql: false
+    hibernate:
+      ddl-auto: update
