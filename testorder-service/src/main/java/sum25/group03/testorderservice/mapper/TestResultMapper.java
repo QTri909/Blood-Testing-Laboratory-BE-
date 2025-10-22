@@ -1,23 +1,35 @@
 package sum25.group03.testorderservice.mapper;
 
 import org.mapstruct.*;
-import sum25.group03.testorderservice.dto.response.TestResultResponse;
-import sum25.group03.testorderservice.entity.ReagentUsed;
+import sum25.group03.testorderservice.dto.request.TestResultRequestDTO;
+import sum25.group03.testorderservice.dto.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entity.TestResult;
 
-import java.util.List;
-
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, uses = {ReagentUsedMapper.class, CommentMapper.class})
 public interface TestResultMapper {
 
-    @Mapping(target = "testOrderId", source = "testOrder.id")
-    @Mapping(target = "parameterId", source = "parameter.id")
-    @Mapping(target = "reagentUsedIds", expression = "java(mapReagents(entity.getReagentsUsed()))")
-    TestResultResponse toDTO(TestResult entity);
+    @Mapping(source = "testOrder.id", target = "testOrderId")
+    @Mapping(source = "parameter.id", target = "parameterId")
+    @Mapping(source = "parameter.name", target = "parameterName")
+    TestResultResponseDTO toResponseDto(TestResult testResult);
 
-    // Map từ List<ReagentUsed> → List<Long>
-    default List<Long> mapReagents(List<ReagentUsed> reagentsUsed) {
-        if (reagentsUsed == null) return List.of();
-        return reagentsUsed.stream().map(ReagentUsed::getId).toList();
-    }
+    @Mapping(source = "testOrderId", target = "testOrder.id")
+    @Mapping(source = "parameterId", target = "parameter.id")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "reagentsUsed", ignore = true)
+    @Mapping(target = "comments", ignore = true)
+    TestResult toEntity(TestResultRequestDTO requestDto);
+
+    @Mapping(source = "testOrderId", target = "testOrder.id")
+    @Mapping(source = "parameterId", target = "parameter.id")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "reagentsUsed", ignore = true)
+    @Mapping(target = "comments", ignore = true)
+    void updateEntity(TestResultRequestDTO requestDto, @MappingTarget TestResult testResult);
 }
