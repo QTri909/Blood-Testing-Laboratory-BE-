@@ -10,12 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import sum25.group03.warehouseservice.dto.response.InstrumentPageResponse;
 import sum25.group03.warehouseservice.dto.response.InstrumentResponse;
 import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
-import sum25.group03.warehouseservice.dto.response.MessageResponse;
-import sum25.group03.warehouseservice.entity.Instrument;
-import sum25.group03.warehouseservice.service.instrumentCleanup.InstrumentCleanupScheduler;
 import sum25.group03.warehouseservice.service.instumentView.InstrumentViewService;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/instruments")

@@ -1,18 +1,15 @@
 spring:
   profiles:
     active: dev
-  config:
-    activate:
-      on-profile: dev
   devtools:
     add-properties: true
   application:
     name: warehouse-service
   datasource:
-    url: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${DB_NAME}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://${POSTGRESQL_HOST}:${POSTGRESQL_PORT}/${DB_NAME}
+#    username: ${DB_USER}
+#    password: ${DB_PASSWORD}
+#    driver-class-name: org.postgresql.Driver
 #    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
 #    username: ${SUPABASE_DB_USER}
 #    password: ${DB_PASSWORD}
@@ -25,6 +22,11 @@ spring:
 #      connection-timeout: 20000
 #      validation-timeout: 5000
 #      connection-test-query: SELECT 1
+    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+    username: postgres.utosgzbzcjenqzpruter
+    password: 123456
+    driver-class-name: org.postgresql.Driver
+
   jpa:
       hibernate:
         ddl-auto: update

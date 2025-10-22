@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.internal.ConfigurationDTO;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
 import sum25.group03.warehouseservice.entity.*;
+import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.InstrumentMapper;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
@@ -22,7 +23,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j(topic = "InstrumentService")
 public class InstrumentServiceImpl implements InstrumentService {
     private final InstrumentRepo instrumentRepo;
     private final InstrumentMapper instrumentMapper;
@@ -129,28 +129,4 @@ public class InstrumentServiceImpl implements InstrumentService {
         // Save instrument with reagents and config if exist
         instrumentRepo.save(newInstrument);
     }
-
-    @Override
-    public void activateInstrument(Long id, String username) {
-        Instrument instrument = instrumentRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Instrument not found"));
-        instrument.setStatus(InstrumentStatus.READY);
-        instrument.setUpdatedAt(LocalDate.now());
-        instrumentRepo.save(instrument);
-
-        log.info("User '{}' activated instrument with id {}", username, id);
-    }
-
-    @Override
-    public void deactivateInstrument(Long id, String username) {
-        Instrument instrument = instrumentRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Instrument not found"));
-        instrument.setStatus(InstrumentStatus.DELETED);
-        instrument.setUpdatedAt(LocalDate.now());
-        instrumentRepo.save(instrument);
-
-        log.info("User '{}' deactivated instrument with id {}", username, id);
-    }
-
 }
-

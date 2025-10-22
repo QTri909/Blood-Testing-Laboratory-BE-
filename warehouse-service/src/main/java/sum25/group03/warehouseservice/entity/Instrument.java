@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
+import sum25.group03.warehouseservice.entity.enums.OperationalStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -85,6 +86,10 @@ public class Instrument {
 
     @Column(name = "updated_by", nullable = false)
     private int updatedBy;
+
+    @Column(name = "operational_status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private OperationalStatus operationalStatus = OperationalStatus.READY;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade =  {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "configuration_id", nullable = true)
