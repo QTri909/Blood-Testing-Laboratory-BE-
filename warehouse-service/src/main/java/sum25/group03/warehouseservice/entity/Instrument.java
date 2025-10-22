@@ -25,11 +25,8 @@ public class Instrument {
     @Column(name = "instrument_name", nullable = false)
     private String instrumentName;
 
-    @Column(name = "instrument_code", nullable = false)
-    private String instrumentCode;
-
-    @Column(name = "instrument_type", nullable = false)
-    private String instrumentType;
+    @Column(name = "model", nullable = false)
+    private String model;
 
     @Column(name = "serial_number", nullable = false, unique = true)
     private String serialNumber;
@@ -39,9 +36,6 @@ public class Instrument {
 
     @Column(name = "location", nullable = false)
     private String location;
-
-    @Column(name = "installation_date", nullable = true)
-    private LocalDate installationDate;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -54,23 +48,11 @@ public class Instrument {
     @Column(name = "deactivated_at", nullable = false)
     private LocalDate deactivatedAt;
 
-    @Column(name = "deactivated_by", nullable = false)
+    @Column(name = "deactivated_by", nullable = true)
     private int deactivatedBy;
 
     @Column(name = "auto_delete_scheduled_at", nullable = true)
     private LocalDate autoDeleteScheduledAt;
-
-    @Column(name = "last_calibration_date", nullable = true)
-    private LocalDate lastCalibrationDate;
-
-    @Column(name = "next_calibration_date", nullable = true)
-    private LocalDate nextCalibrationDate;
-
-    @Column(name = "last_maintenance_date", nullable = true)
-    private LocalDate lastMaintenanceDate;
-
-    @Column(name = "next_maintenance_date", nullable = true)
-    private LocalDate nextMaintenanceDate;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -80,10 +62,10 @@ public class Instrument {
     @Column(name = "updated_at", nullable = false)
     private LocalDate updatedAt;
 
-    @Column(name = "created_by", nullable = false)
+    @Column(name = "created_by", nullable = true)
     private int createdBy;
 
-    @Column(name = "updated_by", nullable = false)
+    @Column(name = "updated_by", nullable = true)
     private int updatedBy;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade =  {CascadeType.PERSIST, CascadeType.MERGE})

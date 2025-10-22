@@ -14,16 +14,11 @@ public class InstrumentReq {
     @NotBlank
     private String instrumentName;
     @NotBlank
-    private String instrumentCode;
-    @NotBlank
-    private String instrumentType;
+    private String model;
     @NotBlank
     private String serialNumber;
     @NotBlank
     private String firmwareVersion;
-    @NotBlank
-    private String warrantyExpiryDate;
-    private String installationDate;
     private String location;
     private String notes;
     @NotBlank

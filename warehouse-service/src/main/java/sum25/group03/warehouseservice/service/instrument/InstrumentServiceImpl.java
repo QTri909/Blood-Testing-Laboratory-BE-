@@ -55,14 +55,13 @@ public class InstrumentServiceImpl implements InstrumentService {
     }
     public Configurations mapConfigurations (ConfigurationDTO config) {
         return Configurations.builder()
-                .configurationKey(config.getConfigurationKey())
-                .configurationValue(config.getConfigurationValue())
-                .configurationCategory(config.getConfigurationCategory())
-                .instrumentType(config.getInstrumentType())
-                .unit(config.getUnit())
+                .sampleVolume(config.getSampleVolume())
+                .sampleVolumeUnit(config.getSampleVolumeUnit())
                 .configType(config.getConfigType())
+                .maxConcurrentSamples(config.getMaxConcurrentSamples())
+                .parameterSettings(config.getParameterSettings())
+                .supportedTests(config.getSupportedTests())
                 .description(config.getDescription())
-                .active(config.isActive())
                 .build();
     }
     public List<ReagentHistoryUsage> getReagentUsageReferences(List<Long> reagentIds, Instrument instrument) {

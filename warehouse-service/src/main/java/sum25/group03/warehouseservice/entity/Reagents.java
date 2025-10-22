@@ -41,9 +41,6 @@ public class Reagents {
     @Column(name = "storage_conditions", nullable = false)
     private String storageConditions;
 
-    @Column(name = "lot_number", nullable = false)
-    private String lotNumber;
-
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private ReagentStatus status;
@@ -55,12 +52,6 @@ public class Reagents {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDate updatedAt;
-
-    @Column(name = "min_stock_level", nullable = false)
-    private int minStockLevel;
-
-    @Column(name = "max_stock_level", nullable = false)
-    private int maxStockLevel;
 
     @OneToMany(mappedBy = "reagent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReagentHistoryUsage> reagentHistoryUsages;

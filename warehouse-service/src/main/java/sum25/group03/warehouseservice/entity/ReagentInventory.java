@@ -25,6 +25,12 @@ public class ReagentInventory {
     @Column(name = "quantity_available", nullable = false)
     private int quantityAvailable;
 
+    @Column(name = "min_stock_level", nullable = false)
+    private int minStockLevel;
+
+    @Column(name = "max_stock_level", nullable = false)
+    private int maxStockLevel;
+
     @Column(name = "expiry_date", nullable = false)
     private LocalDate expiryDate;
 
