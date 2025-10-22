@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import sum25.group03.warehouseservice.entity.enums.ConfigType;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -21,7 +22,7 @@ public class Configurations {
     @Column(name = "configuration_id")
     private Long configurationId;
 
-    @Column(name = "configuration_key", nullable = false)
+    @Column(name = "configuration_key", nullable = false, unique = true)
     private String configurationKey;
 
     @Column(name = "configuration_value", nullable = false, columnDefinition = "TEXT")
@@ -29,6 +30,10 @@ public class Configurations {
 
     @Column(name = "configuration_category", nullable = false)
     private String configurationCategory;
+
+    @Column(name = "config_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ConfigType configType;
 
     @Column(name = "instrument_type", nullable = false)
     private String instrumentType;
@@ -41,9 +46,6 @@ public class Configurations {
 
     @Column(name = "active", nullable = false)
     private boolean active;
-
-    @Column(name = "deleted", nullable = false)
-    private boolean deleted;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -59,6 +61,6 @@ public class Configurations {
     @Column(name = "updated_by", nullable = false)
     private int updatedBy;
 
-    @OneToOne(mappedBy = "configuration")
-    private Instrument instrument;
+    @OneToMany(mappedBy = "configurations")
+    private List<Instrument> instrument;
 }

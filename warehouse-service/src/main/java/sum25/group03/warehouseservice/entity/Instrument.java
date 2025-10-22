@@ -7,7 +7,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -20,7 +19,7 @@ import java.util.List;
 public class Instrument {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "instrument_id")
     private Long instrumentId;
 
     @Column(name = "instrument_name", nullable = false)
@@ -41,6 +40,9 @@ public class Instrument {
     @Column(name = "location", nullable = false)
     private String location;
 
+    @Column(name = "installation_date", nullable = true)
+    private LocalDate installationDate;
+
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private InstrumentStatus status;
@@ -57,9 +59,6 @@ public class Instrument {
 
     @Column(name = "auto_delete_scheduled_at", nullable = true)
     private LocalDate autoDeleteScheduledAt;
-
-    @Column(name = "installation_date", nullable = false)
-    private LocalDate installationDate;
 
     @Column(name = "last_calibration_date", nullable = true)
     private LocalDate lastCalibrationDate;
@@ -87,9 +86,9 @@ public class Instrument {
     @Column(name = "updated_by", nullable = false)
     private int updatedBy;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade =  {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToOne(fetch = FetchType.LAZY, cascade =  {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "configuration_id", nullable = true)
-    private Configurations configuration;
+    private Configurations configurations;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "manufacturer_id", nullable = false)
@@ -97,11 +96,4 @@ public class Instrument {
 
     @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReagentHistoryUsage> reagentHistoryUsages;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "raw_test_results_id", nullable = true)
-    private RawTestResults rawTestResults;
-
-    @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<InstalledReagent> installedReagents;
 }

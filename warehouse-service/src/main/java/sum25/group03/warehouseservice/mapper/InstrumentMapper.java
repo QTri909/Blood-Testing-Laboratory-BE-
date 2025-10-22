@@ -7,6 +7,6 @@ import sum25.group03.warehouseservice.entity.Instrument;
 
 @Mapper(componentModel = "spring")
 public interface InstrumentMapper {
-    @Mapping(target = "status", expression = "java(sum25.group03.warehouseservice.entity.enums.InstrumentStatus.READY)")
+    @Mapping(target = "status", expression = "java(sum25.group03.warehouseservice.entity.enums.InstrumentStatus.ACTIVE)")
     Instrument toEntity(InstrumentReq instrument);
 }

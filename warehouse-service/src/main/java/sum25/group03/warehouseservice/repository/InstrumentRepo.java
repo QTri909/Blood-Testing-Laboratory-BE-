@@ -12,16 +12,4 @@ import java.util.List;
 @Repository
 public interface InstrumentRepo extends JpaRepository<Instrument,Long> {
     boolean existsBySerialNumber(String serialNumber);
-
-    @Query("""
-        SELECT new sum25.group03.warehouseservice.dto.internal.ConfigIdAndReagentDTO(
-            config.configurationId,
-            reagent.reagent.reagentId
-        )
-        FROM Instrument ir
-        LEFT JOIN ir.configuration config
-        LEFT JOIN ir.reagentHistoryUsages reagent 
-        WHERE ir.instrumentId = :instrumentId
-    """)
-    List<ConfigIdAndReagentDTO> findConfigAndReagentByInstrument(@Param("instrumentId") Long instrumentId);
 }

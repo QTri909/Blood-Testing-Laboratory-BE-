@@ -10,9 +10,10 @@ import sum25.group03.warehouseservice.entity.*;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.InstrumentMapper;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
-import sum25.group03.warehouseservice.service.configuration.ConfigurationService;
+import sum25.group03.warehouseservice.service.config.ConfigService;
 import sum25.group03.warehouseservice.service.reagent.ReagentService;
-import sum25.group03.warehouseservice.service.installedreagent.InstalledReagentService;
+import sum25.group03.warehouseservice.service.reagentusage.ReagentUsageService;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +23,9 @@ import java.util.List;
 public class InstrumentServiceImpl implements InstrumentService {
     private final InstrumentRepo instrumentRepo;
     private final InstrumentMapper instrumentMapper;
-    private final ConfigurationService configurationService;
-    private final InstalledReagentService installedReagentService;
+    private final ConfigService configService;
     private final ReagentService reagentService;
+    private final ReagentUsageService reagentUsageService;
     @PersistenceContext
     private EntityManager entityManager;
 
@@ -38,12 +39,12 @@ public class InstrumentServiceImpl implements InstrumentService {
         return instrumentRepo.existsBySerialNumber(serialNumber);
     }
     public void getConfigAndReagentByInstrument(Instrument instrument, Long cloneFromInstrumentId) {
-        ConfigurationDTO configurationDTO = configurationService.findByInstrumentId(cloneFromInstrumentId);
+        ConfigurationDTO configurationDTO = configService.findByInstrumentId(cloneFromInstrumentId);
         if (configurationDTO != null) {
             Configurations configRef = mapConfigurations(configurationDTO);
-            instrument.setConfiguration(configRef);
+            instrument.setConfigurations(configRef);
         }
-        List<Long> reagentIds = installedReagentService.findIdsByInstrumentId(cloneFromInstrumentId);
+        List<Long> reagentIds = reagentUsageService.getReagentUsageIdsByInstrumentId(cloneFromInstrumentId);
         if (!reagentIds.isEmpty()) {
             List<ReagentHistoryUsage> reagentUsages = getReagentUsageReferences(
                     reagentIds,
@@ -59,6 +60,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .configurationCategory(config.getConfigurationCategory())
                 .instrumentType(config.getInstrumentType())
                 .unit(config.getUnit())
+                .configType(config.getConfigType())
                 .description(config.getDescription())
                 .active(config.isActive())
                 .build();
@@ -90,13 +92,13 @@ public class InstrumentServiceImpl implements InstrumentService {
         // Validate configuration and reagents existence
         List<String> errorMessages = new ArrayList<>();
         if(!isEmptyConfig(instrument.getConfigurationId())) {
-            if(!configurationService.existsById(instrument.getConfigurationId())){
+            if(!configService.existsById(instrument.getConfigurationId())){
                 errorMessages.add("Configuration not found");
             } else{
                 // Configuration exists
                 // Link configuration (as reference)
                 Configurations configRef = entityManager.getReference(Configurations.class, instrument.getConfigurationId());
-                newInstrument.setConfiguration(configRef);
+                newInstrument.setConfigurations(configRef);
             }
         }
         if(!isEmptyReagents(instrument.getReagentId())) {
@@ -106,11 +108,16 @@ public class InstrumentServiceImpl implements InstrumentService {
                     .toList();
 
             if (!missingReagentIds.isEmpty()){
-                errorMessages.add("Reagents not found: " + missingReagentIds);
+                errorMessages.add("Reagents not available: " + missingReagentIds);
             } else {
-                // Create reagent usages
-                List<ReagentHistoryUsage> usages = getReagentUsageReferences(instrument.getReagentId(), newInstrument);
-                newInstrument.setReagentHistoryUsages(usages);
+                // All-reagents exist
+                // Link reagents (as reference)
+                List<ReagentHistoryUsage> reagentUsages = getReagentUsageReferences(
+                        existingReagentIds,
+                        newInstrument
+                );
+                newInstrument.setReagentHistoryUsages(reagentUsages);
+
             }
         }
         if(!errorMessages.isEmpty()) {

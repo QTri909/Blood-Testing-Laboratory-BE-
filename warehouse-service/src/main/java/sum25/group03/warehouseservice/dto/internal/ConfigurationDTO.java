@@ -1,6 +1,7 @@
 package sum25.group03.warehouseservice.dto.internal;
 
 import lombok.*;
+import sum25.group03.warehouseservice.entity.enums.ConfigType;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,5 +15,6 @@ public class ConfigurationDTO {
     private String instrumentType;
     private String description;
     private String unit;
+    private ConfigType configType;
     private boolean active;
 }

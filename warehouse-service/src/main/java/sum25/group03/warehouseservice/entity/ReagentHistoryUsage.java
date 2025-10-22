@@ -39,6 +39,9 @@ public class ReagentHistoryUsage {
     @Column(name = "notes", nullable = true, columnDefinition = "TEXT")
     private String notes;
 
+    @Column(name = "lot_number", nullable = true)
+    private String lotNumber;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "instrument_id", nullable = false)
     private Instrument instrument;

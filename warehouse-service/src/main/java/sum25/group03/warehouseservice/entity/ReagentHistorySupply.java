@@ -4,9 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import sum25.group03.warehouseservice.entity.enums.SupplyStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,11 +23,8 @@ public class ReagentHistorySupply {
     @Column(name = "reagent_history_supply_id")
     private Long reagentHistorySupplyId;
 
-    @Column(name = "batch_number", nullable = false)
-    private String batchNumber;
-
     @Column(name = "iot_number", nullable = false)
-    private String iotNumber;
+    private String lotNumber;
 
     @Column(name = "manufacture_date", nullable = false)
     private LocalDate manufactureDate;
@@ -35,9 +34,6 @@ public class ReagentHistorySupply {
 
     @Column(name = "quantity_received", nullable = false)
     private BigDecimal quantityReceived;
-
-    @Column(name = "quantity_remaining", nullable = false)
-    private BigDecimal quantityRemaining;
 
     @Column(name = "unit_of_measurement", nullable = false)
     private String unitOfMeasurement;
@@ -52,7 +48,8 @@ public class ReagentHistorySupply {
     private String storageLocation;
 
     @Column(name = "status", nullable = false)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private SupplyStatus status;
 
     @Column(name = "notes", nullable = false)
     private String notes;
@@ -66,24 +63,14 @@ public class ReagentHistorySupply {
     @Column(name = "quality_checked_by", nullable = false)
     private int qualityCheckedBy;
 
-    @Column(name = "deleted", nullable = false)
-    private boolean deleted;
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDate createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
-    private LocalDate updatedAt;
-
     @Column(name = "purchase_order_number", nullable = false)
     private String purchaseOrderNumber;
 
-    @Column(name = "catalog_number", nullable = false)
-    private String catalogNumber;
-
-    @Column(name = "manufacturer", nullable = false)
+    @Column(name = "manufacturer", nullable = true)
     private String manufacturer;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -93,4 +80,5 @@ public class ReagentHistorySupply {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vendor_id", nullable = false)
     private Vendors vendor;
+
 }
