@@ -1,7 +1,9 @@
 package sum25.group03.patientservice.mapper;
 
-import org.mapstruct.*;
 import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import sum25.group03.patientservice.documents.MedicalRecordDocument;
 import sum25.group03.patientservice.dtos.response.MedicalRecordResponse;
 import sum25.group03.patientservice.entities.MedicalRecordEntity;
 
@@ -15,7 +17,6 @@ public interface MedicalRecordMapper {
     public MedicalRecordResponse toMedicalRecordResponse(MedicalRecordEntity entity);
     public List<MedicalRecordResponse> toMedicalRecordResponseList(List<MedicalRecordEntity> entities);
 
-    // Convert Request -> Entity
     @Mapping(target = "recordId", ignore = true)
     @Mapping(target = "recordCode", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
@@ -27,6 +28,5 @@ public interface MedicalRecordMapper {
     @Mapping(target = "clinicalNotes", ignore = true)
     MedicalRecordEntity toEntity(MedicalRecordRequest request);
 
-    // Convert Entity -> Response
-//    MedicalRecordResponse toResponse(MedicalRecordEntity entity);
+    public MedicalRecordDocument toMedicalRecordDocument(MedicalRecordEntity entity);
 }

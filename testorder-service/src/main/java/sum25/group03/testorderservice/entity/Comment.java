@@ -30,7 +30,7 @@ public class Comment {
     private TestResult testResult;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId; // ID từ UserService
+    private Long userId; // by which user
 
     @Column(name = "comment_text", nullable = false, columnDefinition = "TEXT")
     private String commentText;
@@ -45,4 +45,6 @@ public class Comment {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    private Long updatedBy;
 }
