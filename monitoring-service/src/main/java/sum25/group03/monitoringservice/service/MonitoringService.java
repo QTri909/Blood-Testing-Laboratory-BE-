@@ -34,6 +34,9 @@ public class MonitoringService {
     public List<EventLog> getAllEventLogs() {
         return eventLogService.getAllEventLogs();
     }
+    public List<EventLog> searchEventLogs(String action, String message, String operator) {
+        return eventLogService.searchEventLogs(action, message, operator);
+    }
     // Raw results
     public RawTestResult addRawTestResult(RawTestResult rawTestResult) {
         return rawTestResultService.addRawTestResult(rawTestResult);

@@ -24,5 +24,7 @@ public class EventLogService {
     public Optional<EventLog> getEventLog(String id) {
         return eventLogRepo.findById(id);
     }
-
+    public List<EventLog> searchEventLogs(String action, String message, String operator) {
+        return eventLogRepo.searchEventLogs(action, message, operator);
+    }
 }
