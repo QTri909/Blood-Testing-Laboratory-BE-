@@ -13,8 +13,8 @@ import sum25.group03.patientservice.entities.MedicalRecordEntity;
 import sum25.group03.patientservice.exception.medical.record.MedicalRecordNotFound;
 import sum25.group03.patientservice.exception.user.snapshot.UserNotFoundException;
 import sum25.group03.patientservice.mapper.MedicalRecordMapper;
-import sum25.group03.patientservice.repositories.MedicalRecordRepository;
-import sum25.group03.patientservice.repositories.UserSnapshotRepository;
+import sum25.group03.patientservice.repositories.postgres.MedicalRecordRepository;
+import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 
 @Service
