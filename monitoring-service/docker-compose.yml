@@ -1,0 +1,74 @@
+
+services:
+  # Cấu hình cho monitoring-service-db (MongoDB)
+  monitoring-service-db:
+    image: mongo:latest # Image ID or name: mongo:latest
+    container_name: monitoring-service-db # Container name: monitoring-service-db
+    restart: always
+    environment:
+      # Environment variables: root123;MONGO_INITDB_DATABASE=monitoring_db
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root123 # Giả định root123 là mật khẩu gốc
+      - MONGO_INITDB_DATABASE=monitoring_db
+    ports:
+      # Bind ports: 27017:27017
+      - "27017:27017"
+    volumes:
+      # Bind mounts: E:\volume_db/monitoring-service-db/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+    networks:
+      # Run options: --network internal (Giả định tên network là 'internal')
+      - internal
+
+  # Cấu hình cho kafka
+  kafka:
+    image: bitnamilegacy/kafka:latest # Image ID or name: bitnamilegacy/kafka:latest
+    container_name: kafka # Container name: kafka
+    restart: always
+    environment:
+      # Environment variables: >=0;KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+    ports:
+      # Bind ports: 9092:9092 9094:9094
+      - "9092:9092" # Port nội bộ
+      - "9094:9094" # Port bên ngoài
+    networks:
+      # Run options: --network internal
+      - internal
+
+  # Cấu hình cho monitoring-service (Ứng dụng Spring Boot/Docker build)
+  monitoring-service:
+    build:
+      # Dockerfile: Dockerfile (Giả định Dockerfile nằm cùng thư mục với docker-compose.yml)
+      context: .
+      dockerfile: Dockerfile
+    image: monitoring-service:latest # Image tag: monitoring-service:latest
+    container_name: monitoring-service # Container name: monitoring-service
+    restart: always
+    environment:
+      # Environment variables: PRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_DATA_MONGODB_URI=mongodb://root:root123@monitoring-service-db:27017/monitoring_db?authSource=admin
+    ports:
+      # Bind ports: 4000:4000
+      - "4000:4000"
+    networks:
+      # Run options: --network internal
+      - internal
+    depends_on:
+      - monitoring-service-db # Ứng dụng có thể phụ thuộc vào DB
+
+networks:
+  internal:
+    driver: bridge
+
+# Hướng dẫn chạy:
+# 1. Đặt file này vào thư mục gốc của dự án.
+# 2. Đảm bảo file Dockerfile cho monitoring-service nằm cùng thư mục.
+# 3. Chạy lệnh: docker compose up -d

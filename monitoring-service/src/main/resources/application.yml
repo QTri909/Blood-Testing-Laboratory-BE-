@@ -1,0 +1,21 @@
+server:
+  port: 4000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics, prometheus
+  endpoint:
+    health:
+      show-details: always
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+
+healthcheck:
+  kafka:
+    checkIntervalMillis: 60000
+    retryDelayMillis: 2000
+    maxRetries: 3
