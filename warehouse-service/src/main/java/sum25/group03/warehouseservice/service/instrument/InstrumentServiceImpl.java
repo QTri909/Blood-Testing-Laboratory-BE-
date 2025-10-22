@@ -128,7 +128,7 @@ public class InstrumentServiceImpl implements InstrumentService {
         Instrument instrument = instrumentRepo.findById(instrumentId)
                 .orElseThrow(() -> new NotFoundException("Instrument not found with id: " + instrumentId));
 
-        boolean isActive = instrument.getStatus() == InstrumentStatus.READY;
+        boolean isActive = instrument.getStatus() == InstrumentStatus.ACTIVE;
 
         return InstrumentStatusResponse.builder()
                 .instrumentId(instrument.getInstrumentId())

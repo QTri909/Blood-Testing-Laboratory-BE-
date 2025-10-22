@@ -16,6 +16,7 @@ import sum25.group03.instrumentservice.controller.response.InstrumentResponse;
 import sum25.group03.instrumentservice.exception.InstrumentModeChangeException;
 import sum25.group03.instrumentservice.exception.ResourceNotFoundException;
 import sum25.group03.instrumentservice.exception.WarehouseServiceException;
+import sum25.group03.instrumentservice.event.InstrumentModeChangedEvent;
 import sum25.group03.instrumentservice.event.ReagentInstalledEvent;
 
 import sum25.group03.instrumentservice.model.Configuration;
@@ -65,7 +66,6 @@ public class InstrumentServiceImpl implements InstrumentService {
     public ChangeInstrumentModeResponse changeInstrumentMode(ChangeInstrumentModeRequest request) {
         log.info("Starting change instrument mode process for instrument ID: {}", request.getInstrumentId());
 
-
         Instrument instrument = instrumentRepository.findById(request.getInstrumentId())
                 .orElseThrow(() -> {
                     log.error("Instrument not found with ID: {}", request.getInstrumentId());
@@ -74,7 +74,6 @@ public class InstrumentServiceImpl implements InstrumentService {
                 });
 
         log.info("Instrument found: {} ({})", instrument.getInstrumentName(), instrument.getInstrumentCode());
-
 
         log.info("Checking instrument status with Warehouse Service");
         boolean isActive;
@@ -86,7 +85,6 @@ public class InstrumentServiceImpl implements InstrumentService {
                     "Cannot change instrument mode: Unable to verify instrument status with Warehouse Service. " + e.getMessage());
         }
 
-
         if (!isActive) {
             log.warn("Mode change denied - Instrument is not active in Warehouse Service");
             throw new InstrumentModeChangeException(
@@ -96,7 +94,6 @@ public class InstrumentServiceImpl implements InstrumentService {
 
         log.info("Warehouse Service confirmed instrument is active - proceeding with mode change");
 
-
         validateModeChangeRequest(request, instrument);
 
         InstrumentStatus previousStatus = instrument.getStatus();
@@ -105,6 +102,26 @@ public class InstrumentServiceImpl implements InstrumentService {
 
         log.info("Instrument mode changed successfully from {} to {}", previousStatus, request.getNewStatus());
 
+        if (request.getNewStatus() == InstrumentStatus.INACTIVE || request.getNewStatus() == InstrumentStatus.MAINTENANCE) {
+            try {
+                InstrumentModeChangedEvent event = InstrumentModeChangedEvent.builder()
+                        .instrumentId(updatedInstrument.getId())
+                        .instrumentCode(updatedInstrument.getInstrumentCode())
+                        .instrumentName(updatedInstrument.getInstrumentName())
+                        .previousStatus(String.valueOf(previousStatus))
+                        .newStatus(String.valueOf(request.getNewStatus()))
+                        .reason(request.getReason())
+                        .changedDate(LocalDate.now())
+                        .eventTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
+                        .build();
+
+                kafkaEventPublisher.publishInstrumentModeChangedEvent(event);
+                log.info("Instrument mode changed event published for instrument ID: {}", updatedInstrument.getId());
+            } catch (Exception e) {
+                log.error("Failed to publish instrument mode changed event, but mode change was successful: {}", e.getMessage());
+
+            }
+        }
 
         return ChangeInstrumentModeResponse.builder()
                 .instrumentId(updatedInstrument.getId())

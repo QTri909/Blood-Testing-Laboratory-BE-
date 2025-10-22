@@ -13,6 +13,7 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.util.backoff.FixedBackOff;
+import sum25.group03.warehouseservice.event.InstrumentModeChangedEvent;
 import sum25.group03.warehouseservice.event.ReagentInstalledEvent;
 
 import java.util.HashMap;
@@ -38,8 +39,25 @@ public class KafkaConfig {
 
         configProps.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
 
-
         configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, ReagentInstalledEvent.class.getName());
+        configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+
+        configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        return new DefaultKafkaConsumerFactory<>(configProps);
+    }
+
+    @Bean
+    public ConsumerFactory<String, InstrumentModeChangedEvent> instrumentModeConsumerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+
+        configProps.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
+
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, InstrumentModeChangedEvent.class.getName());
         configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
 
@@ -64,7 +82,19 @@ public class KafkaConfig {
     public ConcurrentKafkaListenerContainerFactory<String, ReagentInstalledEvent> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, ReagentInstalledEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
+
         factory.setConsumerFactory(consumerFactory());
+        factory.setCommonErrorHandler(errorHandler());
+
+        return factory;
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, InstrumentModeChangedEvent> instrumentModeKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, InstrumentModeChangedEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+
+        factory.setConsumerFactory(instrumentModeConsumerFactory());
         factory.setCommonErrorHandler(errorHandler());
 
         return factory;
