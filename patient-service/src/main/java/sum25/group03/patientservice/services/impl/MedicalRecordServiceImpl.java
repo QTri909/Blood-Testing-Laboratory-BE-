@@ -17,6 +17,10 @@ import sum25.group03.patientservice.repositories.MedicalRecordRepository;
 import sum25.group03.patientservice.repositories.UserSnapshotRepository;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -77,5 +81,35 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         // TODO: integrate with proper logging framework or auditing service to cloud watch AWS
 
         return updateInfo;
+    }
+
+    @Override
+    public MedicalRecordResponse getById(Long recordId) {
+        return medicalRecordRepository.findById(recordId)
+                .map(medicalRecordMapper::toMedicalRecordResponse)
+                .orElseThrow(() -> new RuntimeException("Medical Record not found"));
+    }
+
+    @Override
+    public MedicalRecordResponse getByCode(UUID recordCode) {
+        return medicalRecordRepository.findByRecordCode(recordCode)
+                .map(medicalRecordMapper::toMedicalRecordResponse)
+                .orElseThrow(() -> new RuntimeException("Medical Record not found"));
+    }
+
+    @Override
+    public List<MedicalRecordResponse> getAll() {
+        return medicalRecordRepository.findAll()
+                .stream()
+                .map(medicalRecordMapper::toMedicalRecordResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MedicalRecordResponse> getByPatientId(Long patientId) {
+        return medicalRecordRepository.findByPatientId(patientId)
+                .stream()
+                .map(medicalRecordMapper::toMedicalRecordResponse)
+                .collect(Collectors.toList());
     }
 }
