@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.internal.ConfigIdAndReagentDTO;
 import sum25.group03.warehouseservice.dto.internal.ConfigurationDTO;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
+import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
 import sum25.group03.warehouseservice.entity.*;
+import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.InstrumentMapper;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
@@ -91,9 +93,9 @@ public class InstrumentServiceImpl implements InstrumentService {
         // Validate configuration and reagents existence
         List<String> errorMessages = new ArrayList<>();
         if(!isEmptyConfig(instrument.getConfigurationId())) {
-            if(!configurationService.existsById(instrument.getConfigurationId())){
+            if(!configurationService.existsById(instrument.getConfigurationId())) {
                 errorMessages.add("Configuration not found");
-            } else{
+            } else {
                 // Configuration exists
                 // Link configuration (as reference)
                 Configurations configRef = entityManager.getReference(Configurations.class, instrument.getConfigurationId());
@@ -106,7 +108,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                     .filter(id -> !existingReagentIds.contains(id))
                     .toList();
 
-            if (!missingReagentIds.isEmpty()){
+            if (!missingReagentIds.isEmpty()) {
                 errorMessages.add("Reagents not found: " + missingReagentIds);
             } else {
                 // Create reagent usages
@@ -121,5 +123,22 @@ public class InstrumentServiceImpl implements InstrumentService {
         instrumentRepo.save(newInstrument);
     }
 
-}
+    @Override
+    public InstrumentStatusResponse getInstrumentStatus(Long instrumentId) {
+        Instrument instrument = instrumentRepo.findById(instrumentId)
+                .orElseThrow(() -> new NotFoundException("Instrument not found with id: " + instrumentId));
 
+        boolean isActive = instrument.getStatus() == InstrumentStatus.READY;
+
+        return InstrumentStatusResponse.builder()
+                .instrumentId(instrument.getInstrumentId())
+                .instrumentName(instrument.getInstrumentName())
+                .instrumentCode(instrument.getInstrumentCode())
+                .status(instrument.getStatus())
+                .isActive(isActive)
+                .location(instrument.getLocation())
+                .message(isActive ? "Instrument is active and ready for mode change" :
+                        "Instrument is not active. Current status: " + instrument.getStatus())
+                .build();
+    }
+}

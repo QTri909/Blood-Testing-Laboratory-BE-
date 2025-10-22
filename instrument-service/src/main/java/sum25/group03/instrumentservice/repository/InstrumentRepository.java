@@ -1,4 +1,15 @@
 package sum25.group03.instrumentservice.repository;
 
-public class InstrumentRepository {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import sum25.group03.instrumentservice.common.InstrumentStatus;
+import sum25.group03.instrumentservice.model.Instrument;
+
+import java.util.List;
+import java.util.Optional;
+
+@Repository
+public interface InstrumentRepository extends JpaRepository<Instrument, Integer> {
+    Optional<Instrument> findByInstrumentCode(String instrumentCode);
+    List<Instrument> findByStatus(InstrumentStatus status);
 }

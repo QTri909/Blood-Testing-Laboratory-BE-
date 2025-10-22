@@ -17,3 +17,7 @@ logging:
   level:
     web: info
     root: info
+
+warehouse:
+  service:
+    url: http://localhost:8082

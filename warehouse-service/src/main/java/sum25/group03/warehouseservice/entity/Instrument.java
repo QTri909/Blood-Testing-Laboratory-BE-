@@ -1,4 +1,4 @@
-package sum25.group03.warehouseservice.entity;
+package sum25.group03.warehouseservice.entity; // Tên package giữ nguyên
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -35,7 +35,7 @@ public class Instrument {
     @Column(name = "serial_number", nullable = false, unique = true)
     private String serialNumber;
 
-    @Column(name = "firmware_version", nullable = false)
+    @Column(name = "firmware_version")
     private String firmwareVersion;
 
     @Column(name = "location", nullable = false)
@@ -48,17 +48,17 @@ public class Instrument {
     @Column(name = "notes", nullable = true, columnDefinition = "TEXT")
     private String notes;
 
-    @CreationTimestamp
-    @Column(name = "deactivated_at", nullable = false)
+    // @CreationTimestamp // <-- ĐÃ XÓA: Dùng timestamp ở đây là sai logic
+    @Column(name = "deactivated_at")
     private LocalDate deactivatedAt;
 
-    @Column(name = "deactivated_by", nullable = false)
-    private int deactivatedBy;
+    @Column(name = "deactivated_by")
+    private Integer deactivatedBy; // <-- SỬA LỖI: Đổi 'int' thành 'Integer'
 
-    @Column(name = "auto_delete_scheduled_at", nullable = true)
+    @Column(name = "auto_delete_scheduled_at")
     private LocalDate autoDeleteScheduledAt;
 
-    @Column(name = "installation_date", nullable = false)
+    @Column(name = "installation_date")
     private LocalDate installationDate;
 
     @Column(name = "last_calibration_date", nullable = true)
@@ -74,25 +74,25 @@ public class Instrument {
     private LocalDate nextMaintenanceDate;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at")
     private LocalDate createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDate updatedAt;
 
-    @Column(name = "created_by", nullable = false)
-    private int createdBy;
+    @Column(name = "created_by")
+    private Integer createdBy;
 
-    @Column(name = "updated_by", nullable = false)
-    private int updatedBy;
+    @Column(name = "updated_by")
+    private Integer updatedBy;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade =  {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "configuration_id", nullable = true)
     private Configurations configuration;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "manufacturer_id", nullable = false)
+    @JoinColumn(name = "manufacturer_id")
     private Manufacturer manufacturer;
 
     @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL, orphanRemoval = true)

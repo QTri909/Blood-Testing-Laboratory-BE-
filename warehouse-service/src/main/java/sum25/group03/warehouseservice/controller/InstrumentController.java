@@ -29,4 +29,9 @@ public class InstrumentController {
     public ResponseEntity<?> testEndpointReagent(@PathVariable Long id) {
         return ResponseEntity.ok(reagentUsageRepo.findIdsByInstrumentId(id));
     }
+
+    @GetMapping("/status/{instrumentId}")
+    public ResponseEntity<?> getInstrumentStatus(@PathVariable Long instrumentId) {
+        return ResponseEntity.ok(instrumentService.getInstrumentStatus(instrumentId));
+    }
 }

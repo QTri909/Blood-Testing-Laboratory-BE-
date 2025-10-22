@@ -5,5 +5,7 @@ public enum InstrumentStatus {
     PROCESSING,
     MAINTENANCE,
     ERROR,
-    DELETED
+    DELETED,
+    ACTIVE,
+    DEACTIVE
 }

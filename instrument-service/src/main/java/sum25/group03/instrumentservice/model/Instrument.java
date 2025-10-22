@@ -30,6 +30,6 @@ public class Instrument {
     private InstrumentStatus status;
 
     @ManyToOne
-    @JoinColumn(name = "configuration_id", nullable = false)
+    @JoinColumn(name = "configuration_id")
     private Configuration configuration;
 }
