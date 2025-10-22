@@ -5,6 +5,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.testorderservice.dto.request.TestOrderFiltering;
 import sum25.group03.testorderservice.dto.request.TestOrderRequest;
 import sum25.group03.testorderservice.dto.response.TestOrderResponse;
 import sum25.group03.testorderservice.entity.TestOrder;
@@ -68,15 +69,13 @@ public class TestOrderServiceImpl implements ITestOrderService {
     }
 
     @Override
-    public List<TestOrderResponse> filterTestOrders(
-            TestOrderStatus status, Long createdBy, Long runBy,
-            LocalDate fromDate, LocalDate toDate) {
+    public List<TestOrderResponse> filterTestOrders(TestOrderFiltering filterInfo) {
 
         Specification<TestOrder> spec =
-                TestOrderSpecification.hasStatus(status)
-                        .and(TestOrderSpecification.hasCreatedBy(createdBy))
-                        .and(TestOrderSpecification.hasRunBy(runBy))
-                        .and(TestOrderSpecification.createdBetween(fromDate, toDate));
+                TestOrderSpecification.hasStatus(filterInfo.status())
+                        .and(TestOrderSpecification.hasCreatedBy(filterInfo.createdBy()))
+                        .and(TestOrderSpecification.hasRunBy(filterInfo.runBy()))
+                        .and(TestOrderSpecification.createdBetween(filterInfo.fromDate(), filterInfo.toDate()));
 
         List<TestOrder> results = repository.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"));
         return results.stream().map(mapper::toDTO).toList();

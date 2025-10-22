@@ -44,14 +44,10 @@ public class MedicalRecordController {
         return ResponseEntity.ok(medicalRecordService.getById(recordId));
     }
 
-    @GetMapping("/code/{recordCode}")
-    public ResponseEntity<MedicalRecordResponse> getByCode(@PathVariable UUID recordCode) {
-        return ResponseEntity.ok(medicalRecordService.getByCode(recordCode));
-    }
-
+    /*
     @GetMapping("/patient/{patientId}")
     public ResponseEntity<List<MedicalRecordResponse>> getByPatientId(@PathVariable Long patientId) {
         return ResponseEntity.ok(medicalRecordService.getByPatientId(patientId));
     }
-
+     */
 }

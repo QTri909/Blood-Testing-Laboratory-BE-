@@ -6,7 +6,7 @@ import sum25.group03.patientservice.entities.ClinicalNoteEntity;
 
 import java.util.List;
 
-@Repository
+@Repository("postgresClinicalNoteRepository")
 public interface ClinicalNoteRepository extends JpaRepository<ClinicalNoteEntity, Long> {
     List<ClinicalNoteEntity> findByRecordId(Long recordId);
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.testorderservice.dto.request.TestOrderFiltering;
 import sum25.group03.testorderservice.dto.request.TestOrderRequest;
 import sum25.group03.testorderservice.dto.response.TestOrderResponse;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
@@ -52,15 +53,11 @@ public class TestOrderController {
         return ResponseEntity.noContent().build();
     }
 
-    // BE-2: GET /test-orders/filter
+    // BE-6: GET /test-orders/filter
     @GetMapping("/filter")
     public ResponseEntity<List<TestOrderResponse>> filterTestOrders(
-            @RequestParam(required = false) TestOrderStatus status,
-            @RequestParam(required = false) Long createdBy,
-            @RequestParam(required = false) Long runBy,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate
+            @ModelAttribute TestOrderFiltering filterInfo
     ) {
-        return ResponseEntity.ok(service.filterTestOrders(status, createdBy, runBy, fromDate, toDate));
+        return ResponseEntity.ok(service.filterTestOrders(filterInfo));
     }
 }

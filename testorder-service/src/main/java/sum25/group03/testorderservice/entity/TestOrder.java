@@ -58,4 +58,10 @@ public class TestOrder {
 
     @OneToMany(mappedBy = "testOrder", cascade = CascadeType.ALL)
     private List<Comment> comments;
+
+    @PrePersist
+    private void prePersist() {
+        if (this.status == null)
+            this.status = TestOrderStatus.PENDING;
+    }
 }
