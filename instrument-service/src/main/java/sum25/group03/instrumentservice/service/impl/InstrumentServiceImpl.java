@@ -4,21 +4,32 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import sum25.group03.instrumentservice.client.WarehouseServiceClient;
+import sum25.group03.instrumentservice.client.response.ReagentValidationResponse;
+import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.common.InstrumentStatus;
 import sum25.group03.instrumentservice.controller.request.ChangeInstrumentModeRequest;
 import sum25.group03.instrumentservice.controller.request.CreateInstrumentRequest;
+import sum25.group03.instrumentservice.controller.request.InstallReagentRequest;
 import sum25.group03.instrumentservice.controller.response.ChangeInstrumentModeResponse;
+import sum25.group03.instrumentservice.controller.response.InstallReagentResponse;
 import sum25.group03.instrumentservice.controller.response.InstrumentResponse;
 import sum25.group03.instrumentservice.exception.InstrumentModeChangeException;
 import sum25.group03.instrumentservice.exception.ResourceNotFoundException;
 import sum25.group03.instrumentservice.exception.WarehouseServiceException;
+import sum25.group03.instrumentservice.event.ReagentInstalledEvent;
+
 import sum25.group03.instrumentservice.model.Configuration;
+import sum25.group03.instrumentservice.model.InstalledReagent;
 import sum25.group03.instrumentservice.model.Instrument;
 import sum25.group03.instrumentservice.repository.ConfigurationRepository;
+import sum25.group03.instrumentservice.repository.InstalledReagentRepository;
 import sum25.group03.instrumentservice.repository.InstrumentRepository;
 import sum25.group03.instrumentservice.service.InstrumentService;
+import sum25.group03.instrumentservice.service.KafkaEventPublisher;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +38,8 @@ public class InstrumentServiceImpl implements InstrumentService {
     private final InstrumentRepository instrumentRepository;
     private final ConfigurationRepository configurationRepository;
     private final WarehouseServiceClient warehouseServiceClient;
+    private final InstalledReagentRepository installedReagentRepository;
+    private final KafkaEventPublisher kafkaEventPublisher;
 
     @Override
     public InstrumentResponse createInstrument(CreateInstrumentRequest request) {
@@ -104,6 +117,91 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .message("Instrument mode changed successfully from " + previousStatus + " to " + request.getNewStatus())
                 .build();
     }
+
+    @Override
+    public InstallReagentResponse installReagent(InstallReagentRequest request) {
+        log.info("[v0] Starting reagent installation process for instrument ID: {}", request.getInstrumentId());
+
+        Instrument instrument = instrumentRepository.findById(request.getInstrumentId())
+                .orElseThrow(() -> {
+                    log.error("[v0] Instrument not found with ID: {}", request.getInstrumentId());
+                    return new ResourceNotFoundException(
+                            "Instrument not found with id: " + request.getInstrumentId());
+                });
+
+        log.info("Instrument found: {} ({})", instrument.getInstrumentName(), instrument.getInstrumentCode());
+
+
+        log.info("Validating reagent with Warehouse Service - batch number: {}", request.getLotNumber());
+        ReagentValidationResponse reagentValidation;
+        try {
+            reagentValidation = warehouseServiceClient.validateReagent(request.getLotNumber(), request.getCurrentVolume());
+        } catch (WarehouseServiceException e) {
+            log.error("[v0] Warehouse Service validation failed: {}", e.getMessage());
+            throw new WarehouseServiceException(
+                    "Cannot install reagent: Unable to validate with Warehouse Service. " + e.getMessage());
+        }
+
+
+        if (!reagentValidation.isValid()) {
+            log.warn("Reagent validation failed: {}", reagentValidation.getMessage());
+            throw new InstrumentModeChangeException(
+                    "Cannot install reagent: " + reagentValidation.getMessage());
+        }
+
+        log.info("Reagent validation successful - reagent is valid and ready for use");
+
+        if (request.getCurrentVolume() == null || request.getCurrentVolume() <= 0) {
+            log.warn("Invalid current volume: {}", request.getCurrentVolume());
+            throw new InstrumentModeChangeException("Current volume must be greater than 0");
+        }
+
+
+        InstalledReagent installedReagent = InstalledReagent.builder()
+                .instrument(instrument)
+                .currentVolume(request.getCurrentVolume())
+                .status(InstalledReagentStatus.AVAILABLE)
+                .installationDate(LocalDate.now())
+                .lotReagentId(reagentValidation.getReagentId().intValue())
+                .build();
+
+        InstalledReagent savedReagent = installedReagentRepository.save(installedReagent);
+
+        log.info("[v0] Reagent installed successfully - ID: {}, Batch: {}",
+                savedReagent.getId(), request.getLotNumber());
+
+        try {
+            ReagentInstalledEvent event = ReagentInstalledEvent.builder()
+                    .reagentId(reagentValidation.getReagentId())
+                    .reagentName(reagentValidation.getReagentName())
+                    .batchNumber(request.getLotNumber())
+                    .requiredVolume(request.getCurrentVolume())
+                    .instrumentId(instrument.getId())
+                    .instrumentName(instrument.getInstrumentName())
+                    .installationDate(LocalDate.now())
+                    .eventTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
+                    .build();
+
+            kafkaEventPublisher.publishReagentInstalledEvent(event);
+        } catch (Exception e) {
+            log.error("Failed to publish reagent installed event, but reagent installation was successful: {}", e.getMessage());
+
+        }
+
+        return InstallReagentResponse.builder()
+                .installedReagentId(savedReagent.getId())
+                .instrumentId(instrument.getId())
+                .instrumentName(instrument.getInstrumentName())
+                .reagentName(reagentValidation.getReagentName())
+                .batchNumber(request.getLotNumber())
+                .currentVolume(request.getCurrentVolume())
+                .installationDate(savedReagent.getInstallationDate())
+                .status(InstalledReagentStatus.AVAILABLE)
+                .message("Reagent installed successfully and is available for operational use")
+                .success(true)
+                .build();
+    }
+
 
 
     private void validateModeChangeRequest(ChangeInstrumentModeRequest request, Instrument instrument) {

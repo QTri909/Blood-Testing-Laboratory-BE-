@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+import sum25.group03.instrumentservice.client.response.ReagentValidationResponse;
 import sum25.group03.instrumentservice.exception.WarehouseServiceException;
 
 import java.util.HashMap;
@@ -22,7 +24,7 @@ public class WarehouseServiceClient {
     private String warehouseServiceUrl;
 
 
-    public boolean checkInstrumentStatus(Integer instrumentId) {
+    public boolean checkInstrumentStatus(Long instrumentId) {
         try {
             String url = warehouseServiceUrl + "/api/v1/instruments/status/" + instrumentId;
             log.info("Checking instrument status from Warehouse Service: {}", url);
@@ -54,25 +56,33 @@ public class WarehouseServiceClient {
     }
 
 
-    public Map<String, Object> getInstrumentDetails(Integer instrumentId) {
-        try {
-            String url = warehouseServiceUrl + "/api/v1/instruments/" + instrumentId;
-            log.info("[v0] Fetching instrument details from Warehouse Service: {}", url);
+    public ReagentValidationResponse validateReagent(String lotNumber, Double requiredVolume) {
 
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+
+        String urlTemplate = warehouseServiceUrl + "/api/v1/reagents/validate/{lotNumber}";
+
+        String url = UriComponentsBuilder.fromUriString(urlTemplate)
+                .queryParam("requiredVolume", requiredVolume)
+                .buildAndExpand(lotNumber)
+                .toUriString();
+
+        try {
+            log.info("Validating reagent from Warehouse Service: {}", url);
+
+            ReagentValidationResponse response = restTemplate.getForObject(url, ReagentValidationResponse.class);
 
             if (response == null) {
-                log.warn("[v0] Warehouse Service returned null response for instrument details: {}", instrumentId);
+                log.warn("Warehouse Service returned null response for reagent batch: {}", lotNumber);
                 throw new WarehouseServiceException("Warehouse Service returned null response");
             }
 
-            log.info("[v0] Successfully retrieved instrument details for ID: {}", instrumentId);
+            log.info("Reagent validation result - Valid: {}, Message: {}", response.isValid(), response.getMessage());
             return response;
 
         } catch (RestClientException e) {
-            log.error("[v0] Error fetching instrument details from Warehouse Service for ID: {}", instrumentId, e);
+            log.error("Error validating reagent from Warehouse Service for batch: {}", lotNumber, e);
             throw new WarehouseServiceException(
-                    "Failed to fetch instrument details from Warehouse Service: " + e.getMessage(), e);
+                    "Failed to validate reagent from Warehouse Service: " + e.getMessage(), e);
         }
     }
 }

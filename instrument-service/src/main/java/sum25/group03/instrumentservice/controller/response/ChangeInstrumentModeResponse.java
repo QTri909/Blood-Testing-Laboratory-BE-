@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class ChangeInstrumentModeResponse {
-    private Integer instrumentId;
+    private Long instrumentId;
     private String instrumentCode;
     private String instrumentName;
     private InstrumentStatus previousStatus;

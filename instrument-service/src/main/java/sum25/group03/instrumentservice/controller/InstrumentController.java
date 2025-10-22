@@ -13,7 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.instrumentservice.controller.request.ChangeInstrumentModeRequest;
 import sum25.group03.instrumentservice.controller.request.CreateInstrumentRequest;
+import sum25.group03.instrumentservice.controller.request.InstallReagentRequest;
 import sum25.group03.instrumentservice.controller.response.ChangeInstrumentModeResponse;
+import sum25.group03.instrumentservice.controller.response.InstallReagentResponse;
 import sum25.group03.instrumentservice.controller.response.InstrumentResponse;
 import sum25.group03.instrumentservice.service.InstrumentService;
 
@@ -59,5 +61,25 @@ public class InstrumentController {
             @Valid @RequestBody ChangeInstrumentModeRequest request) {
         ChangeInstrumentModeResponse response = instrumentService.changeInstrumentMode(request);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reagents/install")
+    @Operation(
+            summary = "Install a reagent on an instrument",
+            description = "Installs a new reagent bottle on an instrument by scanning its barcode/batch number. " +
+                    "Validates the reagent with Warehouse Service before installation",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Reagent installed successfully",
+                            content = @Content(schema = @Schema(implementation = InstallReagentResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid request or validation failed"),
+                    @ApiResponse(responseCode = "404", description = "Instrument or reagent not found"),
+                    @ApiResponse(responseCode = "409", description = "Reagent is invalid, expired, or already in use"),
+                    @ApiResponse(responseCode = "503", description = "Warehouse Service unavailable")
+            }
+    )
+    public ResponseEntity<InstallReagentResponse> installReagent(
+            @Valid @RequestBody InstallReagentRequest request) {
+        InstallReagentResponse response = instrumentService.installReagent(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

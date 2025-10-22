@@ -4,6 +4,7 @@ public enum ReagentStatus {
     AVAILABLE,
     EXPIRED,
     LOW_STOCK,
-    OUT_OF_STOCK,
+    EMPTY,
+    ACTIVE,
     DELETED
 }

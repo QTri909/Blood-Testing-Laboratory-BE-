@@ -17,7 +17,7 @@ import sum25.group03.instrumentservice.common.InstrumentStatus;
 public class Instrument {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name = "instrument_code")
     private String instrumentCode;

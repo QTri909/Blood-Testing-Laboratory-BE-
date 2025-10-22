@@ -35,5 +35,5 @@ public class InstalledReagent {
     private LocalDate installationDate;
 
     @Column(name = "batch_reagent_id", nullable = false)
-    private Integer batchReagentId;
+    private Integer lotReagentId;
 }

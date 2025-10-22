@@ -6,20 +6,18 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import sum25.group03.instrumentservice.common.InstrumentStatus;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ChangeInstrumentModeRequest {
+public class InstallReagentRequest {
     @NotNull(message = "Instrument ID is required")
     private Long instrumentId;
-    @NotNull(message = "New status is required")
-    private InstrumentStatus newStatus;
 
-    @NotBlank(message = "Reason is required when changing to Maintenance or Inactive mode")
-    private String reason;
+    @NotBlank(message = "Batch number/barcode is required")
+    private String lotNumber;
 
-    private String qcCheckDetails;
+    @NotNull(message = "Current volume is required")
+    private Double currentVolume;
 }
