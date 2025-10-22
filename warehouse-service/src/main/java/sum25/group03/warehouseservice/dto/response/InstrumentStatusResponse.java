@@ -10,9 +10,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class InstrumentStatusResponse {
-    private Long instrumentId;
     private String instrumentName;
-    private OperationalStatus status;
+    private String instrumentModel;
+    private String currentStatus;
     private String message;
     private LocalDate checkedAt;
 }

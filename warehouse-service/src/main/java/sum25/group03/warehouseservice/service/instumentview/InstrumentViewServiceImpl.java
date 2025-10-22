@@ -1,4 +1,4 @@
-package sum25.group03.warehouseservice.service.instumentView;
+package sum25.group03.warehouseservice.service.instumentview;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,10 +10,12 @@ import sum25.group03.warehouseservice.dto.response.InstrumentResponse;
 import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
 import sum25.group03.warehouseservice.entity.Instrument;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
+import sum25.group03.warehouseservice.exception.InvalidArgumentException;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.InstrumentMapper;
-import sum25.group03.warehouseservice.exception.InvalidArgumentException;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
+
+import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +33,8 @@ public class InstrumentViewServiceImpl implements InstrumentViewService {
     }
 
     @Override
-    public Page<InstrumentResponse> searchInstruments(String name, String code, String status, Pageable pageable) {
-        log.info("Searching instruments: name='{}', code='{}', status='{}'", name, code, status);
+    public Page<InstrumentResponse> searchInstruments(String name, String model, String status, Pageable pageable) {
+        log.info("Searching instruments: name='{}', model='{}', status='{}'", name, model, status);
 
         InstrumentStatus enumStatus = null;
         if(status != null && !status.isBlank()) {
@@ -45,7 +47,7 @@ public class InstrumentViewServiceImpl implements InstrumentViewService {
         }
 
         try {
-            return instrumentRepo.searchInstruments(name, code, enumStatus, pageable)
+            return instrumentRepo.searchInstruments(name, model, enumStatus, pageable)
                     .map(instrumentMapper::toResponse);
         } catch (Exception e) {
             log.error("Unexpected error during instrument search: {}", e.getMessage(), e);
@@ -53,10 +55,29 @@ public class InstrumentViewServiceImpl implements InstrumentViewService {
         }
     }
 
+    @Override
+    public InstrumentStatusResponse checkInstrumentStatus(Long id) {
+        Instrument instrument = instrumentRepo.findById(id).orElseThrow(() -> new NotFoundException("Instrument not found with id: " + id));
+
+        String message = switch (instrument.getStatus()) {
+            case ACTIVE -> "Instrument is Active";
+            case INACTIVE -> "Instrument is Inactive";
+            case DELETED -> "Instrument has been removed from the system.";
+        };
+        return InstrumentStatusResponse.builder()
+                .instrumentName(instrument.getInstrumentName())
+                .instrumentModel(instrument.getModel())
+                .currentStatus(instrument.getStatus().name())
+                .message(message)
+                .checkedAt(LocalDate.now())
+                .build();
+    }
+
     private InstrumentStatus convertToStatus(String status) {
         try {
             return InstrumentStatus.valueOf(status.trim().toUpperCase());
         } catch (Exception e) {
+            log.warn("Invalid status value : {}", status);
             throw new InvalidArgumentException("Invalid status value: " + status);
         }
     }

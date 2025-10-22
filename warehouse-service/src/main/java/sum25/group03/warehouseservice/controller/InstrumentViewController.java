@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import sum25.group03.warehouseservice.dto.response.InstrumentPageResponse;
 import sum25.group03.warehouseservice.dto.response.InstrumentResponse;
 import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
-import sum25.group03.warehouseservice.service.instumentView.InstrumentViewService;
+import sum25.group03.warehouseservice.service.instumentview.InstrumentViewService;
 
 @RestController
 @RequestMapping("/api/v1/instruments")
@@ -37,12 +37,17 @@ public class InstrumentViewController {
     @GetMapping("/search")
     public ResponseEntity<InstrumentPageResponse> searchInstruments(
             @RequestParam(required = false) String name,
-            @RequestParam(required = false) String code,
+            @RequestParam(required = false) String model,
             @RequestParam(required = false) String status,
             @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return ResponseEntity.ok(buildPageResponse(
-                instrumentViewService.searchInstruments(name, code, status, pageable)));
+                instrumentViewService.searchInstruments(name, model, status, pageable)));
     }
 
+    @GetMapping("/{id}/status")
+    public ResponseEntity<InstrumentStatusResponse> getInstrumentStatus(@PathVariable Long id) {
+        InstrumentStatusResponse response = instrumentViewService.checkInstrumentStatus(id);
+        return ResponseEntity.ok(response);
+    }
 }

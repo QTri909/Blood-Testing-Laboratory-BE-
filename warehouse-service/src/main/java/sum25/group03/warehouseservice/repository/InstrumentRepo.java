@@ -20,12 +20,12 @@ public interface InstrumentRepo extends JpaRepository<Instrument,Long> {
     @Query("""
             SELECT i FROM Instrument i
             WHERE (:name IS NULL OR :name = '' OR LOWER(i.instrumentName) LIKE LOWER(CONCAT('%', :name, '%')))
-            AND (:code IS NULL OR :code = '' OR LOWER(i.instrumentCode) LIKE LOWER(CONCAT('%', :code, '%')))
+            AND (:model IS NULL OR :model = '' OR LOWER(i.model) LIKE LOWER(CONCAT('%', :model, '%')))
             AND (:status IS NULL OR i.status = :status)
     """)
     Page<Instrument> searchInstruments(
             @Param("name") String name,
-            @Param("code") String code,
+            @Param("model") String model,
             @Param("status") InstrumentStatus status,
             Pageable pageable
     );
