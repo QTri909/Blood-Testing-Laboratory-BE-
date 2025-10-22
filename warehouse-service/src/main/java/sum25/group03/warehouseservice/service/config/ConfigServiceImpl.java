@@ -1,4 +1,4 @@
-package sum25.group03.warehouseservice.service.configuration;
+package sum25.group03.warehouseservice.service.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -7,8 +7,9 @@ import sum25.group03.warehouseservice.repository.ConfigRepo;
 
 @Service
 @RequiredArgsConstructor
-public class ConfigurationServiceImpl implements  ConfigurationService {
+public class ConfigServiceImpl implements ConfigService {
     private final ConfigRepo configRepo;
+
     @Override
     public ConfigurationDTO findByInstrumentId(Long id) {
         return configRepo.findByInstrumentId(id);

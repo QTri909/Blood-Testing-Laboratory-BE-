@@ -4,9 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
-import sum25.group03.warehouseservice.dto.response.MessageResponse;
-import sum25.group03.warehouseservice.repository.InstrumentRepo;
-import sum25.group03.warehouseservice.repository.ReagentUsageRepo;
 import sum25.group03.warehouseservice.service.instrument.InstrumentService;
 
 @RestController
@@ -14,17 +11,11 @@ import sum25.group03.warehouseservice.service.instrument.InstrumentService;
 @RequestMapping("/api/v1/instruments")
 public class InstrumentController {
     private final InstrumentService instrumentService;
-    private final InstrumentRepo instrumentRepo;
-    private final ReagentUsageRepo reagentUsageRepo;
+
     @PostMapping("/add")
     public ResponseEntity<?> addInstrument(@RequestBody InstrumentReq instrument) {
         instrumentService.addInstrumentToWarehouse(instrument);
-        return ResponseEntity.ok("succcess");
-    }
-    @GetMapping("/test/{id}")
-    public ResponseEntity<?> testEndpoint(@PathVariable Long id) {
-        var result = instrumentRepo.findConfigAndReagentByInstrument(id);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok("success");
     }
     @GetMapping("/testReagent/{id}")
     public ResponseEntity<?> testEndpointReagent(@PathVariable Long id) {
