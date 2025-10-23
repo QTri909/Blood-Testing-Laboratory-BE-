@@ -1,0 +1,7 @@
+package sum25.group03.testorderservice.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import sum25.group03.testorderservice.entity.TestResult;
+
+public interface TestResultRepository extends JpaRepository<TestResult,Long> {
+}
