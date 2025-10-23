@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.service.impl;
+package sum25.group03.testorderservice.services.impl;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -6,19 +6,20 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
+import sum25.group03.testorderservice.component.Hl7Parser;
 import sum25.group03.testorderservice.mapper.TestResultMapper;
-import sum25.group03.testorderservice.service.interfaces.IKafkaConsumer;
+import sum25.group03.testorderservice.services.interfaces.IKafkaConsumer;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Service
 public class KafkaConsumerImpl implements IKafkaConsumer {
     private final KafkaTemplate<String, String> kafkaTemplate;
 
     private final TestResultMapper testResultMapper;
+
+    @Autowired
+    private Hl7Parser  hl7Parser;
 
     private static final String CRASH_FLAG_FILE = "crash-flag.txt";
 
@@ -47,7 +48,7 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
             if (!message.startsWith("MSH")) {
                 throw new IllegalArgumentException("Invalid HL7 header");
             }
-
+            hl7Parser.parseHL7(message);
             System.out.println("✅ HL7 processed successfully: " + message);
 
         } catch (Exception e) {

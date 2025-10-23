@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import sum25.group03.testorderservice.service.impl.TestResultServiceImpl;
+import sum25.group03.testorderservice.services.impl.TestResultServiceImpl;
 
 @RestController
 @RequestMapping("/test-result")

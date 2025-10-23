@@ -1,6 +1,4 @@
-package sum25.group03.testorderservice.service.interfaces;
-
-import org.springframework.data.crossstore.ChangeSetPersister;
+package sum25.group03.testorderservice.services.interfaces;
 
 public interface ITestResult {
     public void reviewTestResult(Long testResultId, Double adjustedValue, Long reviewId);

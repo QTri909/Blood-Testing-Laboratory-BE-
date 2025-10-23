@@ -1,14 +1,13 @@
-package sum25.group03.testorderservice.service.impl;
+package sum25.group03.testorderservice.services.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
 import sum25.group03.testorderservice.entity.Parameter;
 import sum25.group03.testorderservice.entity.TestResult;
 import sum25.group03.testorderservice.enums.TestResultStatus;
-import sum25.group03.testorderservice.repository.TestResultRepository;
-import sum25.group03.testorderservice.service.interfaces.ITestResult;
+import sum25.group03.testorderservice.repositories.TestResultRepository;
+import sum25.group03.testorderservice.services.interfaces.ITestResult;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
