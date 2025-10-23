@@ -51,17 +51,6 @@ public class TestOrderServiceImpl implements ITestOrderService {
     }
 
     @Override
-    public TestOrderResponse updateTestOrder(Long id, TestOrderRequest dto) {
-        TestOrder entity = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("TestOrder not found with id " + id));
-
-        mapper.updateEntityFromDTO(dto, entity);
-        entity.setUpdatedAt(LocalDateTime.now());
-
-        return mapper.toDTO(repository.save(entity));
-    }
-
-    @Override
     public void deleteTestOrder(Long id) {
         TestOrder entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TestOrder not found with id " + id));

@@ -16,8 +16,6 @@ public interface ITestOrderService {
 
     List<TestOrderResponse> getAllTestOrders();
 
-    TestOrderResponse updateTestOrder(Long id, TestOrderRequest requestDTO);
-
     void deleteTestOrder(Long id);
 
     List<TestOrderResponse> filterTestOrders(TestOrderFiltering filterInfo);

@@ -38,14 +38,6 @@ public class TestOrderController {
         return ResponseEntity.ok(service.createTestOrder(dto));
     }
 
-    // BE-4: PUT /test-orders/{id}
-    @PutMapping("/{id}")
-    public ResponseEntity<TestOrderResponse> update(
-            @PathVariable Long id,
-            @RequestBody TestOrderRequest dto) {
-        return ResponseEntity.ok(service.updateTestOrder(id, dto));
-    }
-
     // BE-5: DELETE /test-orders/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
