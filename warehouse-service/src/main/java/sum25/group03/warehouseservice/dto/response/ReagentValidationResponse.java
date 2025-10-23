@@ -16,6 +16,7 @@ public class ReagentValidationResponse {
     private Long reagentId;
     private String reagentName;
     private String lotNumber;
+    private String unit;
     private String catalogNumber;
     private LocalDate expirationDate;
     private boolean isValid;

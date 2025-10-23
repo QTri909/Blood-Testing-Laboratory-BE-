@@ -20,4 +20,10 @@ public class InstalledReagentDetailResponse {
     private Double currentVolume;
     private InstalledReagentStatus status;
     private LocalDate installationDate;
+    private LocalDate expirationDate;
+    private Long reagentId;
+    private String reagentName;
+    private String lotNumber;
+    private String unit;
+
 }

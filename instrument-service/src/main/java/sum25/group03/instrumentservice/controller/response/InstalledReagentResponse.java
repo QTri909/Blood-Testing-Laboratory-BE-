@@ -20,4 +20,6 @@ public class InstalledReagentResponse {
     private Integer lotReagentId;
     private Long reagentId;
     private String reagentName;
+    private String lotNumber;
+    private String unit;
 }

@@ -27,12 +27,19 @@ public class InstalledReagent {
     @Column(name = "current_volume", nullable = false)
     private Double currentVolume;
 
+    @Column(name = "reagent_unit", nullable = false)
+    private String unit;
+
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private InstalledReagentStatus status;
 
     @Column(name = "installation_date", nullable = false)
     private LocalDate installationDate;
+
+    @Column(name = "expiration_date", nullable = false)
+    private LocalDate expirationDate;
 
     @Column(name = "lot_reagent_id", nullable = false)
     private Integer lotReagentId;
@@ -42,6 +49,9 @@ public class InstalledReagent {
 
     @Column(name = "reagent_name", nullable = false)
     private String reagentName;
+
+    @Column(name = "lot_number", nullable = false)
+    private String lotNumber;
 
 
 

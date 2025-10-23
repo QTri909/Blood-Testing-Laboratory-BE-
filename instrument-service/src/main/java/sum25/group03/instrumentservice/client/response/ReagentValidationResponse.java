@@ -14,6 +14,7 @@ import java.time.LocalDate;
 public class ReagentValidationResponse {
     private Long reagentId;
     private String reagentName;
+    private String unit;
     private String lotNumber;
     private String catalogNumber;
     private LocalDate expirationDate;

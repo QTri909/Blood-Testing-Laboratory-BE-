@@ -63,5 +63,8 @@ public interface InstalledReagentRepository extends JpaRepository<InstalledReage
     @Query("SELECT ir FROM InstalledReagent ir")
     Page<InstalledReagent> findAllReagents(Pageable pageable);
     List<InstalledReagent> findByInstrumentIdAndStatusIsNot(Long instrumentId, InstalledReagentStatus status);
+
+    @Query("SELECT ir FROM InstalledReagent ir WHERE ir.status NOT IN :statuses")
+    List<InstalledReagent> findByStatusNotIn(@Param("statuses") List<InstalledReagentStatus> statuses);
 }
 

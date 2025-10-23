@@ -19,7 +19,9 @@ public class InstallReagentResponse {
     private String instrumentName;
     private String reagentName;
     private String lotNumber;
+    private String unit;
     private Double currentVolume;
+    private  LocalDate expirationDate;
     private LocalDate installationDate;
     private InstalledReagentStatus status;
     private String message;

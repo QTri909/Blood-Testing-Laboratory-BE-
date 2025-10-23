@@ -136,6 +136,11 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
                 .currentVolume(reagent.getCurrentVolume())
                 .status(reagent.getStatus())
                 .installationDate(reagent.getInstallationDate())
+                .expirationDate(reagent.getExpirationDate())
+                .reagentId(reagent.getReagentId())
+                .reagentName(reagent.getReagentName())
+                .lotNumber(reagent.getLotNumber())
+                .unit(reagent.getUnit())
                 .build();
     }
 

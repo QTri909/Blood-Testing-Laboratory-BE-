@@ -44,6 +44,7 @@ public class ReagentServiceImpl implements ReagentService {
         ReagentValidationResponse.ReagentValidationResponseBuilder responseBuilder = ReagentValidationResponse.builder()
                 .reagentId(reagent.getReagent().getReagentId())
                 .reagentName(reagent.getReagent().getReagentName())
+                .unit(reagent.getReagent().getUnit())
                 .lotNumber(reagent.getLotNumber())
                 .catalogNumber(reagent.getReagent().getCatalogNumber())
                 .expirationDate(reagent.getExpiryDate())

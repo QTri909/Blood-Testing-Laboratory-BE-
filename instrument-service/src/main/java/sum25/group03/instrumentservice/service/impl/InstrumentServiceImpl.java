@@ -164,15 +164,30 @@ public class InstrumentServiceImpl implements InstrumentService {
             throw new InstrumentModeChangeException("Current volume must be greater than 0");
         }
 
+        List<InstalledReagent> reagents = installedReagentRepository
+                .findByInstrumentIdAndStatusIsNot(request.getInstrumentId(), InstalledReagentStatus.REMOVED);
+        for (InstalledReagent reagent : reagents) {
+            if(reagent.getReagentId().equals(request.getInstrumentId())) {
+                log.warn("Reagent with ID {} is already installed on instrument ID {}",
+                        reagent.getReagentId(), request.getInstrumentId());
+                throw new InstrumentModeChangeException(
+                        "Reagent with ID " + reagent.getReagentId() +
+                                " is already installed on this instrument. Please remove it before installing a new one.");
+            }
+        }
+
 
         InstalledReagent installedReagent = InstalledReagent.builder()
                 .instrument(instrument)
                 .currentVolume(request.getCurrentVolume())
                 .status(InstalledReagentStatus.AVAILABLE)
+                .unit(reagentValidation.getUnit())
                 .installationDate(LocalDate.now())
                 .lotReagentId(reagentValidation.getReagentId().intValue())
                 .reagentId(reagentValidation.getReagentId())
                 .reagentName(reagentValidation.getReagentName())
+                .expirationDate(reagentValidation.getExpirationDate())
+                .lotNumber(reagentValidation.getLotNumber())
                 .build();
 
         InstalledReagent savedReagent = installedReagentRepository.save(installedReagent);
@@ -204,6 +219,8 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .reagentId(reagentValidation.getReagentId())
                 .instrumentName(instrument.getInstrumentName())
                 .reagentName(reagentValidation.getReagentName())
+                .unit(reagentValidation.getUnit())
+                .expirationDate(reagentValidation.getExpirationDate())
                 .lotNumber(request.getLotNumber())
                 .currentVolume(request.getCurrentVolume())
                 .installationDate(savedReagent.getInstallationDate())
@@ -300,6 +317,8 @@ public class InstrumentServiceImpl implements InstrumentService {
                                 .status(reagent.getStatus())
                                 .installationDate(reagent.getInstallationDate())
                                 .lotReagentId(reagent.getLotReagentId())
+                                .lotNumber(reagent.getLotNumber())
+                                .unit(reagent.getUnit())
                                 .build())
                         .collect(Collectors.toList());
 
