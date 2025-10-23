@@ -3,6 +3,7 @@ package sum25.group03.warehouseservice.service.instrument;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.internal.ConfigurationDTO;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
@@ -23,6 +24,7 @@ import java.util.List;
 public class InstrumentServiceImpl implements InstrumentService {
     private final InstrumentRepo instrumentRepo;
     private final InstrumentMapper instrumentMapper;
+
     private final ConfigService configService;
     private final ReagentService reagentService;
     private final ReagentUsageService reagentUsageService;
@@ -124,6 +126,12 @@ public class InstrumentServiceImpl implements InstrumentService {
         }
         // Save instrument with reagents and config if exist
         instrumentRepo.save(newInstrument);
+    }
+
+    @Override
+    public Instrument findById(Long id) {
+        return instrumentRepo.findById(id).orElseThrow(() ->
+                new NotFoundException("Instrument not found with id: " + id));
     }
 
 }
