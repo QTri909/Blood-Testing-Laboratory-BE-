@@ -10,7 +10,6 @@ import sum25.group03.testorderservice.dto.request.TestOrderRequest;
 import sum25.group03.testorderservice.dto.response.TestOrderResponse;
 import sum25.group03.testorderservice.entity.TestOrder;
 import sum25.group03.testorderservice.enums.ActionTypeFeatures;
-import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.TestOrderMapper;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
@@ -36,11 +35,11 @@ public class TestOrderServiceImpl implements ITestOrderService {
 
     @Override
     public TestOrderResponse createTestOrder(TestOrderRequest requestDTO) {
-        TestOrder entity = mapper.toEntity(requestDTO);
+        TestOrder entity = mapper.toEntityFrom(requestDTO);
         entity.setCreatedAt(LocalDateTime.now());
         entity.setUpdatedAt(LocalDateTime.now());
         TestOrder saved = repository.save(entity);
-        return mapper.toDTO(saved);
+        return mapper.toResponse(saved);
     }
 
     @Override
@@ -53,7 +52,7 @@ public class TestOrderServiceImpl implements ITestOrderService {
 
         TestOrder entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TestOrder not found with id " + id));
-        return mapper.toDTO(entity);
+        return mapper.toResponse(entity);
     }
 
     @Override
@@ -65,7 +64,7 @@ public class TestOrderServiceImpl implements ITestOrderService {
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
 
         List<TestOrder> orders = repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-        return orders.stream().map(mapper::toDTO).toList();
+        return orders.stream().map(mapper::toResponse).toList();
     }
 
     @Override
@@ -77,6 +76,9 @@ public class TestOrderServiceImpl implements ITestOrderService {
 
     @Override
     public List<TestOrderResponse> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId) {
+
+        // TODO 4: Verify viewerId existence in the system using todo_1
+
         // Log the action of viewing the test order list
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
 
@@ -87,7 +89,7 @@ public class TestOrderServiceImpl implements ITestOrderService {
                         .and(TestOrderSpecification.createdBetween(filterInfo.fromDate(), filterInfo.toDate()));
 
         List<TestOrder> results = repository.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return results.stream().map(mapper::toDTO).toList();
+        return results.stream().map(mapper::toResponse).toList();
     }
 
 }
