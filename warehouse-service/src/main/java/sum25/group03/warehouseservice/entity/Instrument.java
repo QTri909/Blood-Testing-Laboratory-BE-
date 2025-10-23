@@ -31,9 +31,6 @@ public class Instrument {
     @Column(name = "serial_number", nullable = false, unique = true)
     private String serialNumber;
 
-    @Column(name = "firmware_version", nullable = false)
-    private String firmwareVersion;
-
     @Column(name = "location", nullable = false)
     private String location;
 
@@ -68,9 +65,9 @@ public class Instrument {
     @Column(name = "updated_by", nullable = true)
     private int updatedBy;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade =  {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "configuration_id", nullable = true)
-    private Configurations configurations;
+    @OneToOne(fetch = FetchType.LAZY, cascade =  {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "specific_configuration_id", nullable = true)
+    private SpecificConfiguration specificConfiguration;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "manufacturer_id", nullable = false)
