@@ -12,11 +12,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.instrumentservice.controller.request.ChangeInstrumentModeRequest;
-import sum25.group03.instrumentservice.controller.request.CreateInstrumentRequest;
 import sum25.group03.instrumentservice.controller.request.InstallReagentRequest;
 import sum25.group03.instrumentservice.controller.response.ChangeInstrumentModeResponse;
 import sum25.group03.instrumentservice.controller.response.InstallReagentResponse;
-import sum25.group03.instrumentservice.controller.response.InstrumentResponse;
 import sum25.group03.instrumentservice.service.InstrumentService;
 
 @RestController
@@ -26,22 +24,7 @@ import sum25.group03.instrumentservice.service.InstrumentService;
 public class InstrumentController {
     private final InstrumentService instrumentService;
 
-    @PostMapping
-    @Operation(
-            summary = "Create a new instrument",
-            description = "Creates a new laboratory instrument with the provided details",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "Instrument created successfully",
-                            content = @Content(schema = @Schema(implementation = InstrumentResponse.class))),
-                    @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
-                    @ApiResponse(responseCode = "404", description = "Configuration not found")
-            }
-    )
-    public ResponseEntity<InstrumentResponse> createInstrument(
-            @Valid @RequestBody CreateInstrumentRequest request) {
-        InstrumentResponse response = instrumentService.createInstrument(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
+
 
     @PutMapping("/change-mode")
     @Operation(

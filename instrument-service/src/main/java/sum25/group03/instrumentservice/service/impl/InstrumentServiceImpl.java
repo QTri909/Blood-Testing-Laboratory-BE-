@@ -8,11 +8,9 @@ import sum25.group03.instrumentservice.client.response.ReagentValidationResponse
 import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.common.InstrumentStatus;
 import sum25.group03.instrumentservice.controller.request.ChangeInstrumentModeRequest;
-import sum25.group03.instrumentservice.controller.request.CreateInstrumentRequest;
 import sum25.group03.instrumentservice.controller.request.InstallReagentRequest;
 import sum25.group03.instrumentservice.controller.response.ChangeInstrumentModeResponse;
 import sum25.group03.instrumentservice.controller.response.InstallReagentResponse;
-import sum25.group03.instrumentservice.controller.response.InstrumentResponse;
 import sum25.group03.instrumentservice.exception.InstrumentModeChangeException;
 import sum25.group03.instrumentservice.exception.ResourceNotFoundException;
 import sum25.group03.instrumentservice.exception.WarehouseServiceException;
@@ -42,24 +40,7 @@ public class InstrumentServiceImpl implements InstrumentService {
     private final InstalledReagentRepository installedReagentRepository;
     private final KafkaEventPublisher kafkaEventPublisher;
 
-    @Override
-    public InstrumentResponse createInstrument(CreateInstrumentRequest request) {
 
-        Configuration configuration = configurationRepository.findById(request.getConfigurationId())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Configuration not found with id: " + request.getConfigurationId()));
-
-
-        Instrument instrument = Instrument.builder()
-                .instrumentName(request.getInstrumentName())
-                .status(request.getStatus())
-                .configuration(configuration)
-                .build();
-
-
-        Instrument savedInstrument = instrumentRepository.save(instrument);
-        return mapToResponse(savedInstrument);
-    }
 
     @Override
     public ChangeInstrumentModeResponse changeInstrumentMode(ChangeInstrumentModeRequest request) {
