@@ -39,9 +39,9 @@ public class InstrumentStatusController {
         return ResponseEntity.ok("Cleanup job executed manually!");
     }
 
-    @PostMapping("/cleanup")
-    public ResponseEntity<String> triggerCleanup() {
-        instrumentCleanupService.autoDeleteInactiveInstruments();
-        return ResponseEntity.ok("Manual cleanup executed successfully.");
-    }
+//    @PostMapping("/cleanup")
+//    public ResponseEntity<String> triggerCleanup() {
+//        instrumentCleanupService.autoDeleteInactiveInstruments();
+//        return ResponseEntity.ok("Manual cleanup executed successfully.");
+//    }
 }

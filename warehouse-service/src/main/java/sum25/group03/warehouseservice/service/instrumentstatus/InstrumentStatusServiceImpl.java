@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.entity.Instrument;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
+import sum25.group03.warehouseservice.exception.InvalidArgumentException;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
 
@@ -41,6 +42,7 @@ public class InstrumentStatusServiceImpl implements InstrumentStatusService {
         instrument.setStatus(InstrumentStatus.INACTIVE);
         instrument.setAutoDeleteScheduledAt(LocalDate.now().plusMonths(3));
         instrument.setUpdatedAt(LocalDate.now());
+        instrument.setDeactivatedAt(LocalDate.now());
         instrumentRepo.save(instrument);
         log.info("User '{}' deactivated instrument {}", username, id);
     }
@@ -49,7 +51,7 @@ public class InstrumentStatusServiceImpl implements InstrumentStatusService {
     public void deleteInstrument(Long id, String username) {
         Instrument instrument = getInstrumentOrThrow(id);
         if (!isSameStatus(instrument, InstrumentStatus.INACTIVE)) {
-            throw new IllegalStateException("Only INACTIVE instruments can be deleted");
+            throw new InvalidArgumentException("Only INACTIVE instruments can be deleted");
         }
         instrument.setStatus(InstrumentStatus.DELETED);
         instrument.setAutoDeleteScheduledAt(null);
