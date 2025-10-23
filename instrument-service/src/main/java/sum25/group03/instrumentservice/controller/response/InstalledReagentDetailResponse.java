@@ -9,19 +9,15 @@ import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import java.time.LocalDate;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class InstallReagentResponse {
-    private Long installedReagentId;
+public class InstalledReagentDetailResponse {
+    private Long id;
     private Long instrumentId;
-    private Long reagentId;
     private String instrumentName;
-    private String reagentName;
-    private String lotNumber;
+    private Integer lotReagentId;
     private Double currentVolume;
-    private LocalDate installationDate;
     private InstalledReagentStatus status;
-    private String message;
-    private boolean success;
+    private LocalDate installationDate;
 }

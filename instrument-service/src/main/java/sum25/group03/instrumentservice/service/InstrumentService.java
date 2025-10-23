@@ -8,7 +8,7 @@ import sum25.group03.instrumentservice.controller.response.*;
 public interface InstrumentService {
     ChangeInstrumentModeResponse changeInstrumentMode(ChangeInstrumentModeRequest request);
     InstallReagentResponse installReagent(InstallReagentRequest request);
-    UpdateReagentStatusResponse updateReagentStatus(UpdateReagentStatusRequest request);
+
     InstrumentResponse findInstrumentById(Long id);
     InstrumentPageResponse findAllInstruments(String keyword, String sort, String status, int page, int size);
 }

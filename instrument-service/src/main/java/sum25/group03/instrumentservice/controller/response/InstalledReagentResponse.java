@@ -18,4 +18,6 @@ public class InstalledReagentResponse {
     private InstalledReagentStatus status;
     private LocalDate installationDate;
     private Integer lotReagentId;
+    private Long reagentId;
+    private String reagentName;
 }

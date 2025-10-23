@@ -171,11 +171,13 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .status(InstalledReagentStatus.AVAILABLE)
                 .installationDate(LocalDate.now())
                 .lotReagentId(reagentValidation.getReagentId().intValue())
+                .reagentId(reagentValidation.getReagentId())
+                .reagentName(reagentValidation.getReagentName())
                 .build();
 
         InstalledReagent savedReagent = installedReagentRepository.save(installedReagent);
 
-        log.info("[v0] Reagent installed successfully - ID: {}, Batch: {}",
+        log.info("Reagent installed successfully - ID: {}, Batch: {}",
                 savedReagent.getId(), request.getLotNumber());
 
         try {
@@ -199,6 +201,7 @@ public class InstrumentServiceImpl implements InstrumentService {
         return InstallReagentResponse.builder()
                 .installedReagentId(savedReagent.getId())
                 .instrumentId(instrument.getId())
+                .reagentId(reagentValidation.getReagentId())
                 .instrumentName(instrument.getInstrumentName())
                 .reagentName(reagentValidation.getReagentName())
                 .lotNumber(request.getLotNumber())
@@ -285,12 +288,14 @@ public class InstrumentServiceImpl implements InstrumentService {
     }
 
     private InstrumentResponse mapToResponse(Instrument instrument) {
-        List<InstalledReagent> installedReagents = installedReagentRepository.findByInstrumentId(instrument.getId());
+        List<InstalledReagent> installedReagents = installedReagentRepository.findByInstrumentIdAndStatusIsNot(instrument.getId(),InstalledReagentStatus.REMOVED);
 
         List<sum25.group03.instrumentservice.controller.response.InstalledReagentResponse> reagentResponses =
                 installedReagents.stream()
                         .map(reagent -> sum25.group03.instrumentservice.controller.response.InstalledReagentResponse.builder()
                                 .id(reagent.getId())
+                                .reagentId(reagent.getReagentId())
+                                .reagentName(reagent.getReagentName())
                                 .currentVolume(reagent.getCurrentVolume())
                                 .status(reagent.getStatus())
                                 .installationDate(reagent.getInstallationDate())
@@ -341,102 +346,7 @@ public class InstrumentServiceImpl implements InstrumentService {
         log.info("Mode change validation passed");
     }
 
-    @Override
-    public UpdateReagentStatusResponse updateReagentStatus(UpdateReagentStatusRequest request) {
-        log.info("Starting reagent status update process for installed reagent ID: {}", request.getInstalledReagentId());
-
-        InstalledReagent installedReagent = installedReagentRepository.findById(request.getInstalledReagentId())
-                .orElseThrow(() -> {
-                    log.error("Installed reagent not found with ID: {}", request.getInstalledReagentId());
-                    return new ResourceNotFoundException(
-                            "Installed reagent not found with id: " + request.getInstalledReagentId());
-                });
-
-        log.info("Installed reagent found - current status: {}", installedReagent.getStatus());
-
-        if (installedReagent.getStatus() == InstalledReagentStatus.REMOVED) {
-            log.warn("Cannot update status of removed reagent");
-            throw new InstrumentModeChangeException(
-                    "Cannot update status: Reagent has been removed from the system");
-        }
-
-        if (installedReagent.getStatus() == request.getNewStatus()) {
-            log.warn("Attempted to update reagent to same status: {}", request.getNewStatus());
-            throw new InstrumentModeChangeException(
-                    "Reagent is already in " + request.getNewStatus() + " status. No change needed.");
-        }
-
-        validateStatusTransition(installedReagent.getStatus(), request.getNewStatus());
-
-        InstalledReagentStatus previousStatus = installedReagent.getStatus();
-        installedReagent.setStatus(request.getNewStatus());
-        InstalledReagent updatedReagent = installedReagentRepository.save(installedReagent);
 
 
 
-        log.info("Reagent status updated successfully from {} to {} by user: {}",
-                previousStatus, request.getNewStatus(), request.getChangedBy());
-
-        return UpdateReagentStatusResponse.builder()
-                .installedReagentId(updatedReagent.getId())
-                .instrumentId(updatedReagent.getInstrument().getId())
-                .instrumentName(updatedReagent.getInstrument().getInstrumentName())
-                .previousStatus(previousStatus)
-                .newStatus(request.getNewStatus())
-                .changedAt(LocalDateTime.now())
-                .changedBy(request.getChangedBy())
-                .reason(request.getReason())
-                .message("Reagent status updated successfully from " + previousStatus + " to " + request.getNewStatus())
-                .success(true)
-                .build();
-    }
-
-    private void validateStatusTransition(InstalledReagentStatus currentStatus, InstalledReagentStatus newStatus) {
-        log.info("Validating status transition from {} to {}", currentStatus, newStatus);
-
-        boolean isValidTransition = false;
-
-        switch (currentStatus) {
-            case AVAILABLE:
-                isValidTransition = newStatus == InstalledReagentStatus.IN_USE ||
-                        newStatus == InstalledReagentStatus.QUARANTINED ||
-                        newStatus == InstalledReagentStatus.REMOVED ||
-                        newStatus == InstalledReagentStatus.EXPIRED||
-                        newStatus == InstalledReagentStatus.EMPTY;
-                break;
-            case IN_USE:
-                isValidTransition = newStatus == InstalledReagentStatus.LOW_VOLUME ||
-                        newStatus == InstalledReagentStatus.QUARANTINED ||
-                        newStatus == InstalledReagentStatus.REMOVED ||
-                        newStatus == InstalledReagentStatus.EXPIRED;
-                break;
-            case LOW_VOLUME:
-                isValidTransition = newStatus == InstalledReagentStatus.EMPTY ||
-                        newStatus == InstalledReagentStatus.QUARANTINED ||
-                        newStatus == InstalledReagentStatus.REMOVED ||
-                        newStatus == InstalledReagentStatus.EXPIRED;
-                break;
-            case EMPTY:
-                isValidTransition = newStatus == InstalledReagentStatus.REMOVED;
-                break;
-            case EXPIRED:
-                isValidTransition = newStatus == InstalledReagentStatus.REMOVED;
-                break;
-            case QUARANTINED:
-                isValidTransition = newStatus == InstalledReagentStatus.AVAILABLE ||
-                        newStatus == InstalledReagentStatus.REMOVED;
-                break;
-            case REMOVED:
-                isValidTransition = false;
-                break;
-        }
-
-        if (!isValidTransition) {
-            log.warn("Invalid status transition from {} to {}", currentStatus, newStatus);
-            throw new InstrumentModeChangeException(
-                    "Invalid status transition: Cannot change from " + currentStatus + " to " + newStatus);
-        }
-
-        log.info("Status transition validation passed");
-    }
 }

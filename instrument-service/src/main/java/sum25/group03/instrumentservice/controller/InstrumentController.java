@@ -100,22 +100,5 @@ public class InstrumentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PutMapping("/reagents/status")
-    @Operation(
-            summary = "Update reagent status",
-            description = "Updates the status of an installed reagent with validation of allowed transitions. " +
-                    "Tracks all status changes for audit purposes. Prevents updates to removed reagents and invalid transitions.",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Reagent status updated successfully",
-                            content = @Content(schema = @Schema(implementation = UpdateReagentStatusResponse.class))),
-                    @ApiResponse(responseCode = "400", description = "Invalid status transition or request"),
-                    @ApiResponse(responseCode = "404", description = "Installed reagent not found"),
-                    @ApiResponse(responseCode = "409", description = "Reagent is already removed or status is unchanged")
-            }
-    )
-    public ResponseEntity<UpdateReagentStatusResponse> updateReagentStatus(
-            @Valid @RequestBody UpdateReagentStatusRequest request) {
-        UpdateReagentStatusResponse response = instrumentService.updateReagentStatus(request);
-        return ResponseEntity.ok(response);
-    }
+
 }

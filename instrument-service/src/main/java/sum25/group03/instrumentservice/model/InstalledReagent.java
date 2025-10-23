@@ -34,6 +34,16 @@ public class InstalledReagent {
     @Column(name = "installation_date", nullable = false)
     private LocalDate installationDate;
 
-    @Column(name = "batch_reagent_id", nullable = false)
+    @Column(name = "lot_reagent_id", nullable = false)
     private Integer lotReagentId;
+
+    @Column(name = "reagent_id", nullable = false)
+    private Long reagentId;
+
+    @Column(name = "reagent_name", nullable = false)
+    private String reagentName;
+
+
+
+
 }
