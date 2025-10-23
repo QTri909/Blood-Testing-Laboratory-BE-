@@ -32,9 +32,6 @@ public class Reagents {
     @Column(name = "cas_number", nullable = false)
     private String casNumber;
 
-    @Column(name = "quantity", nullable = false)
-    private int quantity;
-
     @Column(name = "unit", nullable = false)
     private String unit;
 
@@ -48,12 +45,6 @@ public class Reagents {
     @Enumerated(EnumType.STRING)
     private ReagentStatus status;
 
-    @Column(name = "in_use", nullable = false)
-    private boolean inUse;
-
-    @Column(name = "deleted", nullable = false)
-    private boolean deleted;
-
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDate createdAt;
@@ -62,12 +53,12 @@ public class Reagents {
     @Column(name = "updated_at", nullable = false)
     private LocalDate updatedAt;
 
-    @Column(name = "batch_number", nullable = false)
-    private String batchNumber;
-
     @OneToMany(mappedBy = "reagent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReagentHistoryUsage> reagentHistoryUsages;
 
     @OneToMany(mappedBy = "reagent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReagentHistorySupply> reagentHistorySupplies;
+
+    @OneToMany(mappedBy = "reagent", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ReagentInventory> reagentInventories;
 }

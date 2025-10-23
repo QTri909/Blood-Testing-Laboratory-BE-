@@ -9,9 +9,9 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ReagentUsageServiceImpl implements ReagentUsageService {
-    private  final ReagentUsageRepo reagentUsageRepo;
+    private final ReagentUsageRepo reagentUsageRepo;
     @Override
-    public List<Long> findIdsByInstrumentId(Long instrumentId) {
-        return reagentUsageRepo.findIdsByInstrumentId(instrumentId);
+    public List<Long> getReagentUsageIdsByInstrumentId(Long instrumentId) {
+        return reagentUsageRepo.findAllByInstrument_InstrumentId(instrumentId);
     }
 }

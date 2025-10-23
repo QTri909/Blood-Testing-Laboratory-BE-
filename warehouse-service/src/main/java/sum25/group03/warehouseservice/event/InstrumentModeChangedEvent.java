@@ -17,7 +17,6 @@ public class InstrumentModeChangedEvent implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Long instrumentId;
-    private String instrumentCode;
     private String instrumentName;
     private String previousStatus;
     private String newStatus;

@@ -32,7 +32,7 @@ public class InstrumentEventListener {
                         return new RuntimeException("Instrument not found with ID: " + event.getInstrumentId());
                     });
 
-            log.info("Instrument found: {} ({})", instrument.getInstrumentName(), instrument.getInstrumentCode());
+            log.info("Instrument found: {} ", instrument.getInstrumentName());
             String newStatus = event.getNewStatus();
 
             if ("INACTIVE".equals(newStatus) || "MAINTENANCE".equals(newStatus)){

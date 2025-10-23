@@ -18,7 +18,7 @@ public class ReagentInstalledEvent implements Serializable {
 
     private Long reagentId;
     private String reagentName;
-    private String batchNumber;
+    private String lotNumber;
     private Double requiredVolume;
     private Long instrumentId;
     private String instrumentName;

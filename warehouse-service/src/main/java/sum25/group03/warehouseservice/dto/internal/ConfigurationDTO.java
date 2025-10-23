@@ -1,6 +1,9 @@
 package sum25.group03.warehouseservice.dto.internal;
 
 import lombok.*;
+import sum25.group03.warehouseservice.entity.enums.ConfigType;
+
+import java.math.BigDecimal;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -8,11 +11,11 @@ import lombok.*;
 @Setter
 @Builder
 public class ConfigurationDTO {
-    private String configurationKey;
-    private String configurationValue;
-    private String configurationCategory;
-    private String instrumentType;
+    private BigDecimal sampleVolume;
+    private int maxConcurrentSamples;
+    private String supportedTests;
+    private ConfigType configType;
+    private String parameterSettings;
     private String description;
-    private String unit;
-    private boolean active;
+    private String sampleVolumeUnit;
 }

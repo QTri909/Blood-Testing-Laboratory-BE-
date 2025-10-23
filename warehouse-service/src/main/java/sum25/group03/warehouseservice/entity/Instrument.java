@@ -1,4 +1,4 @@
-package sum25.group03.warehouseservice.entity; // Tên package giữ nguyên
+package sum25.group03.warehouseservice.entity; 
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -7,7 +7,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -20,17 +19,14 @@ import java.util.List;
 public class Instrument {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "instrument_id")
     private Long instrumentId;
 
     @Column(name = "instrument_name", nullable = false)
     private String instrumentName;
 
-    @Column(name = "instrument_code", nullable = false)
-    private String instrumentCode;
-
-    @Column(name = "instrument_type", nullable = false)
-    private String instrumentType;
+    @Column(name = "model", nullable = false)
+    private String model;
 
     @Column(name = "serial_number", nullable = false, unique = true)
     private String serialNumber;
@@ -48,12 +44,12 @@ public class Instrument {
     @Column(name = "notes", nullable = true, columnDefinition = "TEXT")
     private String notes;
 
-    // @CreationTimestamp // <-- ĐÃ XÓA: Dùng timestamp ở đây là sai logic
+
     @Column(name = "deactivated_at")
     private LocalDate deactivatedAt;
 
     @Column(name = "deactivated_by")
-    private Integer deactivatedBy; // <-- SỬA LỖI: Đổi 'int' thành 'Integer'
+    private Integer deactivatedBy;
 
     @Column(name = "auto_delete_scheduled_at")
     private LocalDate autoDeleteScheduledAt;
@@ -73,6 +69,7 @@ public class Instrument {
     @Column(name = "next_maintenance_date", nullable = true)
     private LocalDate nextMaintenanceDate;
 
+
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDate createdAt;
@@ -81,15 +78,17 @@ public class Instrument {
     @Column(name = "updated_at")
     private LocalDate updatedAt;
 
-    @Column(name = "created_by")
-    private Integer createdBy;
 
-    @Column(name = "updated_by")
-    private Integer updatedBy;
+    @Column(name = "created_by", nullable = true)
+    private int createdBy;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @Column(name = "updated_by", nullable = true)
+    private int updatedBy;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade =  {CascadeType.PERSIST, CascadeType.MERGE})
+
     @JoinColumn(name = "configuration_id", nullable = true)
-    private Configurations configuration;
+    private Configurations configurations;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinColumn(name = "manufacturer_id")
@@ -98,4 +97,8 @@ public class Instrument {
     @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReagentHistoryUsage> reagentHistoryUsages;
 
+
 }
+
+
+

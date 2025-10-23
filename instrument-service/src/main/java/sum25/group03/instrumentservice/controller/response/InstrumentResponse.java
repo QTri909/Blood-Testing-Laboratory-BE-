@@ -12,7 +12,6 @@ import sum25.group03.instrumentservice.common.InstrumentStatus;
 @Builder
 public class InstrumentResponse {
     private Long id;
-    private String instrumentCode;
     private String instrumentName;
     private InstrumentStatus status;
     private Integer configurationId;

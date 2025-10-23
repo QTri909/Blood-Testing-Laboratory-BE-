@@ -17,7 +17,7 @@ public class InstallReagentResponse {
     private Long instrumentId;
     private String instrumentName;
     private String reagentName;
-    private String batchNumber;
+    private String lotNumber;
     private Double currentVolume;
     private LocalDate installationDate;
     private InstalledReagentStatus status;

@@ -10,6 +10,6 @@ import java.util.Optional;
 
 @Repository
 public interface InstrumentRepository extends JpaRepository<Instrument, Long> {
-    Optional<Instrument> findByInstrumentCode(String instrumentCode);
+
     List<Instrument> findByStatus(InstrumentStatus status);
 }

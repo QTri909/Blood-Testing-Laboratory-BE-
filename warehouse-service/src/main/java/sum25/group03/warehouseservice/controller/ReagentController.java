@@ -16,15 +16,15 @@ import sum25.group03.warehouseservice.service.reagent.ReagentService;
 public class ReagentController {
     private final ReagentService reagentService;
 
-    @GetMapping("/validate/{batchNumber}")
+    @GetMapping("/validate/{lotNumber}")
     public ResponseEntity<ReagentValidationResponse> validateReagent(
-            @PathVariable String batchNumber,
+            @PathVariable String lotNumber,
             @RequestParam Double requiredVolume) {
 
         log.info("Received reagent validation request for batch number: {} with required volume: {}",
-                batchNumber, requiredVolume);
+                lotNumber, requiredVolume);
 
-        ReagentValidationResponse response = reagentService.validateReagent(batchNumber, requiredVolume);
+        ReagentValidationResponse response = reagentService.validateReagent(lotNumber, requiredVolume);
 
         return ResponseEntity.ok(response);
     }

@@ -11,8 +11,8 @@ import java.util.Optional;
 @Repository
 public interface ReagentRepo extends JpaRepository<Reagents, Long> {
 
-    @Query("SELECT r.reagentId FROM Reagents r WHERE r.reagentId IN :reagentIds")
+    @Query("SELECT r.reagentId FROM Reagents r WHERE r.reagentId IN :reagentIds AND r.status = 'AVAILABLE'")
     List<Long> findExistingIds(List<Long> reagentIds);
 
-    Optional<Reagents> findByBatchNumber(String batchNumber);
+
 }

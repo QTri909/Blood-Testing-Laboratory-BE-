@@ -51,7 +51,6 @@ public class InstrumentServiceImpl implements InstrumentService {
 
 
         Instrument instrument = Instrument.builder()
-                .instrumentCode(request.getInstrumentCode())
                 .instrumentName(request.getInstrumentName())
                 .status(request.getStatus())
                 .configuration(configuration)
@@ -73,7 +72,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                             "Instrument not found with id: " + request.getInstrumentId());
                 });
 
-        log.info("Instrument found: {} ({})", instrument.getInstrumentName(), instrument.getInstrumentCode());
+        log.info("Instrument found: {} ", instrument.getInstrumentName());
 
         log.info("Checking instrument status with Warehouse Service");
         boolean isActive;
@@ -106,7 +105,6 @@ public class InstrumentServiceImpl implements InstrumentService {
             try {
                 InstrumentModeChangedEvent event = InstrumentModeChangedEvent.builder()
                         .instrumentId(updatedInstrument.getId())
-                        .instrumentCode(updatedInstrument.getInstrumentCode())
                         .instrumentName(updatedInstrument.getInstrumentName())
                         .previousStatus(String.valueOf(previousStatus))
                         .newStatus(String.valueOf(request.getNewStatus()))
@@ -125,7 +123,6 @@ public class InstrumentServiceImpl implements InstrumentService {
 
         return ChangeInstrumentModeResponse.builder()
                 .instrumentId(updatedInstrument.getId())
-                .instrumentCode(updatedInstrument.getInstrumentCode())
                 .instrumentName(updatedInstrument.getInstrumentName())
                 .previousStatus(previousStatus)
                 .newStatus(updatedInstrument.getStatus())
@@ -137,7 +134,7 @@ public class InstrumentServiceImpl implements InstrumentService {
 
     @Override
     public InstallReagentResponse installReagent(InstallReagentRequest request) {
-        log.info("[v0] Starting reagent installation process for instrument ID: {}", request.getInstrumentId());
+        log.info("Starting reagent installation process for instrument ID: {}", request.getInstrumentId());
 
         Instrument instrument = instrumentRepository.findById(request.getInstrumentId())
                 .orElseThrow(() -> {
@@ -146,7 +143,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                             "Instrument not found with id: " + request.getInstrumentId());
                 });
 
-        log.info("Instrument found: {} ({})", instrument.getInstrumentName(), instrument.getInstrumentCode());
+        log.info("Instrument found: {}", instrument.getInstrumentName());
 
 
         log.info("Validating reagent with Warehouse Service - batch number: {}", request.getLotNumber());
@@ -154,7 +151,7 @@ public class InstrumentServiceImpl implements InstrumentService {
         try {
             reagentValidation = warehouseServiceClient.validateReagent(request.getLotNumber(), request.getCurrentVolume());
         } catch (WarehouseServiceException e) {
-            log.error("[v0] Warehouse Service validation failed: {}", e.getMessage());
+            log.error("Warehouse Service validation failed: {}", e.getMessage());
             throw new WarehouseServiceException(
                     "Cannot install reagent: Unable to validate with Warehouse Service. " + e.getMessage());
         }
@@ -165,6 +162,12 @@ public class InstrumentServiceImpl implements InstrumentService {
             throw new InstrumentModeChangeException(
                     "Cannot install reagent: " + reagentValidation.getMessage());
         }
+        if (!reagentValidation.isNotExpired()) {
+            log.warn("Reagent validation failed: {}", reagentValidation.getMessage());
+            throw new InstrumentModeChangeException(
+                    "Cannot install reagent: " + reagentValidation.getMessage());
+        }
+
 
         log.info("Reagent validation successful - reagent is valid and ready for use");
 
@@ -191,7 +194,7 @@ public class InstrumentServiceImpl implements InstrumentService {
             ReagentInstalledEvent event = ReagentInstalledEvent.builder()
                     .reagentId(reagentValidation.getReagentId())
                     .reagentName(reagentValidation.getReagentName())
-                    .batchNumber(request.getLotNumber())
+                    .lotNumber(request.getLotNumber())
                     .requiredVolume(request.getCurrentVolume())
                     .instrumentId(instrument.getId())
                     .instrumentName(instrument.getInstrumentName())
@@ -210,7 +213,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .instrumentId(instrument.getId())
                 .instrumentName(instrument.getInstrumentName())
                 .reagentName(reagentValidation.getReagentName())
-                .batchNumber(request.getLotNumber())
+                .lotNumber(request.getLotNumber())
                 .currentVolume(request.getCurrentVolume())
                 .installationDate(savedReagent.getInstallationDate())
                 .status(InstalledReagentStatus.AVAILABLE)
@@ -256,7 +259,6 @@ public class InstrumentServiceImpl implements InstrumentService {
     private InstrumentResponse mapToResponse(Instrument instrument) {
         return InstrumentResponse.builder()
                 .id(instrument.getId())
-                .instrumentCode(instrument.getInstrumentCode())
                 .instrumentName(instrument.getInstrumentName())
                 .status(instrument.getStatus())
                 .configurationId(instrument.getConfiguration().getId())

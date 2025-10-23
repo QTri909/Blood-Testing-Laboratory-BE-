@@ -63,7 +63,7 @@ public class InstrumentController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/reagents/install")
+    @PostMapping("/install-reagent")
     @Operation(
             summary = "Install a reagent on an instrument",
             description = "Installs a new reagent bottle on an instrument by scanning its barcode/batch number. " +

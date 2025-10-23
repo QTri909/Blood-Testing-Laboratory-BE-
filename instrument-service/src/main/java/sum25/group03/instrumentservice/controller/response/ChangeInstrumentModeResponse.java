@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @Builder
 public class ChangeInstrumentModeResponse {
     private Long instrumentId;
-    private String instrumentCode;
     private String instrumentName;
     private InstrumentStatus previousStatus;
     private InstrumentStatus newStatus;

@@ -13,8 +13,6 @@ import sum25.group03.instrumentservice.common.InstrumentStatus;
 @AllArgsConstructor
 @Builder
 public class CreateInstrumentRequest {
-    @NotBlank(message = "Instrument code is required")
-    private String instrumentCode;
 
     @NotBlank(message = "Instrument name is required")
     private String instrumentName;
