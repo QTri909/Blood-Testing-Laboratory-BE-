@@ -11,11 +11,10 @@ import java.math.BigDecimal;
 @Setter
 @Builder
 public class ConfigurationDTO {
-    private BigDecimal sampleVolume;
-    private int maxConcurrentSamples;
+    private Long globalConfigurationId;
     private String supportedTests;
-    private ConfigType configType;
     private String parameterSettings;
-    private String description;
-    private String sampleVolumeUnit;
+    private String dataOutputFormat;
+    private String communicationProtocol;
+    private int  mixingSpeed;
 }

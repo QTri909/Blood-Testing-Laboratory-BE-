@@ -13,16 +13,11 @@ import java.math.BigDecimal;
 @Builder
 public class UpdateSpecificConfigReq {
     @NonNull
-    private Long instrumentId;
-    @NonNull
-    private BigDecimal sampleVolume;
-    @Positive
-    private int maxConcurrentSamples;
-    @NotBlank
+    private Long specificConfigurationId;
     private String supportedTests;
-    @NotBlank
     private String parameterSettings;
-    private String description;
-    @NotBlank
-    private String sampleVolumeUnit;
+    private String dataOutputFormat;
+    private String communicationProtocol;
+    private int mixingSpeed;
+    private String firmwareVersion;
 }

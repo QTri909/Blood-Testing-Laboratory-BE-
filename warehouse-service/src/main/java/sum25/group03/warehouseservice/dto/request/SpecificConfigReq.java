@@ -11,16 +11,20 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Builder
-public class ConfigReq {
+public class SpecificConfigReq {
     @NonNull
-    private BigDecimal sampleVolume;
-    @Positive
-    private int maxConcurrentSamples;
+    private Long globalConfigurationId;
     @NotBlank
     private String supportedTests;
     @NotBlank
     private String parameterSettings;
-    private String description;
     @NotBlank
-    private String sampleVolumeUnit;
+    private String dataOutputFormat;
+    @NotBlank
+    private String communicationProtocol;
+    @Positive
+    private int mixingSpeed;
+    @NotBlank
+    private String firmwareVersion;
+
 }

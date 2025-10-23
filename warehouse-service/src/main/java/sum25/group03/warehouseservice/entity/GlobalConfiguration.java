@@ -1,5 +1,6 @@
 package sum25.group03.warehouseservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -16,34 +17,24 @@ import java.util.List;
 @Setter
 @Builder
 @Entity
-@Table(name = "configurations")
-public class Configurations {
+@Table(name = "global_configurations")
+public class GlobalConfiguration {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "configuration_id")
-    private Long configurationId;
+    @Column(name = "gobal_configuration_id")
+    private Long globalConfigurationId;
 
     @Column(name = "sample_volume", nullable = false)
     private BigDecimal sampleVolume;
 
+    @Column(name = "sample_volume_unit", nullable = false)
+    private String sampleVolumeUnit;
+
     @Column(name = "max_concurrent_samples", nullable = false)
     private int maxConcurrentSamples;
 
-    @Column(name = "supported_tests", nullable = false)
-    private String supportedTests;
-
-    @Column(name = "config_type", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private ConfigType configType;
-
-    @Column(name = "parameter_settings", nullable = false)
-    private String parameterSettings;
-
-    @Column(name = "description", nullable = false, columnDefinition = "TEXT")
-    private String description;
-    
-    @Column(name = "sample_volume_unit", nullable = false)
-    private String sampleVolumeUnit;
+    @Column(name = "default_timeout", nullable = false)
+    private int defaultTimeout;
 
     @Column(name = "active", nullable = false)
     private boolean active;
@@ -56,12 +47,12 @@ public class Configurations {
     @Column(name = "updated_at", nullable = false)
     private LocalDate updatedAt;
 
-    @Column(name = "created_by", nullable = false)
+    @Column(name = "created_by", nullable = true)
     private int createdBy;
 
-    @Column(name = "updated_by", nullable = false)
+    @Column(name = "updated_by", nullable = true)
     private int updatedBy;
 
-    @OneToMany(mappedBy = "configurations")
-    private List<Instrument> instrument;
+    @OneToMany(mappedBy = "globalConfiguration", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<SpecificConfiguration> specificConfigurations;
 }

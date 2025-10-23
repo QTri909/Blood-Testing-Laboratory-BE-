@@ -17,13 +17,11 @@ public class InstrumentReq {
     private String model;
     @NotBlank
     private String serialNumber;
-    @NotBlank
-    private String firmwareVersion;
     private String location;
     private String notes;
     @NotBlank
     private ManufacturerReq manufacturer;
-    private Long configurationId;
-    private List<Long> reagentId;
+//    private Long configurationId;
+//    private List<Long> reagentId;
     private Long cloneFromInstrumentId;
 }

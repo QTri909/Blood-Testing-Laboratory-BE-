@@ -11,11 +11,13 @@ import java.math.BigDecimal;
 @Getter
 @Setter
 @Builder
-public class UpdateGlobalConfigReq {
+public class GlobalConfigReq {
     @NonNull
-    private Long globalConfigurationId;
     private BigDecimal sampleVolume;
+    @Positive
     private int maxConcurrentSamples;
+    @NotBlank
     private String sampleVolumeUnit;
+    @Positive
     private int defaultTimeout;
 }

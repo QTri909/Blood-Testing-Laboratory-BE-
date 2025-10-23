@@ -3,7 +3,6 @@ package sum25.group03.warehouseservice.service.instrument;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.internal.ConfigurationDTO;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
@@ -43,8 +42,10 @@ public class InstrumentServiceImpl implements InstrumentService {
     public void getConfigAndReagentByInstrument(Instrument instrument, Long cloneFromInstrumentId) {
         ConfigurationDTO configurationDTO = configService.findByInstrumentId(cloneFromInstrumentId);
         if (configurationDTO != null) {
-            Configurations configRef = mapConfigurations(configurationDTO);
-            instrument.setConfigurations(configRef);
+            SpecificConfiguration configRef = mapConfigurations(configurationDTO);
+            GlobalConfiguration globalConfigRef = entityManager.getReference(GlobalConfiguration.class, configurationDTO.getGlobalConfigurationId());
+            configRef.setGlobalConfiguration(globalConfigRef);
+            instrument.setSpecificConfiguration(configRef);
         }
         List<Long> reagentIds = reagentUsageService.getReagentUsageIdsByInstrumentId(cloneFromInstrumentId);
         if (!reagentIds.isEmpty()) {
@@ -55,15 +56,13 @@ public class InstrumentServiceImpl implements InstrumentService {
             instrument.setReagentHistoryUsages(reagentUsages);
         }
     }
-    public Configurations mapConfigurations (ConfigurationDTO config) {
-        return Configurations.builder()
-                .sampleVolume(config.getSampleVolume())
-                .sampleVolumeUnit(config.getSampleVolumeUnit())
-                .configType(config.getConfigType())
-                .maxConcurrentSamples(config.getMaxConcurrentSamples())
+    public SpecificConfiguration mapConfigurations (ConfigurationDTO config) {
+        return SpecificConfiguration.builder()
                 .parameterSettings(config.getParameterSettings())
                 .supportedTests(config.getSupportedTests())
-                .description(config.getDescription())
+                .dataOutputFormat(config.getDataOutputFormat())
+                .communicationProtocol(config.getCommunicationProtocol())
+                .mixingSpeed(config.getMixingSpeed())
                 .build();
     }
     public List<ReagentHistoryUsage> getReagentUsageReferences(List<Long> reagentIds, Instrument instrument) {
@@ -87,43 +86,43 @@ public class InstrumentServiceImpl implements InstrumentService {
         // Clone from an existing instrument
         if(instrument.getCloneFromInstrumentId() != null) {
             getConfigAndReagentByInstrument(newInstrument, instrument.getCloneFromInstrumentId());
-            instrumentRepo.save(newInstrument);
-            return;
+//            instrumentRepo.save(newInstrument);
+//            return;
         }
         // Validate configuration and reagents existence
-        List<String> errorMessages = new ArrayList<>();
-        if(!isEmptyConfig(instrument.getConfigurationId())) {
-            if(!configService.existsById(instrument.getConfigurationId())){
-                errorMessages.add("Configuration not found");
-            } else{
-                // Configuration exists
-                // Link configuration (as reference)
-                Configurations configRef = entityManager.getReference(Configurations.class, instrument.getConfigurationId());
-                newInstrument.setConfigurations(configRef);
-            }
-        }
-        if(!isEmptyReagents(instrument.getReagentId())) {
-            List<Long> existingReagentIds = reagentService.findExistingIds(instrument.getReagentId());
-            List<Long> missingReagentIds = instrument.getReagentId().stream()
-                    .filter(id -> !existingReagentIds.contains(id))
-                    .toList();
-
-            if (!missingReagentIds.isEmpty()){
-                errorMessages.add("Reagents not available: " + missingReagentIds);
-            } else {
-                // All-reagents exist
-                // Link reagents (as reference)
-                List<ReagentHistoryUsage> reagentUsages = getReagentUsageReferences(
-                        existingReagentIds,
-                        newInstrument
-                );
-                newInstrument.setReagentHistoryUsages(reagentUsages);
-
-            }
-        }
-        if(!errorMessages.isEmpty()) {
-            throw new NotFoundException(String.join(". ", errorMessages));
-        }
+//        List<String> errorMessages = new ArrayList<>();
+//        if(!isEmptyConfig(instrument.getConfigurationId())) {
+//            if(!configService.existsById(instrument.getConfigurationId())){
+//                errorMessages.add("Configuration not found");
+//            } else{
+//                // Configuration exists
+//                // Link configuration (as reference)
+//                SpecificConfiguration configRef = entityManager.getReference(SpecificConfiguration.class, instrument.getConfigurationId());
+//                newInstrument.setSpecificConfiguration(configRef);
+//            }
+//        }
+//        if(!isEmptyReagents(instrument.getReagentId())) {
+//            List<Long> existingReagentIds = reagentService.findExistingIds(instrument.getReagentId());
+//            List<Long> missingReagentIds = instrument.getReagentId().stream()
+//                    .filter(id -> !existingReagentIds.contains(id))
+//                    .toList();
+//
+//            if (!missingReagentIds.isEmpty()){
+//                errorMessages.add("Reagents not available: " + missingReagentIds);
+//            } else {
+//                // All-reagents exist
+//                // Link reagents (as reference)
+//                List<ReagentHistoryUsage> reagentUsages = getReagentUsageReferences(
+//                        existingReagentIds,
+//                        newInstrument
+//                );
+//                newInstrument.setReagentHistoryUsages(reagentUsages);
+//
+//            }
+//        }
+//        if(!errorMessages.isEmpty()) {
+//            throw new NotFoundException(String.join(". ", errorMessages));
+//        }
         // Save instrument with reagents and config if exist
         instrumentRepo.save(newInstrument);
     }
