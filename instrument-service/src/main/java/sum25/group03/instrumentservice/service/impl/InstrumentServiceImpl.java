@@ -2,7 +2,12 @@ package sum25.group03.instrumentservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import sum25.group03.instrumentservice.client.WarehouseServiceClient;
 import sum25.group03.instrumentservice.client.response.ReagentValidationResponse;
 import sum25.group03.instrumentservice.common.InstalledReagentStatus;
@@ -11,6 +16,8 @@ import sum25.group03.instrumentservice.controller.request.ChangeInstrumentModeRe
 import sum25.group03.instrumentservice.controller.request.InstallReagentRequest;
 import sum25.group03.instrumentservice.controller.response.ChangeInstrumentModeResponse;
 import sum25.group03.instrumentservice.controller.response.InstallReagentResponse;
+import sum25.group03.instrumentservice.controller.response.InstrumentPageResponse;
+import sum25.group03.instrumentservice.controller.response.InstrumentResponse;
 import sum25.group03.instrumentservice.exception.InstrumentModeChangeException;
 import sum25.group03.instrumentservice.exception.ResourceNotFoundException;
 import sum25.group03.instrumentservice.exception.WarehouseServiceException;
@@ -29,6 +36,10 @@ import sum25.group03.instrumentservice.service.KafkaEventPublisher;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -39,8 +50,6 @@ public class InstrumentServiceImpl implements InstrumentService {
     private final WarehouseServiceClient warehouseServiceClient;
     private final InstalledReagentRepository installedReagentRepository;
     private final KafkaEventPublisher kafkaEventPublisher;
-
-
 
     @Override
     public ChangeInstrumentModeResponse changeInstrumentMode(ChangeInstrumentModeRequest request) {
@@ -203,7 +212,104 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .build();
     }
 
+    @Override
+    public InstrumentResponse findInstrumentById(Long id) {
+        log.info("Get instrument detail by id: {}", id);
+        Instrument instrument = instrumentRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.error("Instrument not found with ID: {}", id);
+                    return new ResourceNotFoundException("Instrument not found with id: " + id);
+                });
+        return mapToResponse(instrument);
+    }
 
+    @Override
+    public InstrumentPageResponse findAllInstruments(String keyword, String sort, String status, int page, int size) {
+        log.info("Finding all instruments with keyword: {}, sort: {}, status: {}, page: {}, size: {}",
+                keyword, sort, status, page, size);
+
+        Sort.Order order = new Sort.Order(Sort.Direction.ASC, "id");
+        if (StringUtils.hasLength(sort)) {
+            Pattern pattern = Pattern.compile("^(\\w+)(:)(asc|desc)$");
+            Matcher matcher = pattern.matcher(sort);
+            if (matcher.find()) {
+                String column = matcher.group(1);
+                if (matcher.group(3).equalsIgnoreCase("asc")) {
+                    order = new Sort.Order(Sort.Direction.ASC, column);
+                } else {
+                    order = new Sort.Order(Sort.Direction.DESC, column);
+                }
+            }
+        }
+
+        int pageNo = 0;
+        if (page > 0) {
+            pageNo = page - 1;
+        }
+
+        Pageable pageable = PageRequest.of(pageNo, size, Sort.by(order));
+        Page<Instrument> instrumentEntities;
+
+        InstrumentStatus statusFilter = null;
+        if (StringUtils.hasLength(status)) {
+            try {
+                statusFilter = InstrumentStatus.valueOf(status.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid status filter: {}", status);
+            }
+        }
+
+        if (StringUtils.hasLength(keyword) && statusFilter != null) {
+            instrumentEntities = instrumentRepository.searchByKeywordsAndStatus(keyword, statusFilter, pageable);
+        } else if (statusFilter != null) {
+            instrumentEntities = instrumentRepository.findAllByStatus(statusFilter, pageable);
+        } else if (StringUtils.hasLength(keyword)) {
+            instrumentEntities = instrumentRepository.searchByKeywords(keyword, pageable);
+        } else {
+            instrumentEntities = instrumentRepository.findAllInstruments(pageable);
+        }
+
+        return getInstrumentPageResponse(page, size, instrumentEntities);
+    }
+
+    private InstrumentPageResponse getInstrumentPageResponse(int page, int size, Page<Instrument> instrumentEntities) {
+        List<InstrumentResponse> instrumentList = instrumentEntities.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+
+        InstrumentPageResponse response = new InstrumentPageResponse();
+        response.setPageNumber(page);
+        response.setPageSize(size);
+        response.setTotalPages(instrumentEntities.getTotalPages());
+        response.setTotalElements(instrumentEntities.getTotalElements());
+        response.setInstruments(instrumentList);
+        return response;
+    }
+
+    private InstrumentResponse mapToResponse(Instrument instrument) {
+        List<InstalledReagent> installedReagents = installedReagentRepository.findByInstrumentId(instrument.getId());
+
+        List<sum25.group03.instrumentservice.controller.response.InstalledReagentResponse> reagentResponses =
+                installedReagents.stream()
+                        .map(reagent -> sum25.group03.instrumentservice.controller.response.InstalledReagentResponse.builder()
+                                .id(reagent.getId())
+                                .currentVolume(reagent.getCurrentVolume())
+                                .status(reagent.getStatus())
+                                .installationDate(reagent.getInstallationDate())
+                                .lotReagentId(reagent.getLotReagentId())
+                                .build())
+                        .collect(Collectors.toList());
+
+        Configuration config = instrument.getConfiguration();
+        return InstrumentResponse.builder()
+                .id(instrument.getId())
+                .instrumentName(instrument.getInstrumentName())
+                .status(instrument.getStatus())
+                .configurationId(config != null ? config.getId() : null)
+                .configurationName(config != null ? config.getConfigKey() : null)
+                .installedReagents(reagentResponses)
+                .build();
+    }
 
     private void validateModeChangeRequest(ChangeInstrumentModeRequest request, Instrument instrument) {
         InstrumentStatus newStatus = request.getNewStatus();
@@ -235,15 +341,5 @@ public class InstrumentServiceImpl implements InstrumentService {
         }
 
         log.info("Mode change validation passed");
-    }
-
-    private InstrumentResponse mapToResponse(Instrument instrument) {
-        return InstrumentResponse.builder()
-                .id(instrument.getId())
-                .instrumentName(instrument.getInstrumentName())
-                .status(instrument.getStatus())
-                .configurationId(instrument.getConfiguration().getId())
-                .configurationName(instrument.getConfiguration().getConfigKey())
-                .build();
     }
 }

@@ -8,8 +8,8 @@ import sum25.group03.instrumentservice.model.InstalledReagent;
 import java.util.List;
 
 @Repository
-public interface InstalledReagentRepository extends JpaRepository<InstalledReagent, Integer> {
-    List<InstalledReagent> findByInstrumentId(Integer instrumentId);
+public interface InstalledReagentRepository extends JpaRepository<InstalledReagent, Long> {
+    List<InstalledReagent> findByInstrumentId(Long instrumentId);
     List<InstalledReagent> findByStatus(InstalledReagentStatus status);
 }
 

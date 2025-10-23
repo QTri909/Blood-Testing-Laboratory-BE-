@@ -12,15 +12,10 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class InstallReagentResponse {
-    private Long installedReagentId;
-    private Long instrumentId;
-    private String instrumentName;
-    private String reagentName;
-    private String lotNumber;
+public class InstalledReagentResponse {
+    private Long id;
     private Double currentVolume;
-    private LocalDate installationDate;
     private InstalledReagentStatus status;
-    private String message;
-    private boolean success;
+    private LocalDate installationDate;
+    private Integer lotReagentId;
 }

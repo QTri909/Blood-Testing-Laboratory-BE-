@@ -18,7 +18,7 @@ import java.time.LocalDate;
 public class InstalledReagent {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "instrument_id", nullable = false)

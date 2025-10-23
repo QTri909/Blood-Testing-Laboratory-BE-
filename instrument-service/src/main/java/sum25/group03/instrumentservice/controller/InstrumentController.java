@@ -15,6 +15,8 @@ import sum25.group03.instrumentservice.controller.request.ChangeInstrumentModeRe
 import sum25.group03.instrumentservice.controller.request.InstallReagentRequest;
 import sum25.group03.instrumentservice.controller.response.ChangeInstrumentModeResponse;
 import sum25.group03.instrumentservice.controller.response.InstallReagentResponse;
+import sum25.group03.instrumentservice.controller.response.InstrumentPageResponse;
+import sum25.group03.instrumentservice.controller.response.InstrumentResponse;
 import sum25.group03.instrumentservice.service.InstrumentService;
 
 @RestController
@@ -24,7 +26,41 @@ import sum25.group03.instrumentservice.service.InstrumentService;
 public class InstrumentController {
     private final InstrumentService instrumentService;
 
+    @GetMapping("/{id}")
+    @Operation(
+            summary = "Get instrument by ID",
+            description = "Retrieves a specific instrument with all its installed reagents",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Instrument found",
+                            content = @Content(schema = @Schema(implementation = InstrumentResponse.class))),
+                    @ApiResponse(responseCode = "404", description = "Instrument not found")
+            }
+    )
+    public ResponseEntity<InstrumentResponse> getInstrumentById(@PathVariable Long id) {
+        InstrumentResponse response = instrumentService.findInstrumentById(id);
+        return ResponseEntity.ok(response);
+    }
 
+    @GetMapping
+    @Operation(
+            summary = "Get all instruments with search and pagination",
+            description = "Retrieves all instruments with optional keyword search, status filter, sorting, and pagination. " +
+                    "Each instrument includes its installed reagents.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Instruments retrieved successfully",
+                            content = @Content(schema = @Schema(implementation = InstrumentPageResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid pagination or sort parameters")
+            }
+    )
+    public ResponseEntity<InstrumentPageResponse> getAllInstruments(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "id:asc") String sort,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        InstrumentPageResponse response = instrumentService.findAllInstruments(keyword, sort, status, page, size);
+        return ResponseEntity.ok(response);
+    }
 
     @PutMapping("/change-mode")
     @Operation(

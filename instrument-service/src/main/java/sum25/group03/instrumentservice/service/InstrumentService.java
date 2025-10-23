@@ -4,8 +4,13 @@ import sum25.group03.instrumentservice.controller.request.ChangeInstrumentModeRe
 import sum25.group03.instrumentservice.controller.request.InstallReagentRequest;
 import sum25.group03.instrumentservice.controller.response.ChangeInstrumentModeResponse;
 import sum25.group03.instrumentservice.controller.response.InstallReagentResponse;
+import sum25.group03.instrumentservice.controller.response.InstrumentPageResponse;
+import sum25.group03.instrumentservice.controller.response.InstrumentResponse;
 
 public interface InstrumentService {
     ChangeInstrumentModeResponse changeInstrumentMode(ChangeInstrumentModeRequest request);
     InstallReagentResponse installReagent(InstallReagentRequest request);
+
+    InstrumentResponse findInstrumentById(Long id);
+    InstrumentPageResponse findAllInstruments(String keyword, String sort, String status, int page, int size);
 }

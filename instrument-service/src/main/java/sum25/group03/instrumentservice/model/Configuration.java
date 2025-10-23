@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 public class Configuration {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @Column(name = "config_key", nullable = false, unique = true)
     private String configKey;
