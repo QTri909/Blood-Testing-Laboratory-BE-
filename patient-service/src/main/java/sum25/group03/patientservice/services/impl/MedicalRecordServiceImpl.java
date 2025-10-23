@@ -41,6 +41,15 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     private final ActionLogService actionLogService;
 
+    // check if a viewerId belongs to our system or not, if not, throw exception and warn to admin
+    private void validateViewerExistence(Long viewerId) {
+        boolean isViewerExisted = userSnapshotRepository.existsByExternalUserId(viewerId);
+        if (!isViewerExisted) {
+            log.warn("WARN: User with id {} has been found in the system!", viewerId);
+            throw new UserNotFoundException("Viewer with id " + viewerId + " not found in the system!");
+        }
+    }
+
     @Transactional
     public MedicalRecordResponse registerMedicalRecord(MedicalRecordRequest request) {
 
@@ -128,6 +137,10 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Override
     public MedicalRecordResponse getById(Long recordId, Long viewerId) {
+
+        // validate viewer existence
+        validateViewerExistence(viewerId);
+
         // log the view action
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_PATIENT_MEDICAL_RECORD_DETAIL, recordId);
 
@@ -145,6 +158,10 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     @Override
     public List<MedicalRecordResponse> getAll(Long viewerId) {
+
+        // validate viewer existence
+        validateViewerExistence(viewerId);
+
         // log the view all action
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_ALL_PATIENT_MEDICAL_RECORDS, null);
 

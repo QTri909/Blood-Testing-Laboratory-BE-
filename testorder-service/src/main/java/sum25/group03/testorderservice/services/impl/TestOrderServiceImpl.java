@@ -31,6 +31,9 @@ public class TestOrderServiceImpl implements ITestOrderService {
     private final TestOrderMapper mapper;
     private final ActionLogService actionLogService;
 
+    // TODO 1: Write a function call to IAM service to verify viewerId exists in the system
+    // If not, throw an exception and log a warning to the admin via cloudwatch logging
+
     @Override
     public TestOrderResponse createTestOrder(TestOrderRequest requestDTO) {
         TestOrder entity = mapper.toEntity(requestDTO);
@@ -42,6 +45,9 @@ public class TestOrderServiceImpl implements ITestOrderService {
 
     @Override
     public TestOrderResponse getTestOrderById(Long id, Long viewerId) {
+
+        // TODO 2: Verify viewerId existence in the system using todo_1
+
         // Log the action of viewing the test order detail
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_DETAIL, id);
 
@@ -52,6 +58,9 @@ public class TestOrderServiceImpl implements ITestOrderService {
 
     @Override
     public List<TestOrderResponse> getAllTestOrders(Long viewerId) {
+
+        // TODO 3: Verify viewerId existence in the system using todo_1
+
         // Log the action of viewing the test order list
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
 
