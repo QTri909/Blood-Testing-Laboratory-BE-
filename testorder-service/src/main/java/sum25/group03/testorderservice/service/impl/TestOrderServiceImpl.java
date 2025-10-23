@@ -42,8 +42,8 @@ public class TestOrderServiceImpl implements TestOrderService {
     }
 
     @Override
-    public TestOrderResponseDTO updateTestOrder(Long id, TestOrderRequestDTO requestDTO) {
-        log.info("Updating test order with id: {}", id);
+    public TestOrderResponseDTO updateTestOrder(Long id, TestOrderRequestDTO requestDTO, Long updatedBy) {
+        log.info("Updating test order with id: {} by user: {}", id, updatedBy);
 
         TestOrder existingTestOrder = testOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Test order not found with id: " + id));
@@ -52,18 +52,21 @@ public class TestOrderServiceImpl implements TestOrderService {
             throw new IllegalStateException("Cannot update cancelled test order");
         }
 
+        Long originalPatientId = existingTestOrder.getPatientId();
+        TestOrderStatus originalStatus = existingTestOrder.getStatus();
+
         testOrderMapper.updateEntity(requestDTO, existingTestOrder);
-        existingTestOrder.setUpdatedAt(LocalDateTime.now());
 
         TestOrder updatedTestOrder = testOrderRepository.save(existingTestOrder);
-        log.info("Test order updated successfully with id: {}", updatedTestOrder.getId());
+        log.info("Test order updated successfully. ID: {}, UpdatedBy: {}, PatientId changed: {} -> {}",
+                id, updatedBy, originalPatientId, updatedTestOrder.getPatientId());
 
         return testOrderMapper.toResponseDto(updatedTestOrder);
     }
 
     @Override
-    public void deleteTestOrder(Long id) {
-        log.info("Deleting test order with id: {}", id);
+    public void deleteTestOrder(Long id, Long deletedBy) {
+        log.info("Deleting test order with id: {} by user: {}", id, deletedBy);
 
         TestOrder testOrder = testOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Test order not found with id: " + id));
@@ -76,11 +79,13 @@ public class TestOrderServiceImpl implements TestOrderService {
             throw new IllegalStateException("Cannot delete completed test order");
         }
 
+        log.info("Audit Log - DeletedBy: {}, TestOrderId: {}, PatientId: {}, Status: {}, CreatedBy: {}",
+                deletedBy, id, testOrder.getPatientId(), testOrder.getStatus(), testOrder.getCreatedBy());
+
         testOrder.setStatus(TestOrderStatus.CANCELED);
-        testOrder.setUpdatedAt(LocalDateTime.now());
 
         testOrderRepository.save(testOrder);
-        log.info("Test order soft deleted (cancelled) successfully with id: {}", id);
+        log.info("Test order soft deleted (cancelled) successfully. ID: {}, DeletedBy: {}", id, deletedBy);
     }
 
     @Override
@@ -128,18 +133,31 @@ public class TestOrderServiceImpl implements TestOrderService {
     }
 
     @Override
-    public TestOrderResponseDTO updateTestOrderStatus(Long id, TestOrderStatus status) {
-        log.info("Updating test order status to {} for id: {}", status, id);
+    public TestOrderResponseDTO updateTestOrderStatus(Long id, TestOrderStatus status, Long updatedBy) {
+        log.info("Updating test order status to {} for id: {} by user: {}", status, id, updatedBy);
 
         TestOrder testOrder = testOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Test order not found with id: " + id));
 
+        TestOrderStatus oldStatus = testOrder.getStatus();
         testOrder.setStatus(status);
-        testOrder.setUpdatedAt(LocalDateTime.now());
 
         TestOrder updatedTestOrder = testOrderRepository.save(testOrder);
-        log.info("Test order status updated successfully for id: {}", id);
+        log.info("Test order status updated successfully. ID: {}, Status changed: {} -> {}, UpdatedBy: {}",
+                id, oldStatus, status, updatedBy);
 
         return testOrderMapper.toResponseDto(updatedTestOrder);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TestOrderResponseDTO> getTestOrdersByCreatedBy(Long createdBy) {
+        log.info("Fetching test orders created by user: {}", createdBy);
+
+        List<TestOrder> testOrders = testOrderRepository.findByCreatedBy(createdBy);
+        return testOrders.stream()
+                .map(testOrderMapper::toResponseDto)
+                .collect(Collectors.toList());
+    }
+
 }

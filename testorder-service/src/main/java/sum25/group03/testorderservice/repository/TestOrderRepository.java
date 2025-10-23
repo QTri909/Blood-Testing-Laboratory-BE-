@@ -12,4 +12,6 @@ public interface TestOrderRepository extends JpaRepository<TestOrder,Long> {
     List<TestOrder> findByPatientId(Long patientId);
 
     List<TestOrder> findByStatus(TestOrderStatus status);
+
+    List<TestOrder> findByCreatedBy(Long createdBy);
 }

@@ -36,22 +36,25 @@ public class TestOrderController {
     @PutMapping("/{id}")
     public ResponseEntity<TestOrderResponseDTO> updateTestOrder(
             @PathVariable Long id,
-            @Valid @RequestBody TestOrderRequestDTO requestDTO) {
-        log.info("PUT /api/v1/test-orders/{} - Updating test order", id);
+            @Valid @RequestBody TestOrderRequestDTO requestDTO,
+            @RequestHeader("X-User-Id") Long updatedBy) {
+        log.info("PUT /api/v1/test-orders/{} - Updating test order by user: {}", id, updatedBy);
 
-        TestOrderResponseDTO response = testOrderService.updateTestOrder(id, requestDTO);
+        TestOrderResponseDTO response = testOrderService.updateTestOrder(id, requestDTO, updatedBy);
 
-        log.info("Test order updated successfully with id: {}", id);
+        log.info("Test order updated successfully with id: {} by user: {}", id, updatedBy);
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTestOrder(@PathVariable Long id) {
-        log.info("DELETE /api/v1/test-orders/{} - Deleting test order", id);
+    public ResponseEntity<Void> deleteTestOrder(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") Long deletedBy) {
+        log.info("DELETE /api/v1/test-orders/{} - Deleting test order by user: {}", id, deletedBy);
 
-        testOrderService.deleteTestOrder(id);
+        testOrderService.deleteTestOrder(id, deletedBy);
 
-        log.info("Test order deleted successfully with id: {}", id);
+        log.info("Test order deleted successfully with id: {} by user: {}", id, deletedBy);
         return ResponseEntity.noContent().build();
     }
 
@@ -96,12 +99,24 @@ public class TestOrderController {
     @PatchMapping("/{id}/status")
     public ResponseEntity<TestOrderResponseDTO> updateTestOrderStatus(
             @PathVariable Long id,
-            @RequestParam TestOrderStatus status) {
-        log.info("PATCH /api/v1/test-orders/{}/status - Updating status to {}", id, status);
+            @RequestParam TestOrderStatus status,
+            @RequestHeader("X-User-Id") Long updatedBy) {
+        log.info("PATCH /api/v1/test-orders/{}/status - Updating status to {} by user: {}",
+                id, status, updatedBy);
 
-        TestOrderResponseDTO response = testOrderService.updateTestOrderStatus(id, status);
+        TestOrderResponseDTO response = testOrderService.updateTestOrderStatus(id, status, updatedBy);
 
-        log.info("Test order status updated successfully for id: {}", id);
+        log.info("Test order status updated successfully for id: {} by user: {}", id, updatedBy);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/created-by/{createdBy}")
+    public ResponseEntity<List<TestOrderResponseDTO>> getTestOrdersByCreatedBy(
+            @PathVariable Long createdBy) {
+        log.info("GET /api/v1/test-orders/created-by/{} - Fetching test orders", createdBy);
+
+        List<TestOrderResponseDTO> response = testOrderService.getTestOrdersByCreatedBy(createdBy);
+
         return ResponseEntity.ok(response);
     }
 }
