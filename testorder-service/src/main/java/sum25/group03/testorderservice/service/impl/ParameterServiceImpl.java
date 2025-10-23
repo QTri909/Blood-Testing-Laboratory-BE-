@@ -10,7 +10,7 @@ import sum25.group03.testorderservice.entity.Parameter;
 import sum25.group03.testorderservice.enums.ParameterStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.ParameterMapper;
-import sum25.group03.testorderservice.repository.ParameterRepository;
+import sum25.group03.testorderservice.repositories.ParameterRepository;
 import sum25.group03.testorderservice.service.interfaces.ParameterService;
 
 import java.time.LocalDate;

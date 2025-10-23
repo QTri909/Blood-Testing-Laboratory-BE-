@@ -7,14 +7,12 @@ import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.testorderservice.dto.request.CommentRequestDTO;
 import sum25.group03.testorderservice.dto.response.CommentResponseDTO;
 import sum25.group03.testorderservice.entity.Comment;
-import sum25.group03.testorderservice.entity.TestOrder;
-import sum25.group03.testorderservice.entity.TestResult;
 import sum25.group03.testorderservice.enums.CommentStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.CommentMapper;
-import sum25.group03.testorderservice.repository.CommentRepository;
-import sum25.group03.testorderservice.repository.TestOrderRepository;
-import sum25.group03.testorderservice.repository.TestResultRepository;
+import sum25.group03.testorderservice.repositories.CommentRepository;
+import sum25.group03.testorderservice.repositories.TestOrderRepository;
+import sum25.group03.testorderservice.repositories.TestResultRepository;
 import sum25.group03.testorderservice.service.interfaces.CommentService;
 
 import java.time.LocalDateTime;

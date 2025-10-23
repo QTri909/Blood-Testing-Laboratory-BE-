@@ -10,7 +10,7 @@ import sum25.group03.testorderservice.entity.TestResult;
 import sum25.group03.testorderservice.enums.TestResultStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.TestResultMapper;
-import sum25.group03.testorderservice.repository.TestResultRepository;
+import sum25.group03.testorderservice.repositories.TestResultRepository;
 import sum25.group03.testorderservice.service.interfaces.TestResultService;
 
 import java.time.LocalDateTime;
