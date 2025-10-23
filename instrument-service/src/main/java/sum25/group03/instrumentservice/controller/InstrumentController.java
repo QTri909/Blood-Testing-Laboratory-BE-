@@ -13,10 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.instrumentservice.controller.request.ChangeInstrumentModeRequest;
 import sum25.group03.instrumentservice.controller.request.InstallReagentRequest;
-import sum25.group03.instrumentservice.controller.response.ChangeInstrumentModeResponse;
-import sum25.group03.instrumentservice.controller.response.InstallReagentResponse;
-import sum25.group03.instrumentservice.controller.response.InstrumentPageResponse;
-import sum25.group03.instrumentservice.controller.response.InstrumentResponse;
+import sum25.group03.instrumentservice.controller.request.UpdateReagentStatusRequest;
+import sum25.group03.instrumentservice.controller.response.*;
 import sum25.group03.instrumentservice.service.InstrumentService;
 
 @RestController
@@ -100,5 +98,24 @@ public class InstrumentController {
             @Valid @RequestBody InstallReagentRequest request) {
         InstallReagentResponse response = instrumentService.installReagent(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/reagents/status")
+    @Operation(
+            summary = "Update reagent status",
+            description = "Updates the status of an installed reagent with validation of allowed transitions. " +
+                    "Tracks all status changes for audit purposes. Prevents updates to removed reagents and invalid transitions.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Reagent status updated successfully",
+                            content = @Content(schema = @Schema(implementation = UpdateReagentStatusResponse.class))),
+                    @ApiResponse(responseCode = "400", description = "Invalid status transition or request"),
+                    @ApiResponse(responseCode = "404", description = "Installed reagent not found"),
+                    @ApiResponse(responseCode = "409", description = "Reagent is already removed or status is unchanged")
+            }
+    )
+    public ResponseEntity<UpdateReagentStatusResponse> updateReagentStatus(
+            @Valid @RequestBody UpdateReagentStatusRequest request) {
+        UpdateReagentStatusResponse response = instrumentService.updateReagentStatus(request);
+        return ResponseEntity.ok(response);
     }
 }
