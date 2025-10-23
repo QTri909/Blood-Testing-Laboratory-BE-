@@ -2,21 +2,28 @@ package sum25.group03.warehouseservice.service.instrumentstatus;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.entity.Instrument;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
+import sum25.group03.warehouseservice.event.InstrumentEvent;
 import sum25.group03.warehouseservice.exception.InvalidArgumentException;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
+import sum25.group03.warehouseservice.service.instrument.InstrumentService;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j(topic = "Instrument_Status_Service")
 public class InstrumentStatusServiceImpl implements InstrumentStatusService {
     private final InstrumentRepo instrumentRepo;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private static final String TOPIC = "instrument-events";
 
     @Override
     public void activateInstrument(Long id, String username) {
@@ -29,7 +36,8 @@ public class InstrumentStatusServiceImpl implements InstrumentStatusService {
         instrument.setUpdatedAt(LocalDate.now());
         instrument.setAutoDeleteScheduledAt(null);
         instrumentRepo.save(instrument);
-        log.info("User '{}' activated instrument {}", username, id);
+        // publish event
+        publishEvent(instrument, "ACTIVATE", username, "Instrument activated successfully");
     }
 
     @Override
@@ -44,7 +52,7 @@ public class InstrumentStatusServiceImpl implements InstrumentStatusService {
         instrument.setUpdatedAt(LocalDate.now());
         instrument.setDeactivatedAt(LocalDate.now());
         instrumentRepo.save(instrument);
-        log.info("User '{}' deactivated instrument {}", username, id);
+        publishEvent(instrument, "DEACTIVATE", username, "Instrument deactivated. Scheduled for deletion in 3 months");
     }
 
     @Override
@@ -57,7 +65,22 @@ public class InstrumentStatusServiceImpl implements InstrumentStatusService {
         instrument.setAutoDeleteScheduledAt(null);
         instrument.setUpdatedAt(LocalDate.now());
         instrumentRepo.save(instrument);
-        log.info("User '{}' deleted instrument {}", username, id);
+        publishEvent(instrument, "DELETE", username, "Instrument deleted from system");
+    }
+
+    private void publishEvent(Instrument instrument, String eventType, String username, String detail) {
+        InstrumentEvent event = InstrumentEvent.builder()
+                .instrumentId(instrument.getInstrumentId())
+                .instrumentName(instrument.getInstrumentName())
+                .eventType(eventType)
+                .performedBy(username)
+                .status(instrument.getStatus())
+                .timestamp(LocalDate.now())
+                .details(detail)
+                .build();
+
+        kafkaTemplate.send(TOPIC, event);
+        log.info("Published Kafka event: {}", event);
     }
 
     private Instrument getInstrumentOrThrow(Long id) {
