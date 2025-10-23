@@ -2,7 +2,7 @@ package sum25.group03.patientservice.services.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import sum25.group03.patientservice.enums.ActionTypeFetures;
+import sum25.group03.patientservice.enums.ActionTypeFeatures;
 
 import java.time.LocalDateTime;
 
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Service
 public class ActionLogService {
 
-    public void logAction(Long viewerId, ActionTypeFetures action, Long targetId) {
+    public void logAction(Long viewerId, ActionTypeFeatures action, Long targetId) {
         LocalDateTime timestamp = LocalDateTime.now();
 
         // In ra console (và sẽ hiển thị trong logs)
