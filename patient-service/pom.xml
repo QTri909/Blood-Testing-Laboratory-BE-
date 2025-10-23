@@ -30,6 +30,21 @@
 		<java.version>21</java.version>
         <mapstruct.version>1.6.3</mapstruct.version>
 	</properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- Import AWS SDK v2 BOM: ensures all AWS SDK modules use the same version -->
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <!-- Note: version 2.15.0 is out-dated and can cause exception 'PASCAL_CASE_TO_CAMEL_CASE'-->
+                <version>2.20.160</version> <!-- Use the latest stable version -->
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
 	<dependencies>
 
         <dependency>
@@ -42,6 +57,14 @@
             <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
+        <!--  AWS dependencies -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>cloudwatchlogs</artifactId>
+        </dependency>
+
+        <!-- end AWS dependencies -->
+
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -52,6 +75,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -121,6 +145,19 @@
             <artifactId>mongodb</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
 
     </dependencies>
 

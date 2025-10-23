@@ -99,6 +99,10 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
         // logs the update action for auditing purposes
         // TODO: integrate with proper logging framework or auditing service to cloud watch AWS
+        String logMessage = String.format(
+                "Medical record with id %d assigned user updated from %d to %d by user %d",
+                recordId, oldAssignedUserId, assignedUserId, updatedById
+        );
 
         // update document, versioning in medical record mongoDb:
         medicalRecordMongoService.updateMedicalRecord(updateInfo);

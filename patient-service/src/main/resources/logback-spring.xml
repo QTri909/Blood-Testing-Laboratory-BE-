@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <!-- =========================
+         CONSOLE APPENDER
+         Logs appear in IDE/terminal
+    ========================== -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- =========================
+         FILE APPENDER
+         Rotates daily, keeps last 7 days
+    ========================== -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/spring-boot.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/spring-boot-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <!-- =========================
+         CLOUDWATCH APPENDER
+         Log group from Spring property
+         Stream dynamically created per host+PID
+    ========================== -->
+    <appender name="CLOUDWATCH" class="sum25.group03.patientservice.configs.CloudWatchV2Appender">
+        <!-- CloudWatch log group from application.properties / yml -->
+        <logGroupName>patient-service-dev-logs</logGroupName>
+        <!--
+            <logStreamName>MyAppLogStream</logStreamName>
+            Optional: leave stream name dynamic (set in Java code as HOSTNAME-PID)
+        -->
+    </appender>
+
+    <!-- =========================
+         ROOT LOGGER
+         Logs to console + file, does NOT send system info to CloudWatch
+    ========================== -->
+    <root level="INFO">
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- =========================
+         PACKAGE LOGGER
+         Logs INFO+ to CloudWatch for your app package
+    ========================== -->
+    <logger name="sum25.group03.patientservice" level="INFO" additivity="true">
+        <appender-ref ref="CLOUDWATCH"/>
+    </logger>
+
+</configuration>
