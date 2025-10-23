@@ -3,6 +3,8 @@ package sum25.group03.warehouseservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import sum25.group03.warehouseservice.entity.enums.ReagentInventoryStatus;
+import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
 
 import java.time.LocalDate;
 
@@ -37,6 +39,10 @@ public class ReagentInventory {
     @Column(name = "created_at", nullable = false)
     @CreationTimestamp
     private LocalDate createdAt;
+
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private ReagentInventoryStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reagent_id", nullable = false)

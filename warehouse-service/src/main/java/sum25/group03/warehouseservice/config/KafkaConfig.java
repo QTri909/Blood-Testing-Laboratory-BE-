@@ -15,6 +15,7 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.util.backoff.FixedBackOff;
 import sum25.group03.warehouseservice.event.InstrumentModeChangedEvent;
 import sum25.group03.warehouseservice.event.ReagentInstalledEvent;
+import sum25.group03.warehouseservice.event.UpdateExpiryReagent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,17 +67,36 @@ public class KafkaConfig {
     }
 
     @Bean
-    public DefaultErrorHandler errorHandler() {
-        DefaultErrorHandler errorHandler = new DefaultErrorHandler((record, exception) -> {
-            System.err.println("[Kafka Error] Failed to deserialize message from topic: " + record.topic() +
-                    ", partition: " + record.partition() + ", offset: " + record.offset());
-            System.err.println("[Kafka Error] Exception: " + exception.getMessage());
-        }, new FixedBackOff(1000, 3));
+    public ConsumerFactory<String, UpdateExpiryReagent> updateExpiryReagentConsumerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
 
-        errorHandler.addNotRetryableExceptions(org.springframework.messaging.converter.MessageConversionException.class);
+        configProps.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
 
-        return errorHandler;
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, InstrumentModeChangedEvent.class.getName());
+        configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+
+        configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        return new DefaultKafkaConsumerFactory<>(configProps);
     }
+
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, UpdateExpiryReagent> updateExpiryReagentContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, UpdateExpiryReagent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+
+        factory.setConsumerFactory(updateExpiryReagentConsumerFactory());
+        factory.setCommonErrorHandler(errorHandler());
+
+        return factory;
+    }
+
+
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, ReagentInstalledEvent> kafkaListenerContainerFactory() {
@@ -98,5 +118,18 @@ public class KafkaConfig {
         factory.setCommonErrorHandler(errorHandler());
 
         return factory;
+    }
+
+    @Bean
+    public DefaultErrorHandler errorHandler() {
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler((record, exception) -> {
+            System.err.println("[Kafka Error] Failed to deserialize message from topic: " + record.topic() +
+                    ", partition: " + record.partition() + ", offset: " + record.offset());
+            System.err.println("[Kafka Error] Exception: " + exception.getMessage());
+        }, new FixedBackOff(1000, 3));
+
+        errorHandler.addNotRetryableExceptions(org.springframework.messaging.converter.MessageConversionException.class);
+
+        return errorHandler;
     }
 }

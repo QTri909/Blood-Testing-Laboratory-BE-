@@ -5,10 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import sum25.group03.instrumentservice.common.InstalledReagentStatus;
+import sum25.group03.instrumentservice.event.ReagentInstalledEvent;
+import sum25.group03.instrumentservice.event.UpdateExpiryReagent;
 import sum25.group03.instrumentservice.model.InstalledReagent;
 import sum25.group03.instrumentservice.repository.InstalledReagentRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -16,6 +20,7 @@ import java.util.List;
 @Slf4j
 public class ReagentStatusSchedulerService {
     private final InstalledReagentRepository installedReagentRepository;
+    private final KafkaEventPublisher kafkaEventPublisher;
 
 
     @Scheduled(cron = "0 0 0 * * *")
@@ -69,6 +74,21 @@ public class ReagentStatusSchedulerService {
                     reagent.setStatus(InstalledReagentStatus.LOW_VOLUME);
                     installedReagentRepository.save(reagent);
                     lowVolumeCount++;
+                    try {
+                        UpdateExpiryReagent event = UpdateExpiryReagent.builder()
+                                .reagentId(reagent.getReagentId())
+                                .reagentName(reagent.getReagentName())
+                                .lotNumber(reagent.getLotNumber())
+                                .lotReagentId(reagent.getLotReagentId().longValue())
+                                .eventTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
+                                .build();
+
+                        kafkaEventPublisher.publicExpiredReagentEvent(event);
+                    } catch (Exception e) {
+                        log.error("Failed to publish reagent installed event, but reagent installation was successful: {}", e.getMessage());
+
+                    }
+
                 }
             }
 

@@ -6,8 +6,11 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.entity.ReagentInventory;
+import sum25.group03.warehouseservice.entity.enums.ReagentInventoryStatus;
+import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
 import sum25.group03.warehouseservice.event.ReagentInstalledEvent;
 import sum25.group03.warehouseservice.entity.Reagents;
+import sum25.group03.warehouseservice.event.UpdateExpiryReagent;
 import sum25.group03.warehouseservice.repository.ReagentInventoryRepo;
 import sum25.group03.warehouseservice.repository.ReagentRepo;
 
@@ -53,6 +56,27 @@ public class ReagentEventListener {
         } catch (Exception e) {
             log.error("Error processing reagent installed event: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to process reagent installed event", e);
+        }
+    }
+
+
+    @KafkaListener(topics = "update-expiry-reagent", groupId = "warehouse-service-group")
+    public void handleUpdateExpiryReagent(@Payload UpdateExpiryReagent event) {
+        try {
+            ReagentInventory reagentInventory = reagentInventoryRepo.findByLotNumber(event.getLotNumber())
+                    .orElseThrow(() -> {
+                        log.error("Reagent not found in lot: {}", event.getLotNumber());
+                        return new RuntimeException("Reagent not found in lot: " + event.getLotNumber());
+                    });
+            reagentInventory.setStatus(ReagentInventoryStatus.EXPIRED);
+
+            log.info("Marking reagent as EXPIRED - Lot: {}, Expiration Date: {}",
+                    reagentInventory.getLotNumber(), reagentInventory.getExpiryDate());
+
+
+        } catch (Exception e) {
+            log.error("Error processing update expiry reagent: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to process update expiry reagent", e);
         }
     }
 }
