@@ -1,5 +1,6 @@
 package sum25.group03.instrumentservice.service.impl;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -8,6 +9,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import sum25.group03.instrumentservice.audit.annotation.SkipAuditLog;
+import sum25.group03.instrumentservice.audit.model.AuditLog;
 import sum25.group03.instrumentservice.client.WarehouseServiceClient;
 import sum25.group03.instrumentservice.client.response.ReagentValidationResponse;
 import sum25.group03.instrumentservice.common.InstalledReagentStatus;
@@ -21,6 +26,8 @@ import sum25.group03.instrumentservice.exception.ResourceNotFoundException;
 import sum25.group03.instrumentservice.exception.WarehouseServiceException;
 import sum25.group03.instrumentservice.event.InstrumentModeChangedEvent;
 import sum25.group03.instrumentservice.event.ReagentInstalledEvent;
+import sum25.group03.instrumentservice.audit.service.AuditLogService;
+import sum25.group03.instrumentservice.audit.util.ObjectChangeDetector;
 
 import sum25.group03.instrumentservice.model.Configuration;
 import sum25.group03.instrumentservice.model.InstalledReagent;
@@ -34,6 +41,7 @@ import sum25.group03.instrumentservice.service.KafkaEventPublisher;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,8 +56,10 @@ public class InstrumentServiceImpl implements InstrumentService {
     private final WarehouseServiceClient warehouseServiceClient;
     private final InstalledReagentRepository installedReagentRepository;
     private final KafkaEventPublisher kafkaEventPublisher;
+    private final AuditLogService auditLogService;
 
     @Override
+    @SkipAuditLog
     public ChangeInstrumentModeResponse changeInstrumentMode(ChangeInstrumentModeRequest request) {
         log.info("Starting change instrument mode process for instrument ID: {}", request.getInstrumentId());
 
@@ -86,6 +96,20 @@ public class InstrumentServiceImpl implements InstrumentService {
         InstrumentStatus previousStatus = instrument.getStatus();
         instrument.setStatus(request.getNewStatus());
         Instrument updatedInstrument = instrumentRepository.save(instrument);
+
+        List<AuditLog.FieldChange> changes = auditLogService.createFieldChanges(
+                "status",
+                previousStatus.toString(),
+                request.getNewStatus().toString()
+        );
+        auditLogService.logWrite(
+                "ChangeInstrumentMode",
+                "Instrument",
+                String.valueOf(updatedInstrument.getId()),
+                "0.0.0.0",
+                "Mozilla/5.0",
+                changes
+        );
 
         log.info("Instrument mode changed successfully from {} to {}", previousStatus, request.getNewStatus());
 
@@ -167,7 +191,7 @@ public class InstrumentServiceImpl implements InstrumentService {
         List<InstalledReagent> reagents = installedReagentRepository
                 .findByInstrumentIdAndStatusIsNot(request.getInstrumentId(), InstalledReagentStatus.REMOVED);
         for (InstalledReagent reagent : reagents) {
-            if(reagent.getReagentId().equals(request.getInstrumentId())) {
+            if (reagent.getReagentId().equals(request.getInstrumentId())) {
                 log.warn("Reagent with ID {} is already installed on instrument ID {}",
                         reagent.getReagentId(), request.getInstrumentId());
                 throw new InstrumentModeChangeException(
@@ -191,6 +215,54 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .build();
 
         InstalledReagent savedReagent = installedReagentRepository.save(installedReagent);
+        try {
+
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            String ipAddress = "unknown";
+            String userAgent = "unknown";
+
+            if (attributes != null) {
+                HttpServletRequest httpRequest = attributes.getRequest();
+                ipAddress = getClientIpAddress(httpRequest);
+                userAgent = httpRequest.getHeader("User-Agent");
+            }
+
+
+            List<AuditLog.FieldChange> changes = new ArrayList<>();
+            changes.add(
+                    AuditLog.FieldChange.builder()
+                            .field("id")
+                            .oldValue(null)
+                            .newValue(savedReagent.getId())
+                            .build()
+            );
+            changes.add(
+                    AuditLog.FieldChange.builder()
+                            .field("status")
+                            .oldValue(null)
+                            .newValue(savedReagent.getStatus().toString())
+                            .build()
+            );
+            changes.add(
+                    AuditLog.FieldChange.builder()
+                            .field("lotNumber")
+                            .oldValue(null)
+                            .newValue(savedReagent.getLotNumber())
+                            .build()
+            );
+
+            auditLogService.logWrite(
+                    "InstalledReagentServiceImpl.installReagent", // Tên hàm/Operation
+                    "InstalledReagent",
+                    savedReagent.getId().toString(),
+                    ipAddress,
+                    userAgent,
+                    changes
+            );
+        } catch (Exception e) {
+            // Quan trọng: Không để lỗi log ảnh hưởng tới nghiệp vụ chính
+            log.warn("Failed to write audit log for installReagent: {}", e.getMessage());
+        }
 
         log.info("Reagent installed successfully - ID: {}, Batch: {}",
                 savedReagent.getId(), request.getLotNumber());
@@ -305,7 +377,7 @@ public class InstrumentServiceImpl implements InstrumentService {
     }
 
     private InstrumentResponse mapToResponse(Instrument instrument) {
-        List<InstalledReagent> installedReagents = installedReagentRepository.findByInstrumentIdAndStatusIsNot(instrument.getId(),InstalledReagentStatus.REMOVED);
+        List<InstalledReagent> installedReagents = installedReagentRepository.findByInstrumentIdAndStatusIsNot(instrument.getId(), InstalledReagentStatus.REMOVED);
 
         List<sum25.group03.instrumentservice.controller.response.InstalledReagentResponse> reagentResponses =
                 installedReagents.stream()
@@ -365,7 +437,16 @@ public class InstrumentServiceImpl implements InstrumentService {
         log.info("Mode change validation passed");
     }
 
-
-
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty()) {
+            return xRealIp;
+        }
+        return request.getRemoteAddr();
+    }
 
 }

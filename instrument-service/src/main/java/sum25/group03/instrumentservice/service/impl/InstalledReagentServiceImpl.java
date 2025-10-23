@@ -9,6 +9,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import sum25.group03.instrumentservice.audit.annotation.SkipAuditLog;
+import sum25.group03.instrumentservice.audit.model.AuditLog;
+import sum25.group03.instrumentservice.audit.service.AuditLogService;
+import sum25.group03.instrumentservice.audit.util.ObjectChangeDetector;
 import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.controller.request.UpdateReagentStatusRequest;
 import sum25.group03.instrumentservice.controller.response.InstalledReagentDetailResponse;
@@ -33,6 +37,7 @@ import java.util.stream.Collectors;
 public class InstalledReagentServiceImpl implements InstalledReagentService {
 
     private final InstalledReagentRepository installedReagentRepository;
+    private final AuditLogService auditLogService;
 
     @Override
     public InstalledReagentPageResponse findInstalledReagentById(Long id) {
@@ -145,6 +150,7 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
     }
 
     @Override
+    @SkipAuditLog
     public UpdateReagentStatusResponse updateReagentStatus(UpdateReagentStatusRequest request) {
         log.info("Starting reagent status update process for installed reagent ID: {}", request.getInstalledReagentId());
 
@@ -175,7 +181,19 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
         installedReagent.setStatus(request.getNewStatus());
         InstalledReagent updatedReagent = installedReagentRepository.save(installedReagent);
 
-
+        List<AuditLog.FieldChange> changes = auditLogService.createFieldChanges(
+                "status",
+                previousStatus.toString(),
+                request.getNewStatus().toString()
+        );
+        auditLogService.logWrite(
+                "UpdateReagentStatus",
+                "InstalledReagent",
+                String.valueOf(updatedReagent.getId()),
+                "0.0.0.0", // Will be captured from request context in real scenario
+                "Mozilla/5.0",
+                changes
+        );
 
         log.info("Reagent status updated successfully from {} to {} by user: {}",
                 previousStatus, request.getNewStatus(), request.getChangedBy());
@@ -210,7 +228,7 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
             case IN_USE:
                 isValidTransition = newStatus == InstalledReagentStatus.LOW_VOLUME ||
                         newStatus == InstalledReagentStatus.QUARANTINED ||
-                        newStatus == InstalledReagentStatus.REMOVED ||
+                        newStatus == InstalledReagentStatus.AVAILABLE ||
                         newStatus == InstalledReagentStatus.EXPIRED;
                 break;
             case LOW_VOLUME:
@@ -242,4 +260,6 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
 
         log.info("Status transition validation passed");
     }
+
+
 }
