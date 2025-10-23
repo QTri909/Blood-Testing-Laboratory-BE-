@@ -14,6 +14,10 @@ public class ActionLogService {
         LocalDateTime timestamp = LocalDateTime.now();
 
         // In ra console (và sẽ hiển thị trong logs)
-        log.info(" User {} viewed {} (targetId={}) at {}", viewerId, action, targetId, timestamp);
+        if (targetId == null) {
+            log.info(" User {} - {} - {}", viewerId, action, timestamp);
+            return;
+        }
+        log.info(" User {} - {} - (targetId={}) - {}", viewerId, action, targetId, timestamp);
     }
 }
