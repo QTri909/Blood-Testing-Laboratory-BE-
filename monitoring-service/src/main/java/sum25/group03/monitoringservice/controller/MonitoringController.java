@@ -38,10 +38,4 @@ public class MonitoringController {
         List<EventLog> results = monitoringService.searchEventLogs(action, message, operator);
         return ResponseEntity.ok().body(results);
     }
-    @PostMapping
-    ResponseEntity<EventLog> saveEventLog(@RequestBody EventLog eventLog){
-     EventLog newEvent =   monitoringService.addEventLog(eventLog);
-     return ResponseEntity.ok().body(newEvent);
-    }
-
 }
