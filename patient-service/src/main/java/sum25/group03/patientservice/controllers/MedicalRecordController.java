@@ -40,14 +40,12 @@ public class MedicalRecordController {
     @GetMapping
     public ResponseEntity<List<MedicalRecordResponse>> getAll(@RequestParam Long viewerId) {
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_ALL_PATIENT_MEDICAL_RECORDS, null);
-        log.info("User {} requested all medical records", viewerId);
         return ResponseEntity.ok(medicalRecordService.getAll());
     }
 
     @GetMapping("/{recordId}")
     public ResponseEntity<MedicalRecordResponse> getById(@PathVariable Long recordId, @RequestParam Long viewerId) {
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_PATIENT_MEDICAL_RECORD_DETAIL, recordId);
-        log.info("User {} requested medical record with id {}", viewerId, recordId);
         return ResponseEntity.ok(medicalRecordService.getById(recordId));
     }
 

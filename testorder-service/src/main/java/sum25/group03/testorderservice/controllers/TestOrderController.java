@@ -26,7 +26,6 @@ public class TestOrderController {
     @GetMapping
     public ResponseEntity<List<TestOrderResponse>> getAllTestOrders(@RequestParam Long viewerId) {
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
-        log.info("User {} requested all test orders", viewerId);
         return ResponseEntity.ok(service.getAllTestOrders());
     }
 
@@ -34,9 +33,6 @@ public class TestOrderController {
     @GetMapping("/{id}")
     public ResponseEntity<TestOrderResponse> getById(@PathVariable Long id, @RequestParam Long viewerId) {
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_DETAIL, id);
-        log.info("User {} requested test order with id {}", viewerId, id);
-
-
         return ResponseEntity.ok(service.getTestOrderById(id));
     }
 
