@@ -12,10 +12,8 @@ import java.util.List;
 public interface TestOrderService{
 
     // -------- THUYEN---------
-    TestOrderResponse createTestOrder(TestOrderRequest requestDTO);
     TestOrderResponse getTestOrderById(Long id, Long viewerId);
     List<TestOrderResponse> getAllTestOrders(Long viewerId);
-    void deleteTestOrder(Long id);
     List<TestOrderResponse> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId);
 
     // -------- HUY -----------
@@ -25,8 +23,6 @@ public interface TestOrderService{
     TestOrderResponseDTO updateTestOrder(Long id, TestOrderRequestDTO requestDTO, Long updatedBy);
     //3.5.1.5 Delete Patient Test Order
     void deleteTestOrder(Long id, Long deletedBy);
-    TestOrderResponseDTO getTestOrderById(Long id);
-    List<TestOrderResponseDTO> getAllTestOrders();
     List<TestOrderResponseDTO> getTestOrdersByPatientId(Long patientId);
     List<TestOrderResponseDTO> getTestOrdersByStatus(TestOrderStatus status);
     TestOrderResponseDTO updateTestOrderStatus(Long id, TestOrderStatus status, Long updatedBy);

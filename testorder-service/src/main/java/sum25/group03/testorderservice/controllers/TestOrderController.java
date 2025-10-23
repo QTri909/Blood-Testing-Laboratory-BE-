@@ -25,32 +25,16 @@ public class TestOrderController {
     private final TestOrderService testOrderService;
 
     // -------- THUYEN --------
-    // BE-1: GET /test-orders
     @GetMapping
     public ResponseEntity<List<TestOrderResponse>> getAllTestOrders(@RequestParam Long viewerId) {
         return ResponseEntity.ok(testOrderService.getAllTestOrders(viewerId));
     }
 
-    // BE-1: GET /test-orders/{id}
     @GetMapping("/{id}")
     public ResponseEntity<TestOrderResponse> getById(@PathVariable Long id, @RequestParam Long viewerId) {
         return ResponseEntity.ok(testOrderService.getTestOrderById(id, viewerId));
     }
 
-    // BE-3: POST /test-orders
-    @PostMapping
-    public ResponseEntity<TestOrderResponse> create(@RequestBody TestOrderRequest dto) {
-        return ResponseEntity.ok(testOrderService.createTestOrder(dto));
-    }
-
-    // BE-5: DELETE /test-orders/{id}
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        testOrderService.deleteTestOrder(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    // BE-6: GET /test-orders/filter
     @GetMapping("/filter")
     public ResponseEntity<List<TestOrderResponse>> filterTestOrders(
             @ModelAttribute TestOrderFiltering filterInfo,
@@ -95,24 +79,6 @@ public class TestOrderController {
 
         log.info("Test order deleted successfully with id: {} by user: {}", id, deletedBy);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<TestOrderResponseDTO> getTestOrderById(@PathVariable Long id) {
-        log.info("GET /api/v1/test-orders/{} - Fetching test order", id);
-
-        TestOrderResponseDTO response = testOrderService.getTestOrderById(id);
-
-        return ResponseEntity.ok(response);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<TestOrderResponseDTO>> getAllTestOrders() {
-        log.info("GET /api/v1/test-orders - Fetching all test orders");
-
-        List<TestOrderResponseDTO> response = testOrderService.getAllTestOrders();
-
-        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/patient/{patientId}")

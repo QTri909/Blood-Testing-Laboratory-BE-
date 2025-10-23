@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.*;
 import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
 import sum25.group03.patientservice.dtos.response.MedicalRecordResponse;
-import sum25.group03.patientservice.enums.ActionTypeFeatures;
-import sum25.group03.patientservice.services.impl.ActionLogService;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 
 

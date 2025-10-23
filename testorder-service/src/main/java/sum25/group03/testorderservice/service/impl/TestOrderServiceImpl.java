@@ -42,15 +42,6 @@ public class TestOrderServiceImpl implements TestOrderService {
     // If not, throw an exception and log a warning to the admin via cloudwatch logging
 
     @Override
-    public TestOrderResponse createTestOrder(TestOrderRequest requestDTO) {
-        TestOrder entity = mapper.toEntityFrom(requestDTO);
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setUpdatedAt(LocalDateTime.now());
-        TestOrder saved = repository.save(entity);
-        return mapper.toResponse(saved);
-    }
-
-    @Override
     public TestOrderResponse getTestOrderById(Long id, Long viewerId) {
 
         // TODO 2: Verify viewerId existence in the system using todo_1
@@ -73,13 +64,6 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         List<TestOrder> orders = repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
         return orders.stream().map(mapper::toResponse).toList();
-    }
-
-    @Override
-    public void deleteTestOrder(Long id) {
-        TestOrder entity = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("TestOrder not found with id " + id));
-        repository.delete(entity);
     }
 
     @Override
@@ -161,28 +145,6 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         testOrderRepository.save(testOrder);
         log.info("Test order soft deleted (cancelled) successfully. ID: {}, DeletedBy: {}", id, deletedBy);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public TestOrderResponseDTO getTestOrderById(Long id) {
-        log.info("Fetching test order with id: {}", id);
-
-        TestOrder testOrder = testOrderRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Test order not found with id: " + id));
-
-        return testOrderMapper.toResponseDto(testOrder);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<TestOrderResponseDTO> getAllTestOrders() {
-        log.info("Fetching all test orders");
-
-        List<TestOrder> testOrders = testOrderRepository.findAll();
-        return testOrders.stream()
-                .map(testOrderMapper::toResponseDto)
-                .collect(Collectors.toList());
     }
 
     @Override
