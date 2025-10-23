@@ -1,4 +1,4 @@
-package sum25.group03.patientservice.repositories;
+package sum25.group03.patientservice.repositories.postgres;
 
 
 import org.springframework.data.jpa.repository.JpaRepository;

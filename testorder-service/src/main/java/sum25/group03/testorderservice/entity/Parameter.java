@@ -52,6 +52,9 @@ public class Parameter {
     @Column(name = "updated_at", nullable = false)
     private LocalDate updatedAt;
 
+    private Long createdBy;
+    private Long updatedBy;
+
     @OneToMany(mappedBy = "parameter", cascade = CascadeType.ALL)
     private Set<TestResult> testResults;
 

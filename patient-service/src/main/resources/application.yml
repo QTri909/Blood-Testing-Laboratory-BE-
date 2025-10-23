@@ -1,4 +1,4 @@
 
 spring:
   profiles:
-    active: patientdb
+    active: patientdb,auditdb

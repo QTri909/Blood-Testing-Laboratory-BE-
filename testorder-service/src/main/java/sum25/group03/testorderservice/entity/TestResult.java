@@ -68,4 +68,9 @@ public class TestResult {
 
     @OneToMany(mappedBy = "testResult")
     private List<Comment> comments;
+
+    // 1 synced configuration can be associated with many test results
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "configuration_id")
+    private SyncedConfiguration syncedConfiguration;
 }
