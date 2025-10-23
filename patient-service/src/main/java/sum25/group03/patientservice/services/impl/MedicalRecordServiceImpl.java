@@ -11,6 +11,7 @@ import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
 import sum25.group03.patientservice.dtos.response.MedicalRecordResponse;
 import sum25.group03.patientservice.entities.MedicalRecordEntity;
+import sum25.group03.patientservice.enums.ActionTypeFeatures;
 import sum25.group03.patientservice.enums.DocumentType;
 import sum25.group03.patientservice.exception.medical.record.MedicalRecordNotFound;
 import sum25.group03.patientservice.exception.user.snapshot.UserNotFoundException;
@@ -37,6 +38,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private final MedicalRecordMongoServiceImpl medicalRecordMongoService;
     private final AuditEntryMongoServiceImpl auditEntryMongoService;
     private final MedicalRecordMapper recordMapper;
+
+    private final ActionLogService actionLogService;
 
     @Transactional
     public MedicalRecordResponse registerMedicalRecord(MedicalRecordRequest request) {
@@ -124,7 +127,10 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Override
-    public MedicalRecordResponse getById(Long recordId) {
+    public MedicalRecordResponse getById(Long recordId, Long viewerId) {
+        // log the view action
+        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_PATIENT_MEDICAL_RECORD_DETAIL, recordId);
+
         return medicalRecordRepository.findById(recordId)
                 .map(medicalRecordMapper::toMedicalRecordResponse)
                 .orElseThrow(() -> new RuntimeException("Medical Record not found"));
@@ -138,7 +144,10 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Override
-    public List<MedicalRecordResponse> getAll() {
+    public List<MedicalRecordResponse> getAll(Long viewerId) {
+        // log the view all action
+        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_ALL_PATIENT_MEDICAL_RECORDS, null);
+
         return medicalRecordRepository.findAll()
                 .stream()
                 .map(medicalRecordMapper::toMedicalRecordResponse)

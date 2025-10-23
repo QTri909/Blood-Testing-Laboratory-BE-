@@ -8,7 +8,6 @@ import sum25.group03.testorderservice.dto.request.TestOrderFiltering;
 import sum25.group03.testorderservice.dto.request.TestOrderRequest;
 import sum25.group03.testorderservice.dto.response.TestOrderResponse;
 import sum25.group03.testorderservice.enums.ActionTypeFeatures;
-import sum25.group03.testorderservice.services.impl.ActionLogService;
 import sum25.group03.testorderservice.services.interfaces.ITestOrderService;
 
 import java.util.List;
@@ -20,20 +19,17 @@ import java.util.List;
 public class TestOrderController {
 
     private final ITestOrderService service;
-    private final ActionLogService actionLogService;
 
     // BE-1: GET /test-orders
     @GetMapping
     public ResponseEntity<List<TestOrderResponse>> getAllTestOrders(@RequestParam Long viewerId) {
-        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
-        return ResponseEntity.ok(service.getAllTestOrders());
+        return ResponseEntity.ok(service.getAllTestOrders(viewerId));
     }
 
     // BE-1: GET /test-orders/{id}
     @GetMapping("/{id}")
     public ResponseEntity<TestOrderResponse> getById(@PathVariable Long id, @RequestParam Long viewerId) {
-        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_DETAIL, id);
-        return ResponseEntity.ok(service.getTestOrderById(id));
+        return ResponseEntity.ok(service.getTestOrderById(id, viewerId));
     }
 
     // BE-3: POST /test-orders
@@ -55,8 +51,6 @@ public class TestOrderController {
             @ModelAttribute TestOrderFiltering filterInfo,
             @RequestParam Long viewerId
     ) {
-        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
-        log.info("User {} requested filtered test orders with criteria: {}", viewerId, filterInfo);
-        return ResponseEntity.ok(service.filterTestOrders(filterInfo));
+        return ResponseEntity.ok(service.filterTestOrders(filterInfo, viewerId));
     }
 }

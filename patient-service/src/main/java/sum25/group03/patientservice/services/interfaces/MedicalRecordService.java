@@ -10,11 +10,11 @@ import java.util.UUID;
 public interface MedicalRecordService {
     MedicalRecordResponse registerMedicalRecord(MedicalRecordRequest request);
     UpdatedAssignedDoctor updateAssignedDoctor(UpdatedAssignedDoctor updateInfo);
-    MedicalRecordResponse getById(Long recordId);
+    MedicalRecordResponse getById(Long recordId, Long viewerId);
 
     MedicalRecordResponse getByCode(UUID recordCode);
 
-    List<MedicalRecordResponse> getAll();
+    List<MedicalRecordResponse> getAll(Long viewerId);
 
     List<MedicalRecordResponse> getByPatientId(Long patientId);
 

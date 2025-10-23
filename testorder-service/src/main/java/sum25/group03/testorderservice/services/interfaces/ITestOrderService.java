@@ -12,11 +12,11 @@ public interface ITestOrderService {
 
     TestOrderResponse createTestOrder(TestOrderRequest requestDTO);
 
-    TestOrderResponse getTestOrderById(Long id);
+    TestOrderResponse getTestOrderById(Long id, Long viewerId);
 
-    List<TestOrderResponse> getAllTestOrders();
+    List<TestOrderResponse> getAllTestOrders(Long viewerId);
 
     void deleteTestOrder(Long id);
 
-    List<TestOrderResponse> filterTestOrders(TestOrderFiltering filterInfo);
+    List<TestOrderResponse> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId);
 }

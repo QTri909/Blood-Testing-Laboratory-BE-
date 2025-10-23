@@ -9,6 +9,7 @@ import sum25.group03.testorderservice.dto.request.TestOrderFiltering;
 import sum25.group03.testorderservice.dto.request.TestOrderRequest;
 import sum25.group03.testorderservice.dto.response.TestOrderResponse;
 import sum25.group03.testorderservice.entity.TestOrder;
+import sum25.group03.testorderservice.enums.ActionTypeFeatures;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.TestOrderMapper;
@@ -28,6 +29,7 @@ public class TestOrderServiceImpl implements ITestOrderService {
 
     private final TestOrderRepository repository;
     private final TestOrderMapper mapper;
+    private final ActionLogService actionLogService;
 
     @Override
     public TestOrderResponse createTestOrder(TestOrderRequest requestDTO) {
@@ -39,14 +41,20 @@ public class TestOrderServiceImpl implements ITestOrderService {
     }
 
     @Override
-    public TestOrderResponse getTestOrderById(Long id) {
+    public TestOrderResponse getTestOrderById(Long id, Long viewerId) {
+        // Log the action of viewing the test order detail
+        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_DETAIL, id);
+
         TestOrder entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TestOrder not found with id " + id));
         return mapper.toDTO(entity);
     }
 
     @Override
-    public List<TestOrderResponse> getAllTestOrders() {
+    public List<TestOrderResponse> getAllTestOrders(Long viewerId) {
+        // Log the action of viewing the test order list
+        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
+
         List<TestOrder> orders = repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
         return orders.stream().map(mapper::toDTO).toList();
     }
@@ -59,7 +67,9 @@ public class TestOrderServiceImpl implements ITestOrderService {
     }
 
     @Override
-    public List<TestOrderResponse> filterTestOrders(TestOrderFiltering filterInfo) {
+    public List<TestOrderResponse> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId) {
+        // Log the action of viewing the test order list
+        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
 
         Specification<TestOrder> spec =
                 TestOrderSpecification.hasStatus(filterInfo.status())
