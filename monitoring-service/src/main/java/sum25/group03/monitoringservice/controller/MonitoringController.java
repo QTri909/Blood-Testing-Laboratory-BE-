@@ -9,7 +9,7 @@ import sum25.group03.monitoringservice.service.MonitoringService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/events")
+@RequestMapping("/monitoring")
 public class MonitoringController {
     private final MonitoringService monitoringService;
 
@@ -29,11 +29,13 @@ public class MonitoringController {
         return ResponseEntity.ok().body(eventLogs);
     }
 
-
-    @PostMapping
-    ResponseEntity<EventLog> saveEventLog(@RequestBody EventLog eventLog){
-     EventLog newEvent =   monitoringService.addEventLog(eventLog);
-     return ResponseEntity.ok().body(newEvent);
+    @GetMapping("/search")
+    public ResponseEntity<List<EventLog>> searchEventLogs(
+            @RequestParam(required = false) String action,
+            @RequestParam(required = false) String message,
+            @RequestParam(required = false) String operator
+    ) {
+        List<EventLog> results = monitoringService.searchEventLogs(action, message, operator);
+        return ResponseEntity.ok().body(results);
     }
-
 }
