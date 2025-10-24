@@ -1,9 +1,11 @@
 package sum25.group03.testorderservice.mapper;
 
 import org.mapstruct.*;
-import sum25.group03.testorderservice.dto.request.TestResultRequestDTO;
-import sum25.group03.testorderservice.dto.response.TestResultResponseDTO;
-import sum25.group03.testorderservice.entity.TestResult;
+import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
+import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
+import sum25.group03.testorderservice.entities.TestResult;
+import sum25.group03.testorderservice.dtos.response.TestResultResponse;
+import sum25.group03.testorderservice.entities.ReagentUsed;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, uses = {ReagentUsedMapper.class, CommentMapper.class})
 public interface TestResultMapper {
