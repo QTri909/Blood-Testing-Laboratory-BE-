@@ -29,4 +29,13 @@ public class GlobalExceptionHandler {
                 req.getDescription(false),
                 LocalDateTime.now());
     }
+    @ExceptionHandler(InvalidArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleInvalidArgumentException(InvalidArgumentException ex, WebRequest req) {
+        return new ErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage(),
+                req.getDescription(false),
+                LocalDateTime.now());
+    }
 }

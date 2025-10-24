@@ -53,7 +53,7 @@ public class Vendors {
     @Column(name = "updated_at", nullable = false)
     private LocalDate updatedAt;
 
-    @Column(name = "deactivated_at", nullable = false)
+    @Column(name = "deactivated_at")
     private LocalDate deactivatedAt;
 
     @Column(name = "updated_by", nullable = false)

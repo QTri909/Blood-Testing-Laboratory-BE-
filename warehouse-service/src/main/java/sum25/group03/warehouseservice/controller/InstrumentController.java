@@ -4,11 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
+import sum25.group03.warehouseservice.dto.response.MessageResponse;
 import sum25.group03.warehouseservice.service.instrument.InstrumentService;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("api/v1/instruments")
+@RequestMapping("/api/v1/instruments")
 public class InstrumentController {
     private final InstrumentService instrumentService;
 
@@ -17,5 +18,4 @@ public class InstrumentController {
         instrumentService.addInstrumentToWarehouse(instrument);
         return ResponseEntity.ok("success");
     }
-
 }
