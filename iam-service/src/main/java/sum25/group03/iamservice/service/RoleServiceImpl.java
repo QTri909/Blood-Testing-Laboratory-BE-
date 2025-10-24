@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class RoleServiceImpl implements RoleService {
+    private final AuditLogService auditLogService;
     private final UserRoleRepository userRoleRepository;
     private final RoleRepository roleRepository;
     private final PrivilegeRepository privilegeRepository;
@@ -59,6 +60,15 @@ public class RoleServiceImpl implements RoleService {
 
             rolePrivilegeRepository.saveAll(rolePrivileges);
             role.setRolePrivileges(rolePrivileges);
+
+            auditLogService.record(
+                    "CREATE",
+                    "Role",
+                    role.getId(),
+                    "system",
+                    "Created role: " + role.getRoleCode()
+            );
+
         }
 
 
@@ -94,6 +104,15 @@ public class RoleServiceImpl implements RoleService {
 
         rolePrivilegeRepository.saveAll(rolePrivileges);
 
+        auditLogService.record(
+                "UPDATE",
+                "Role",
+                role.getId(),
+                "system",
+                "Updated privileges for role: " + role.getRoleCode()
+        );
+
+
 
         cascadeRolePermissionChanges(roleId);
 
@@ -127,7 +146,16 @@ public class RoleServiceImpl implements RoleService {
                     .collect(Collectors.toList());
 
             userPrivilegeRepository.saveAll(ups);
+
+
         }
+        auditLogService.record(
+                "SYSTEM_SYNC",
+                "UserPrivilege",
+                null,
+                "system",
+                "Synchronized privileges for users assigned to roleId=" + roleId
+        );
     }
 
     @Override
@@ -145,5 +173,15 @@ public class RoleServiceImpl implements RoleService {
 
         rolePrivilegeRepository.deleteByRoleId(roleId);
         roleRepository.delete(role);
+
+        auditLogService.record(
+                "DELETE",
+                "Role",
+                role.getId(),
+                "system",
+                "Deleted role: " + role.getRoleCode()
+        );
+
+
     }
 }

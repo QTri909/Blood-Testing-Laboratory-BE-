@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class UserServiceImpl implements UserService {
-
+    private final AuditLogService auditLogService;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
@@ -70,6 +70,14 @@ public class UserServiceImpl implements UserService {
         userRoleRepository.saveAll(userRoles);
         user.setUserRoles(userRoles);
 
+        auditLogService.record(
+                "CREATE",
+                "User",
+                user.getId(),
+                "system",
+                "Created new user with email: " + user.getEmail()
+        );
+
 
         UserResponse response = new UserResponse();
         response.setId(user.getId());
@@ -96,8 +104,6 @@ public class UserServiceImpl implements UserService {
         if (request.getFullName() != null) user.setFullName(request.getFullName());
         if (request.getEmail() != null) user.setEmail(request.getEmail());
         if (request.getPhone() != null) user.setPhoneNumber(request.getPhone());
-
-
         if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
 
             userRoleRepository.deleteByUserId(user.getId());
@@ -112,6 +118,15 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.save(user);
+
+        auditLogService.record(
+                "UPDATE",
+                "User",
+                user.getId(),
+                "system",
+                "Updated user info for: " + user.getEmail()
+        );
+
 
 
         return UserResponse.builder()
@@ -135,6 +150,14 @@ public class UserServiceImpl implements UserService {
 
         user.setIsActive(false);
         userRepository.save(user);
+
+        auditLogService.record(
+                "DEACTIVATE",
+                "User",
+                user.getId(),
+                "system",
+                "Deactivated user account: " + user.getEmail()
+        );
     }
 
     @Transactional
@@ -146,5 +169,15 @@ public class UserServiceImpl implements UserService {
         cognitoService.deleteUser(user.getCognitoUserId());
         userRoleRepository.deleteByUserId(user.getId());
         userRepository.delete(user);
+
+        auditLogService.record(
+                "DELETE",
+                "User",
+                user.getId(),
+                "system",
+                "Deleted user with email: " + user.getEmail()
+        );
+
+
     }
 }
