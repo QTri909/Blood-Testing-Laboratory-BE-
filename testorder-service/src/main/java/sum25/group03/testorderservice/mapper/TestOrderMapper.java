@@ -1,9 +1,9 @@
 package sum25.group03.testorderservice.mapper;
 
 import org.mapstruct.*;
-import sum25.group03.testorderservice.dto.request.TestOrderRequest;
-import sum25.group03.testorderservice.dto.response.TestOrderResponse;
-import sum25.group03.testorderservice.entity.TestOrder;
+import sum25.group03.testorderservice.dtos.request.TestOrderRequest;
+import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
+import sum25.group03.testorderservice.entities.TestOrder;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 
 import java.util.List;

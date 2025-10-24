@@ -1,7 +1,7 @@
 package sum25.group03.testorderservice.specification;
 
 import org.springframework.data.jpa.domain.Specification;
-import sum25.group03.testorderservice.entity.TestOrder;
+import sum25.group03.testorderservice.entities.TestOrder;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 
 import java.time.LocalDate;

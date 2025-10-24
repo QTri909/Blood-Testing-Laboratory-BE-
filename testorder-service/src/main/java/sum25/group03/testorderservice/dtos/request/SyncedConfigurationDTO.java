@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.dto.request;
+package sum25.group03.testorderservice.dtos.request;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;

@@ -1,10 +1,9 @@
-package sum25.group03.testorderservice.entity;
+package sum25.group03.testorderservice.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import sum25.group03.testorderservice.enums.ReagentStatus;
 
 import java.time.LocalDateTime;
 

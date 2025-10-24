@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.controller;
+package sum25.group03.testorderservice.controllers;
 
 import jakarta.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,8 @@
 package sum25.group03.testorderservice.mapper;
 
 import org.mapstruct.*;
-import sum25.group03.testorderservice.dto.response.CommentResponse;
-import sum25.group03.testorderservice.entity.Comment;
+import sum25.group03.testorderservice.dtos.response.CommentResponse;
+import sum25.group03.testorderservice.entities.Comment;
 
 @Mapper(componentModel = "spring")
 public interface CommentMapper {

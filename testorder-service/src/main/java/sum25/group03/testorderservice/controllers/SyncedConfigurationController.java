@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.controller;
+package sum25.group03.testorderservice.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import sum25.group03.testorderservice.dto.request.SyncedConfigurationDTO;
+import sum25.group03.testorderservice.dtos.request.SyncedConfigurationDTO;
 import sum25.group03.testorderservice.services.impl.SyncedConfigurationServiceImpl;
 
 @RestController

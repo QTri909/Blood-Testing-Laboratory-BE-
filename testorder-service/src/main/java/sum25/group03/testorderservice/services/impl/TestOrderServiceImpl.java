@@ -5,18 +5,16 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sum25.group03.testorderservice.dto.request.TestOrderFiltering;
-import sum25.group03.testorderservice.dto.request.TestOrderRequest;
-import sum25.group03.testorderservice.dto.response.TestOrderResponse;
-import sum25.group03.testorderservice.entity.TestOrder;
-import sum25.group03.testorderservice.enums.TestOrderStatus;
+import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
+import sum25.group03.testorderservice.dtos.request.TestOrderRequest;
+import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
+import sum25.group03.testorderservice.entities.TestOrder;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.TestOrderMapper;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
 import sum25.group03.testorderservice.services.interfaces.ITestOrderService;
 import sum25.group03.testorderservice.specification.TestOrderSpecification;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 

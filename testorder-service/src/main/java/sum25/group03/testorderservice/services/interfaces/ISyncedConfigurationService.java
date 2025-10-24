@@ -1,6 +1,6 @@
 package sum25.group03.testorderservice.services.interfaces;
 
-import sum25.group03.testorderservice.entity.SyncedConfiguration;
+import sum25.group03.testorderservice.entities.SyncedConfiguration;
 
 import java.util.List;
 

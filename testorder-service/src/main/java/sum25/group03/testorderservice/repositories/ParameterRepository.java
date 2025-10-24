@@ -3,7 +3,7 @@ package sum25.group03.testorderservice.repositories;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import sum25.group03.testorderservice.entity.Parameter;
+import sum25.group03.testorderservice.entities.Parameter;
 
 @Repository
 public interface ParameterRepository extends JpaRepository<Parameter, Long> {
