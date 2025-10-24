@@ -30,15 +30,15 @@ public class InstrumentStatusController {
         return ResponseEntity.ok(new MessageResponse("Instrument deactivated successfully"));
     }
 
-    @PostMapping("/delete/{id}")
-    public ResponseEntity<String> triggerCleanup(
-            @PathVariable Long id,
-            @RequestHeader(value = "X-User", defaultValue = "system") String username
-    ) {
-        instrumentStatusService.deleteInstrument(id, username);
-        return ResponseEntity.ok("Cleanup job executed manually!");
-    }
-
+//    @PostMapping("/delete/{id}")
+//    public ResponseEntity<String> triggerCleanup(
+//            @PathVariable Long id,
+//            @RequestHeader(value = "X-User", defaultValue = "system") String username
+//    ) {
+//        instrumentStatusService.deleteInstrument(id, username);
+//        return ResponseEntity.ok("Cleanup job executed manually!");
+//    }
+//
 //    @PostMapping("/cleanup")
 //    public ResponseEntity<String> triggerCleanup() {
 //        instrumentCleanupService.autoDeleteInactiveInstruments();
