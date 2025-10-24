@@ -1,0 +1,12 @@
+package sum25.group03.iamservice.service;
+
+import sum25.group03.iamservice.dto.request.LoginRequest;
+import sum25.group03.iamservice.dto.request.RefreshTokenRequest;
+import sum25.group03.iamservice.dto.response.LoginResponse;
+
+public interface AuthService {
+
+
+    LoginResponse login(LoginRequest request);
+    LoginResponse refreshToken(RefreshTokenRequest refreshToken);
+}
