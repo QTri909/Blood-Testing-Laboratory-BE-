@@ -5,5 +5,6 @@ public enum TestResultStatus {
     COMPLETED,
     FAILED,
     CANCELLED,
-    WAITING
+    WAITING,
+    REVIEWED
 }

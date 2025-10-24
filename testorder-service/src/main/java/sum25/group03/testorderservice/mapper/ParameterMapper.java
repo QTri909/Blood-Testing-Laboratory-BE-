@@ -1,9 +1,9 @@
 package sum25.group03.testorderservice.mapper;
 
 import org.mapstruct.*;
-import sum25.group03.testorderservice.dto.request.ParameterRequestDTO;
-import sum25.group03.testorderservice.dto.response.ParameterResponseDTO;
-import sum25.group03.testorderservice.entity.Parameter;
+import sum25.group03.testorderservice.dtos.request.ParameterRequestDTO;
+import sum25.group03.testorderservice.dtos.response.ParameterResponseDTO;
+import sum25.group03.testorderservice.entities.Parameter;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ParameterMapper {
