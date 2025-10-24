@@ -1,0 +1,43 @@
+server:
+  port: 8086
+  error:
+    include-stacktrace: never
+    include-message: always
+spring:
+  application:
+    name: instrument-service
+  profiles:
+    active: @spring.profiles.active@
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+logging:
+  level:
+    web: info
+    root: info
+
+warehouse:
+  service:
+    url: http://localhost:8082
+
+aws:
+  region: ap-southeast-1
+  access-key-id: ${AWS_ACCESS_KEY_ID}
+  secret-key-secret: ${AWS_SECRET_ACCESS_KEY}
+
+
+audit:
+  cloudwatch:
+    log-group: Instrument-service
+    enabled: true
+
+
