@@ -2,6 +2,8 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=maven
 
 ### Maven ###
+diagrams/
+
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -30,3 +32,7 @@ buildNumber.properties
 *.iws
 *.iml
 *.ipr
+
+
+# logs by log appender
+logs/
