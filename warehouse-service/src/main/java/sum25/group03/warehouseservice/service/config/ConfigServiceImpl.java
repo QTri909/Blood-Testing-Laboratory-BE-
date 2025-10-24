@@ -1,6 +1,7 @@
 package sum25.group03.warehouseservice.service.config;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -26,6 +27,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ConfigServiceImpl implements ConfigService {
     private final SpecificConfigRepo specificConfigRepo;
     private final GlobalConfigRepo globalConfigRepo;
@@ -47,6 +49,7 @@ public class ConfigServiceImpl implements ConfigService {
     public void createGlobalConfig(GlobalConfigReq configReq) {
         GlobalConfiguration config = configMapper.toEntity(configReq);
         globalConfigRepo.save(config);
+        log.info("Created new global configuration with id: {}", config.getGlobalConfigurationId());
     }
 
     @Override
@@ -57,6 +60,7 @@ public class ConfigServiceImpl implements ConfigService {
         SpecificConfiguration specificConfiguration = configMapper.toEntity(config);
         specificConfiguration.setGlobalConfiguration(globalConfiguration);
         specificConfigRepo.save(specificConfiguration);
+        log.info("Created new specific configuration with id: {}", specificConfiguration.getSpecificConfigurationId());
     }
 
     @Override
@@ -69,6 +73,7 @@ public class ConfigServiceImpl implements ConfigService {
         config.setMaxConcurrentSamples(configReq.getMaxConcurrentSamples());
         config.setDefaultTimeout(configReq.getDefaultTimeout());
         globalConfigRepo.save(config);
+        log.info("Updated global configuration with id: {}", config.getGlobalConfigurationId());
     }
 
     @Override
@@ -82,6 +87,7 @@ public class ConfigServiceImpl implements ConfigService {
         existingConfig.setMixingSpeed(config.getMixingSpeed());
         existingConfig.setFirmwareVersion(config.getFirmwareVersion());
         specificConfigRepo.save(existingConfig);
+        log.info("Updated specific configuration with id: {}", existingConfig.getSpecificConfigurationId());
     }
 
     @Override
@@ -90,6 +96,7 @@ public class ConfigServiceImpl implements ConfigService {
                 .orElseThrow(() -> new NotFoundException("Configuration not found with id: " + id));
         config.setActive(false);
         specificConfigRepo.save(config);
+        log.info("Specific configuration with id {} has been deactivated.", id);
     }
 
     @Override
@@ -98,6 +105,8 @@ public class ConfigServiceImpl implements ConfigService {
                 .orElseThrow(() -> new NotFoundException("Configuration not found with id: " + id));
         config.setActive(false);
         globalConfigRepo.save(config);
+        log.info("Global configuration with id {} has been deactivated.", id);
+
     }
 
     @Override

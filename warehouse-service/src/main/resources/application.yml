@@ -1,8 +1,12 @@
 spring:
   profiles:
     active: dev
-  devtools:
-    add-properties: true
+#  devtools:
+#    add-properties:
+  restart:
+    enabled: false
+  livereload:
+    enabled: false
   application:
     name: warehouse-service
   datasource:

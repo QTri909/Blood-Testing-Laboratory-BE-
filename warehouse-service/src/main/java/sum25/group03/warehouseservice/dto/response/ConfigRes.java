@@ -14,15 +14,5 @@ import java.time.LocalDate;
 @Setter
 @Builder
 public class ConfigRes {
-    private Long configurationId;
-    private BigDecimal sampleVolume;
-    private int maxConcurrentSamples;
-    private String supportedTests;
-    private String parameterSettings;
-    private String description;
-    private String sampleVolumeUnit;
-    private ConfigType configType;
-    //private int createdBy;
-    private LocalDate createdAt;
-
+    private SpecificConfigRes specificConfigRes;
 }

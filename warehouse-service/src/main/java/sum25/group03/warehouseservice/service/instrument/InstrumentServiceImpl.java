@@ -3,6 +3,7 @@ package sum25.group03.warehouseservice.service.instrument;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.internal.ConfigurationDTO;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
@@ -20,6 +21,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class InstrumentServiceImpl implements InstrumentService {
     private final InstrumentRepo instrumentRepo;
     private final InstrumentMapper instrumentMapper;
@@ -125,6 +127,7 @@ public class InstrumentServiceImpl implements InstrumentService {
 //        }
         // Save instrument with reagents and config if exist
         instrumentRepo.save(newInstrument);
+        log.info("New instrument added to warehouse: {}", newInstrument.getInstrumentName());
     }
 
     @Override
