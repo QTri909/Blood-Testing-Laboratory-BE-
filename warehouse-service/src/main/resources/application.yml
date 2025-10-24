@@ -11,7 +11,7 @@ spring:
     name: warehouse-service
   datasource:
     url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
-    username: postgres.fbzcbprlsaavorceymyp
+    username: postgres.utosgzbzcjenqzpruter
     password: 123456
     driver-class-name: org.postgresql.Driver
 #    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
@@ -34,10 +34,20 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
   kafka:
     bootstrap-servers: localhost:9092
+    consumer:
+      group-id: warehouse-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "*"
+
+#  kafka:
+#    bootstrap-servers: localhost:9092
 
 server:
-  port: 8081
+  port: 8082
 

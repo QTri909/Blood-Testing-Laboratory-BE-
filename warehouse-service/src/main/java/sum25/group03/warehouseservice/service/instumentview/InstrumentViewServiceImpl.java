@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.warehouseservice.dto.response.InstrumentResponse;
 import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
+import sum25.group03.warehouseservice.dto.response.InternalInstrumentStatusResponse;
 import sum25.group03.warehouseservice.entity.Instrument;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 import sum25.group03.warehouseservice.exception.InvalidArgumentException;
@@ -56,7 +57,7 @@ public class InstrumentViewServiceImpl implements InstrumentViewService {
     }
 
     @Override
-    public InstrumentStatusResponse checkInstrumentStatus(Long id) {
+    public InternalInstrumentStatusResponse checkInstrumentStatus(Long id) {
         Instrument instrument = instrumentRepo.findById(id).orElseThrow(() -> new NotFoundException("Instrument not found with id: " + id));
 
         String message = switch (instrument.getStatus()) {
@@ -64,7 +65,7 @@ public class InstrumentViewServiceImpl implements InstrumentViewService {
             case INACTIVE -> "Instrument is Inactive";
             case DELETED -> "Instrument has been removed from the system.";
         };
-        return InstrumentStatusResponse.builder()
+        return InternalInstrumentStatusResponse.builder()
                 .instrumentName(instrument.getInstrumentName())
                 .instrumentModel(instrument.getModel())
                 .currentStatus(instrument.getStatus().name())

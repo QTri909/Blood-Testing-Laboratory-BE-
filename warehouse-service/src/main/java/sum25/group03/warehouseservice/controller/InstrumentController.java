@@ -18,4 +18,13 @@ public class InstrumentController {
         instrumentService.addInstrumentToWarehouse(instrument);
         return ResponseEntity.ok("success");
     }
+
+
+
+    @GetMapping("/status/{instrumentId}")
+    public ResponseEntity<?> getInstrumentStatus(@PathVariable Long instrumentId) {
+        return ResponseEntity.ok(instrumentService.getInstrumentStatus(instrumentId));
+    }
+
+
 }

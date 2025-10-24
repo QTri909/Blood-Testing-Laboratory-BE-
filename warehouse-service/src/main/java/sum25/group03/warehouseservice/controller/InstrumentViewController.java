@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import sum25.group03.warehouseservice.dto.response.InstrumentPageResponse;
 import sum25.group03.warehouseservice.dto.response.InstrumentResponse;
 import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
+import sum25.group03.warehouseservice.dto.response.InternalInstrumentStatusResponse;
+import sum25.group03.warehouseservice.service.instrument.InstrumentService;
 import sum25.group03.warehouseservice.service.instumentview.InstrumentViewService;
 
 @RestController
@@ -18,6 +20,7 @@ import sum25.group03.warehouseservice.service.instumentview.InstrumentViewServic
 public class InstrumentViewController {
 
     private final InstrumentViewService instrumentViewService;
+    private final InstrumentService instrumentService;
 
     private InstrumentPageResponse buildPageResponse(Page<InstrumentResponse> page) {
         return InstrumentPageResponse.builder()
@@ -45,9 +48,11 @@ public class InstrumentViewController {
                 instrumentViewService.searchInstruments(name, model, status, pageable)));
     }
 
+
+
     @GetMapping("/{id}/status")
-    public ResponseEntity<InstrumentStatusResponse> getInstrumentStatus(@PathVariable Long id) {
-        InstrumentStatusResponse response = instrumentViewService.checkInstrumentStatus(id);
+    public ResponseEntity<InternalInstrumentStatusResponse> getInternalInstrumentStatus(@PathVariable Long id) {
+        InternalInstrumentStatusResponse response = instrumentViewService.checkInstrumentStatus(id);
         return ResponseEntity.ok(response);
     }
 }

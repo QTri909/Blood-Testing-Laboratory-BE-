@@ -4,10 +4,13 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.annotation.Configurations;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.internal.ConfigurationDTO;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
+import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
 import sum25.group03.warehouseservice.entity.*;
+import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.InstrumentMapper;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
@@ -130,11 +133,26 @@ public class InstrumentServiceImpl implements InstrumentService {
         log.info("New instrument added to warehouse: {}", newInstrument.getInstrumentName());
     }
 
+
+
+
+
+
     @Override
-    public Instrument findById(Long id) {
-        return instrumentRepo.findById(id).orElseThrow(() ->
-                new NotFoundException("Instrument not found with id: " + id));
+    public InstrumentStatusResponse getInstrumentStatus(Long instrumentId) {
+        Instrument instrument = instrumentRepo.findById(instrumentId)
+                .orElseThrow(() -> new NotFoundException("Instrument not found with id: " + instrumentId));
+
+        boolean isActive = instrument.getStatus() == InstrumentStatus.ACTIVE;
+
+        return InstrumentStatusResponse.builder()
+                .instrumentId(instrument.getInstrumentId())
+                .instrumentName(instrument.getInstrumentName())
+                .status(instrument.getStatus())
+                .isActive(isActive)
+                .location(instrument.getLocation())
+                .message(isActive ? "Instrument is active and ready for mode change" :
+                        "Instrument is not active. Current status: " + instrument.getStatus())
+                .build();
     }
-
 }
-

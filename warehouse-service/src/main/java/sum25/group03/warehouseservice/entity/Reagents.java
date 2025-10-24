@@ -41,11 +41,11 @@ public class Reagents {
     @Column(name = "storage_conditions", nullable = false)
     private String storageConditions;
 
-    @Column(name = "min_stock_level", nullable = false)
-    private int minStockLevel;
+    @Column(name = "max_stock_level", nullable = false, columnDefinition = "integer default 0")
+    private Integer maxStockLevel;
 
-    @Column(name = "max_stock_level", nullable = false)
-    private int maxStockLevel;
+    @Column(name = "min_stock_level", nullable = false, columnDefinition = "integer default 0")
+    private Integer minStockLevel;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
