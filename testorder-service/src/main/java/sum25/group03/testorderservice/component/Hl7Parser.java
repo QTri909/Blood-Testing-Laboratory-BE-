@@ -1,19 +1,6 @@
 package sum25.group03.testorderservice.component;
 
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Component;
-import sum25.group03.testorderservice.entity.Parameter;
-import sum25.group03.testorderservice.entity.TestOrder;
-import sum25.group03.testorderservice.entity.TestResult;
-import sum25.group03.testorderservice.enums.TestResultStatus;
-import sum25.group03.testorderservice.enums.TestType;
-import sum25.group03.testorderservice.repositories.ParameterRepository;
-import sum25.group03.testorderservice.repositories.TestOrderRepository;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 @Component
 public class Hl7Parser {

@@ -1,9 +1,9 @@
 package sum25.group03.testorderservice.mapper;
 
 import org.mapstruct.*;
-import sum25.group03.testorderservice.dto.response.TestResultResponse;
-import sum25.group03.testorderservice.entity.ReagentUsed;
-import sum25.group03.testorderservice.entity.TestResult;
+import sum25.group03.testorderservice.dtos.response.TestResultResponse;
+import sum25.group03.testorderservice.entities.ReagentUsed;
+import sum25.group03.testorderservice.entities.TestResult;
 
 import java.util.List;
 

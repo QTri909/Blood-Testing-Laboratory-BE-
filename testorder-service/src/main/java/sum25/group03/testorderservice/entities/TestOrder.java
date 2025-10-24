@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.entity;
+package sum25.group03.testorderservice.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

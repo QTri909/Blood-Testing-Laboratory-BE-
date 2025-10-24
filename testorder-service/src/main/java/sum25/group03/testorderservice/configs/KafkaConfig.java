@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.config;
+package sum25.group03.testorderservice.configs;
 
 
 import org.apache.kafka.clients.admin.NewTopic;

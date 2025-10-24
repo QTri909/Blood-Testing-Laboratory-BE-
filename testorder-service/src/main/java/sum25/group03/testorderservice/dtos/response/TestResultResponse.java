@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.dto.response;
+package sum25.group03.testorderservice.dtos.response;
 
 import lombok.*;
 import sum25.group03.testorderservice.enums.TestResultStatus;

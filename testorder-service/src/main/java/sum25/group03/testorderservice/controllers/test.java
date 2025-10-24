@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.controller;
+package sum25.group03.testorderservice.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

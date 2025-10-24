@@ -4,8 +4,8 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import sum25.group03.testorderservice.dto.request.SyncedConfigurationDTO;
-import sum25.group03.testorderservice.entity.Parameter;
+import sum25.group03.testorderservice.dtos.request.SyncedConfigurationDTO;
+import sum25.group03.testorderservice.entities.Parameter;
 import sum25.group03.testorderservice.repositories.ParameterRepository;
 
 import java.security.InvalidParameterException;

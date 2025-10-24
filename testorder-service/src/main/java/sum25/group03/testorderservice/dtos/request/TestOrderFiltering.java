@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.dto.request;
+package sum25.group03.testorderservice.dtos.request;
 
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 
