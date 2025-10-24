@@ -7,8 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
+import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
 import sum25.group03.patientservice.dtos.response.MedicalRecordResponse;
+import sum25.group03.patientservice.enums.MedicalRecordStatus;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 
 
@@ -42,6 +44,16 @@ public class MedicalRecordController {
     @GetMapping("/{recordId}")
     public ResponseEntity<MedicalRecordResponse> getById(@PathVariable Long recordId, @RequestParam Long viewerId) {
         return ResponseEntity.ok(medicalRecordService.getById(recordId, viewerId));
+    }
+
+    @DeleteMapping("/{recordId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT) // 204
+    public void deleteById(
+            @PathVariable Long recordId,
+            @RequestHeader("X-User-Id") Long deleterId
+    ) {
+        NewRecordStatusRequest requestInfo = new NewRecordStatusRequest(recordId, MedicalRecordStatus.DELETED, deleterId);
+        medicalRecordService.deleteById(requestInfo);
     }
 
     /*

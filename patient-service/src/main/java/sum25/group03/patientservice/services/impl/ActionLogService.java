@@ -10,14 +10,14 @@ import java.time.LocalDateTime;
 @Service
 public class ActionLogService {
 
-    public void logAction(Long viewerId, ActionTypeFeatures action, Long targetId) {
+    public void logAction(Long actorId, ActionTypeFeatures action, Long targetId) {
         LocalDateTime timestamp = LocalDateTime.now();
 
         // In ra console (và sẽ hiển thị trong logs)
         if (targetId == null) {
-            log.info(" User {} - {} - {}", viewerId, action, timestamp);
+            log.info(" User {} - {} - {}", actorId, action, timestamp);
             return;
         }
-        log.info(" User {} - {} - (targetId={}) - {}", viewerId, action, targetId, timestamp);
+        log.info(" User {} - {} - (targetId={}) - {}", actorId, action, targetId, timestamp);
     }
 }

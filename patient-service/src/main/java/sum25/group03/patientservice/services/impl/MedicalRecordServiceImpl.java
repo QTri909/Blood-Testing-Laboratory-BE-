@@ -1,18 +1,20 @@
 package sum25.group03.patientservice.services.impl;
 
-import groovy.util.logging.Slf4j;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.patientservice.documents.AuditEntryDocument;
 import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
+import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
 import sum25.group03.patientservice.dtos.response.MedicalRecordResponse;
 import sum25.group03.patientservice.entities.MedicalRecordEntity;
 import sum25.group03.patientservice.enums.ActionTypeFeatures;
 import sum25.group03.patientservice.enums.DocumentType;
+import sum25.group03.patientservice.enums.MedicalRecordStatus;
 import sum25.group03.patientservice.exception.medical.record.MedicalRecordNotFound;
 import sum25.group03.patientservice.exception.user.snapshot.UserNotFoundException;
 import sum25.group03.patientservice.mapper.MedicalRecordMapper;
@@ -42,11 +44,11 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private final ActionLogService actionLogService;
 
     // check if a viewerId belongs to our system or not, if not, throw exception and warn to admin
-    private void validateViewerExistence(Long viewerId) {
-        boolean isViewerExisted = userSnapshotRepository.existsByExternalUserId(viewerId);
+    private void validateViewerExistence(Long actorId) {
+        boolean isViewerExisted = userSnapshotRepository.existsByExternalUserId(actorId);
         if (!isViewerExisted) {
-            log.warn("WARN: User with id {} has been found in the system!", viewerId);
-            throw new UserNotFoundException("Viewer with id " + viewerId + " not found in the system!");
+            log.warn("WARN: User with id {} has been found in the system!", actorId);
+            throw new UserNotFoundException("User with id " + actorId + " not found in the system!");
         }
     }
 
@@ -116,7 +118,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 recordId, oldAssignedUserId, assignedUserId, updatedById
         );
 
-        // update document, versioning in medical record mongoDb:
+        // update document and versioning in medical record mongoDb:
         medicalRecordMongoService.updateMedicalRecord(updateInfo);
         AuditEntryDocument auditEntryAssignedUser = AuditEntryDocument.builder()
                 .entityId(recordId)
@@ -129,8 +131,6 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
         // track the change in audit entry collection in mongoDb
         auditEntryMongoService.saveAuditEntry(auditEntryAssignedUser);
-        log.info("Audit entry saved successfully to mongoDb!");
-        log.info("Saved document: {}", auditEntryAssignedUser);
 
         return updateInfo;
     }
@@ -177,5 +177,40 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .stream()
                 .map(medicalRecordMapper::toMedicalRecordResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public void deleteById(NewRecordStatusRequest newRecordStatusRequest) {
+        // extract info:
+        Long recordId = newRecordStatusRequest.recordId();
+        Long deleterId = newRecordStatusRequest.updatedBy();
+        MedicalRecordStatus newStatus = newRecordStatusRequest.newStatus();
+
+        // validate deleter existence
+        validateViewerExistence(deleterId);
+
+        // retrieve record from database
+        MedicalRecordEntity entity = medicalRecordRepository.findByRecordIdAndStatusNot(
+                recordId, MedicalRecordStatus.DELETED
+        ).orElseThrow(() -> new RuntimeException("Medical Record not found!"));
+
+        // soft' delete from database, and log the delete action
+        MedicalRecordStatus oldStatus = entity.getStatus();
+        entity.setStatus(newStatus);
+        entity.setUpdatedBy(deleterId);
+        actionLogService.logAction(deleterId, ActionTypeFeatures.DELETE_PATIENT_MEDICAL_RECORD, recordId);
+
+        // update mongodb medical record and audit info for mongoDb
+        medicalRecordMongoService.updateMedicalRecordStatus(newRecordStatusRequest);
+        AuditEntryDocument auditEntryStatusChange = AuditEntryDocument.builder()
+                .entityId(recordId)
+                .fieldChanged("status")
+                .oldValue(oldStatus.name())
+                .newValue(newStatus.name())
+                .changedBy(deleterId)
+                .entityType(DocumentType.MEDICAL_RECORD)
+                .build();
+        auditEntryMongoService.saveAuditEntry(auditEntryStatusChange);
     }
 }

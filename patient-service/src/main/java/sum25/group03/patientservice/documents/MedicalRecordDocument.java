@@ -1,5 +1,6 @@
 package sum25.group03.patientservice.documents;
 
+import jakarta.persistence.PrePersist;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -7,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import sum25.group03.patientservice.enums.MedicalRecordStatus;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -23,7 +25,6 @@ public class MedicalRecordDocument implements Serializable {
 
     @Id
     private String id;
-
     private Long recordId;
     private UUID recordCode;
     private Long patientId;
@@ -33,10 +34,18 @@ public class MedicalRecordDocument implements Serializable {
     private String visitDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private MedicalRecordStatus status; // ACTIVE, INACTIVE, DELETED, HIDDEN,..
 
     @Field(name = "recentAuditEntries")
     @DBRef(lazy = true) // only store references to AuditEntryDocument
     List<AuditEntryDocument> recentAuditEntries;
+
+    @PrePersist
+    public void prePersist() {
+        if (status == null) {
+            status = MedicalRecordStatus.ACTIVE;
+        }
+    }
 
     @Override
     public String toString() {
@@ -52,6 +61,7 @@ public class MedicalRecordDocument implements Serializable {
                 ", createdAt='" + createdAt + '\'' +
                 ", updatedAt='" + updatedAt + '\'' +
                 ", recentAuditEntries=" + recentAuditEntries +
+                ", status=" + status +
                 '}';
     }
 }

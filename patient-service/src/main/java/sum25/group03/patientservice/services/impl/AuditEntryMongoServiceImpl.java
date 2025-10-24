@@ -29,8 +29,6 @@ public class AuditEntryMongoServiceImpl implements AuditEntryMongoService {
     @Transactional
     public void saveAuditEntry(AuditEntryDocument auditEntryDocument) {
         auditEntryMongoRepository.save(auditEntryDocument);
-        log.info("Audit entry saved successfully to mongoDb!");
-        log.info("Saved document: {}", auditEntryDocument);
     }
 
     // TODO: check permissions for viewerId to make sure only authorized users can view logs (ex: admin)

@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+import sum25.group03.patientservice.enums.MedicalRecordStatus;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -41,6 +42,9 @@ public class MedicalRecordEntity implements Serializable {
     @Column(name = "assigned_user")
     private Long assignedUser;
 
+    @Enumerated(EnumType.STRING)
+    private MedicalRecordStatus status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assigned_user", referencedColumnName = "external_user_id", insertable = false, updatable = false)
     private UserSnapshotEntity assignedUserDetails;
@@ -73,6 +77,13 @@ public class MedicalRecordEntity implements Serializable {
 
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ClinicalNoteEntity> clinicalNotes;
+
+    @PrePersist
+    public void prePersist() {
+        if (status == null) {
+            status = MedicalRecordStatus.ACTIVE;
+        }
+    }
 
     @Override
     public String toString() {
