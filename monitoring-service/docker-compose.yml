@@ -58,6 +58,20 @@ services:
       - "9094:9094"
     networks:
       - internal
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:latest
+    container_name: kafka-exporter
+    command:
+      - '--kafka.server=kafka:9092'
+      - '--web.listen-address=:9308'
+    ports:
+      - "9308:9308"
+    networks:
+      - internal
+    depends_on:
+      - kafka
+    restart: always
+
 
   monitoring-service:
     build:

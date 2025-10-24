@@ -16,11 +16,13 @@ public class MockProducer {
     public void sendMockEvent() {
         String mockMessage = """
             {
-                "topic": "user-service",
-                "action": "USER_CREATED",
+                "topic": "test-service",
+                "action": "TEST_CREATED",
+                "message": "Test created successfully",
+                "operator": "system",
                 "data": {
-                    "userId": "12345",
-                    "username": "john_doe"
+                    "testId": "12345",
+                    "testName": "HL7"
                 }
             }
             """;

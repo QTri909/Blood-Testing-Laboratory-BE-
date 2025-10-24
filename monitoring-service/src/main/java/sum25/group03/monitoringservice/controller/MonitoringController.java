@@ -28,6 +28,12 @@ public class MonitoringController {
         List<EventLog> eventLogs = monitoringService.getAllEventLogs();
         return ResponseEntity.ok().body(eventLogs);
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<EventLog> getEventLogById(@PathVariable String id) {
+        return monitoringService.getEventLog(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
     @GetMapping("/search")
     public ResponseEntity<List<EventLog>> searchEventLogs(
