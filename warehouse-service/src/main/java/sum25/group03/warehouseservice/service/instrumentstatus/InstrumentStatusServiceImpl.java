@@ -55,19 +55,6 @@ public class InstrumentStatusServiceImpl implements InstrumentStatusService {
         publishEvent(instrument, "DEACTIVATE", username, "Instrument deactivated. Scheduled for deletion in 3 months");
     }
 
-    @Override
-    public void deleteInstrument(Long id, String username) {
-        Instrument instrument = getInstrumentOrThrow(id);
-        if (!isSameStatus(instrument, InstrumentStatus.INACTIVE)) {
-            throw new InvalidArgumentException("Only INACTIVE instruments can be deleted");
-        }
-        instrument.setStatus(InstrumentStatus.DELETED);
-        instrument.setAutoDeleteScheduledAt(null);
-        instrument.setUpdatedAt(LocalDate.now());
-        instrumentRepo.save(instrument);
-        publishEvent(instrument, "DELETE", username, "Instrument deleted from system");
-    }
-
     private void publishEvent(Instrument instrument, String eventType, String username, String detail) {
         InstrumentEvent event = InstrumentEvent.builder()
                 .instrumentId(instrument.getInstrumentId())
