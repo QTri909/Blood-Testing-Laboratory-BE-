@@ -3,11 +3,8 @@ package sum25.group03.patientservice.entities;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UpdateTimestamp;
-import sum25.group03.patientservice.enums.UserSnapshotGender;
-import sum25.group03.patientservice.enums.UserSnapshotStatus;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -33,6 +30,9 @@ public class UserSnapshotEntity implements Serializable {
     @UpdateTimestamp
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
+
+    @Column(name = "is_patient", nullable = false)
+    private Boolean isPatient;
 
     // Bidirectional relationships with MedicalRecord
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
