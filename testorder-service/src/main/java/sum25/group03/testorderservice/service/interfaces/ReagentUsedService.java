@@ -1,7 +1,7 @@
 package sum25.group03.testorderservice.service.interfaces;
 
-import sum25.group03.testorderservice.dto.request.ReagentUsedRequestDTO;
-import sum25.group03.testorderservice.dto.response.ReagentUsedResponseDTO;
+import sum25.group03.testorderservice.dtos.request.ReagentUsedRequestDTO;
+import sum25.group03.testorderservice.dtos.response.ReagentUsedResponseDTO;
 
 import java.util.List;
 
