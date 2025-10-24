@@ -49,7 +49,9 @@ public class DataInitializer {
             admin.setUserRoles(roles);
 
             userRepository.save(admin);
+
             System.out.println("Default admin created: admin@system.com");
+
         }
     }
 }

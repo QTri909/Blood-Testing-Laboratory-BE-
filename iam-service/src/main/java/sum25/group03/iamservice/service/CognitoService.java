@@ -6,8 +6,16 @@ public interface CognitoService {
 
 
     String createUser(UserCreateRequest request);
-    void disableUser(String cognitoUserId);
-    void deleteUser(String cognitoUserId);
+
+
     String createAdminUser(String email, String temporaryPassword);
+
+
+
+
+
+
+
+
 
 }

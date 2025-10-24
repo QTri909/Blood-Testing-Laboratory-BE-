@@ -1,6 +1,6 @@
 package sum25.group03.iamservice.dto.response;
 
-import lombok.Builder;
+
 import lombok.Data;
 
 @Data

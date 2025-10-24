@@ -1,5 +1,6 @@
 package sum25.group03.iamservice.controller;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,12 @@ import sum25.group03.iamservice.service.UserService;
 
 import java.util.List;
 
+
+
+import org.springframework.web.bind.annotation.*;
+
+
+
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
@@ -20,7 +27,7 @@ public class UserController {
 
     private final UserService userService;
 
-    //@PreAuthorize("hasRole('ADMIN')")
+
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable Long id,
@@ -30,21 +37,20 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@RequestBody UserCreateRequest request) {
         UserResponse response = userService.createUser(request);
         return ResponseEntity.ok(response);
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
+
     @PatchMapping("/{id}/deactivate")
     public ResponseEntity<String> deactivateUser(@PathVariable Long id) {
         userService.deactivateUser(id);
         return ResponseEntity.ok("User deactivated successfully");
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
@@ -68,4 +74,5 @@ public class UserController {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
+
 }

@@ -3,6 +3,9 @@ package sum25.group03.iamservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
+
+import java.time.LocalDateTime;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,11 +39,27 @@ public class User {
 
     private String address;
 
+
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
     @Column(name = "is_active")
     private Boolean isActive = true;
+
+
+    @Column(name = "failed_attempts", nullable = false)
+    private Integer failedAttempts = 0;
+
+    @Column(name = "account_locked", nullable = false)
+    private Boolean accountNonLocked = true;
+
+    @Column(name = "last_failed_at")
+    private LocalDateTime lastFailedAt;
+
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
+
+
 
 
     // Quan hệ với UserRole

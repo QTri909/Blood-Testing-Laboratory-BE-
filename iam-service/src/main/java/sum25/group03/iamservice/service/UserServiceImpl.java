@@ -1,6 +1,7 @@
 package sum25.group03.iamservice.service;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -8,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.dto.request.UserUpdateRequest;
+
 import sum25.group03.iamservice.dto.response.UserResponse;
 import sum25.group03.iamservice.entity.Role;
 import sum25.group03.iamservice.entity.User;
@@ -17,7 +19,9 @@ import sum25.group03.iamservice.repository.UserRepository;
 import sum25.group03.iamservice.repository.UserRoleRepository;
 
 import java.util.HashSet;
+
 import java.util.List;
+
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,7 +29,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class UserServiceImpl implements UserService {
+
     private final AuditLogService auditLogService;
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
@@ -73,6 +79,7 @@ public class UserServiceImpl implements UserService {
         userRoleRepository.saveAll(userRoles);
         user.setUserRoles(userRoles);
 
+
         auditLogService.record(
                 "CREATE",
                 "User",
@@ -97,6 +104,7 @@ public class UserServiceImpl implements UserService {
 
         return response;
     }
+
 
     @Transactional
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
@@ -149,8 +157,6 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
-        cognitoService.disableUser(user.getCognitoUserId());
-
         user.setIsActive(false);
         userRepository.save(user);
 
@@ -168,8 +174,6 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-
-        cognitoService.deleteUser(user.getCognitoUserId());
         userRoleRepository.deleteByUserId(user.getId());
         userRepository.delete(user);
 
@@ -180,8 +184,6 @@ public class UserServiceImpl implements UserService {
                 "system",
                 "Deleted user with email: " + user.getEmail()
         );
-
-
     }
 
     @Override
@@ -224,4 +226,5 @@ public class UserServiceImpl implements UserService {
 
         return new PageImpl<>(responses, pageable, usersPage.getTotalElements());
     }
+
 }

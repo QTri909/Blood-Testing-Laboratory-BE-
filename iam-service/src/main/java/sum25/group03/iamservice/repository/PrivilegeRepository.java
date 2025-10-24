@@ -1,6 +1,7 @@
 package sum25.group03.iamservice.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -15,4 +16,5 @@ public interface PrivilegeRepository extends JpaRepository<Privilege, Long> {
     List<Privilege> findByRoleId(@Param("roleId") Long roleId);
 
     boolean existsByPrivilegeCode(String privilegeCode);
+
 }

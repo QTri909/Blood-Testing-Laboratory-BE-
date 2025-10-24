@@ -17,9 +17,11 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
     @Query("SELECT r FROM Role r JOIN UserRole ur ON ur.role = r WHERE ur.user.id = :userId")
     List<Role> findByUserId(@Param("userId") Long userId);
 
+
     boolean existsByRoleName(String roleName);
     boolean existsByRoleCode(String roleCode);
 
     @Query("SELECT r FROM Role r WHERE r.userRoles IS EMPTY")
     List<Role> findRolesWithoutUsers();
+
 }

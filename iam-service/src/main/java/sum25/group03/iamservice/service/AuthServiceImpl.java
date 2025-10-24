@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Map;
 
@@ -42,51 +43,66 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest request) {
-        AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
-                .userPoolId(userPoolId)
-                .clientId(clientId)
-                .authFlow(AuthFlowType.ADMIN_USER_PASSWORD_AUTH)
-                .authParameters(
-                        Map.of(
-                                "USERNAME", request.getEmail(),
-                                "PASSWORD", request.getPassword(),
-                                "SECRET_HASH", calculateSecretHash(request.getEmail())
-                        )
-                )
-                .build();
+        // 🔹 1. Lấy user từ DB
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        AdminInitiateAuthResponse response = cognitoClient.adminInitiateAuth(authRequest);
-
-
-        if (response.challengeName() == ChallengeNameType.NEW_PASSWORD_REQUIRED) {
-            AdminRespondToAuthChallengeRequest challengeRequest = AdminRespondToAuthChallengeRequest.builder()
-                    .challengeName(ChallengeNameType.NEW_PASSWORD_REQUIRED)
-                    .clientId(clientId)
-                    .userPoolId(userPoolId)
-                    .challengeResponses(Map.of(
-                            "USERNAME", request.getEmail(),
-                            "NEW_PASSWORD", request.getPassword(),
-                            "SECRET_HASH", calculateSecretHash(request.getEmail())
-                    ))
-                    .session(response.session())
-                    .build();
-
-            AdminRespondToAuthChallengeResponse challengeResponse =
-                    cognitoClient.adminRespondToAuthChallenge(challengeRequest);
-
-            LoginResponse loginResponse = new LoginResponse();
-            loginResponse.setAccessToken(challengeResponse.authenticationResult().accessToken());
-            loginResponse.setRefreshToken(challengeResponse.authenticationResult().refreshToken());
-            loginResponse.setIdToken(challengeResponse.authenticationResult().idToken());
-            loginResponse.setExpiresIn(challengeResponse.authenticationResult().expiresIn());
-            return loginResponse;
+        // 🔹 2. Kiểm tra account khóa
+        if (!user.getAccountNonLocked()) {
+            if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
+                throw new RuntimeException("Account is locked until " + user.getLockedUntil());
+            } else {
+                user.setAccountNonLocked(true);
+                user.setFailedAttempts(0);
+                user.setLockedUntil(null);
+                userRepository.save(user);
+            }
         }
 
+        try {
+            // 🔹 3. Dùng InitiateAuth thay vì AdminInitiateAuth
+            software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthRequest authRequest =
+                    software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthRequest.builder()
+                            .authFlow(AuthFlowType.USER_PASSWORD_AUTH)
+                            .clientId(clientId)
+                            .authParameters(Map.of(
+                                    "USERNAME", request.getEmail(),
+                                    "PASSWORD", request.getPassword(),
+                                    "SECRET_HASH", calculateSecretHash(request.getEmail())
+                            ))
+                            .build();
 
-        LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setAccessToken(response.authenticationResult().accessToken());
-        loginResponse.setExpiresIn(response.authenticationResult().expiresIn());
-        return loginResponse;
+            software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthResponse response =
+                    cognitoClient.initiateAuth(authRequest);
+
+            // 🔹 4. Nếu login thành công
+            user.setFailedAttempts(0);
+            user.setAccountNonLocked(true);
+            user.setLockedUntil(null);
+            userRepository.save(user);
+
+            LoginResponse loginResponse = new LoginResponse();
+            loginResponse.setAccessToken(response.authenticationResult().accessToken());
+            loginResponse.setRefreshToken(response.authenticationResult().refreshToken());
+            loginResponse.setIdToken(response.authenticationResult().idToken());
+            loginResponse.setExpiresIn(response.authenticationResult().expiresIn());
+
+            return loginResponse;
+
+        } catch (Exception e) {
+            // 🔹 5. Nếu login thất bại → tăng số lần thất bại
+            int newAttempts = user.getFailedAttempts() + 1;
+            user.setFailedAttempts(newAttempts);
+            user.setLastFailedAt(LocalDateTime.now());
+
+            if (newAttempts >= 5) {
+                user.setAccountNonLocked(false);
+                user.setLockedUntil(LocalDateTime.now().plusMinutes(15));
+            }
+
+            userRepository.save(user);
+            throw new RuntimeException("Invalid credentials. Failed attempts: " + newAttempts);
+        }
     }
 
     @Override

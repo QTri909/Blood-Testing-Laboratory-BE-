@@ -1,5 +1,6 @@
 package sum25.group03.iamservice.repository;
 
+
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.support.JpaRepositoryImplementation;
 import org.springframework.data.repository.query.Param;
@@ -13,4 +14,5 @@ public interface RolePrivilegeRepository extends JpaRepositoryImplementation<Rol
 
     @Query("SELECT rp.privilege FROM RolePrivilege rp WHERE rp.role.id = :roleId")
     List<Privilege> findByRoleId(@Param("roleId") Long roleId);
+
 }
