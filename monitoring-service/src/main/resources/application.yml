@@ -1,0 +1,20 @@
+server:
+  port: 4000
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://root:root123@monitoring-service-db:27017/monitoring_db?authSource=admin
+  kafka:
+    bootstrap-servers: kafka:9092
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+
+management.server.port: 4000
