@@ -1,6 +1,9 @@
 package sum25.group03.iamservice.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
@@ -179,5 +182,46 @@ public class UserServiceImpl implements UserService {
         );
 
 
+    }
+
+    @Override
+    public Page<UserResponse> getAllPatients(Pageable pageable) {
+        Page<User> usersPage = userRepository.findByRoleCode("PATIENT", pageable);
+
+        List<UserResponse> responses = usersPage.getContent().stream()
+                .map(user -> UserResponse.builder()
+                        .id(user.getId())
+                        .fullName(user.getFullName())
+                        .email(user.getEmail())
+                        .phoneNumber(user.getPhoneNumber())
+                        .address(user.getAddress())
+                        .identityNumber(user.getIdentityNumber())
+                        .build())
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(responses, pageable, usersPage.getTotalElements());
+    }
+
+    @Override
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
+        Page<User> usersPage = userRepository.findAll(pageable); // <-- đây là page, không phải list
+
+        List<UserResponse> responses = usersPage.getContent().stream()
+                .map(user -> UserResponse.builder()
+                        .id(user.getId())
+                        .fullName(user.getFullName())
+                        .email(user.getEmail())
+                        .phoneNumber(user.getPhoneNumber())
+                        .address(user.getAddress())
+                        .identityNumber(user.getIdentityNumber())
+                        .roles(
+                                user.getUserRoles().stream()
+                                        .map(ur -> ur.getRole().getRoleCode())
+                                        .collect(Collectors.toSet())
+                        )
+                        .build())
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(responses, pageable, usersPage.getTotalElements());
     }
 }
