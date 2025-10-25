@@ -1,9 +1,10 @@
 package sum25.group03.testorderservice.mapper;
 
 import org.mapstruct.*;
-import sum25.group03.testorderservice.dto.request.CommentRequestDTO;
-import sum25.group03.testorderservice.dto.response.CommentResponseDTO;
-import sum25.group03.testorderservice.entity.Comment;
+import sum25.group03.testorderservice.dtos.request.CommentRequestDTO;
+import sum25.group03.testorderservice.dtos.response.CommentResponseDTO;
+import sum25.group03.testorderservice.entities.Comment;
+import sum25.group03.testorderservice.dtos.response.CommentResponse;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface CommentMapper {

@@ -1,10 +1,9 @@
 package sum25.group03.testorderservice.service.interfaces;
 
-import sum25.group03.testorderservice.dto.request.TestOrderFiltering;
-import sum25.group03.testorderservice.dto.request.TestOrderRequest;
-import sum25.group03.testorderservice.dto.request.TestOrderRequestDTO;
-import sum25.group03.testorderservice.dto.response.TestOrderResponse;
-import sum25.group03.testorderservice.dto.response.TestOrderResponseDTO;
+import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
+import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
+import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
+import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 
 import java.util.List;
