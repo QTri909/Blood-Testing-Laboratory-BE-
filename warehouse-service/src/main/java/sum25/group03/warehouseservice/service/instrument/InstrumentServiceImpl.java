@@ -48,6 +48,7 @@ public class InstrumentServiceImpl implements InstrumentService {
         ConfigurationDTO configurationDTO = configService.findByInstrumentId(cloneFromInstrumentId);
         if (configurationDTO != null) {
             SpecificConfiguration configRef = mapConfigurations(configurationDTO);
+            log.info("Cloned configuration: {}", configRef.getSpecificConfigurationId()!=null?configRef.getSpecificConfigurationId():null);
             GlobalConfiguration globalConfigRef = entityManager.getReference(GlobalConfiguration.class, configurationDTO.getGlobalConfigurationId());
             configRef.setGlobalConfiguration(globalConfigRef);
             instrument.setSpecificConfiguration(configRef);
@@ -84,6 +85,8 @@ public class InstrumentServiceImpl implements InstrumentService {
     @Override
     public void addInstrumentToWarehouse(InstrumentReq instrument) {
         Instrument newInstrument = instrumentMapper.toEntity(instrument);
+        //newInstrument.setInstrumentId(null);
+        log.info("InstrumentId: {}", newInstrument.getInstrumentId()!=null?newInstrument.getInstrumentId():null);
         // Check an instrument serial number duplication
         if(isDuplicateSerialNumber(newInstrument.getSerialNumber())) {
             throw new NotFoundException("Instrument with serial number " + newInstrument.getSerialNumber() + " already exists");

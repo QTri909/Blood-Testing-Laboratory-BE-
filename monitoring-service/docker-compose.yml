@@ -43,7 +43,7 @@ services:
 
   kafka:
     image: bitnamilegacy/kafka:latest
-    container_name: kafka
+    container_name: kafka-broker
     restart: always
     environment:
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
