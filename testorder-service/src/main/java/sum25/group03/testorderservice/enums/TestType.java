@@ -9,7 +9,8 @@ public enum TestType {
     PLATELET_COUNT,     // Platelet count
 
     // ---------------- Clinical Chemistry / Biochemistry ----------------
-    GLUCOSE,            // Blood glucose
+    GLUCOSE,
+    GLU,// Blood glucose
     CHOLESTEROL,        // Total cholesterol
     ALT,                // Alanine transaminase (liver)
     AST,                // Aspartate transaminase (liver)

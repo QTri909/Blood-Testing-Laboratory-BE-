@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.service.impl;
+package sum25.group03.testorderservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +10,7 @@ import sum25.group03.testorderservice.entities.ReagentUsed;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.ReagentUsedMapper;
 import sum25.group03.testorderservice.repositories.ReagentUsedRepository;
-import sum25.group03.testorderservice.service.interfaces.ReagentUsedService;
+import sum25.group03.testorderservice.services.interfaces.ReagentUsedService;
 
 import java.util.List;
 import java.util.stream.Collectors;

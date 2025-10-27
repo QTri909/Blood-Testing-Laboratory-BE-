@@ -1,10 +1,7 @@
 package sum25.group03.testorderservice.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
@@ -19,7 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "test_order")
-
+@Builder
 public class TestOrder {
 
     @Id

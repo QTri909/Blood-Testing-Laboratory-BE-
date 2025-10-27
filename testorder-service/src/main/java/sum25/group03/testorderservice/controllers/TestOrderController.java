@@ -11,7 +11,7 @@ import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
-import sum25.group03.testorderservice.service.interfaces.TestOrderService;
+import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 
 import java.util.List;
 
