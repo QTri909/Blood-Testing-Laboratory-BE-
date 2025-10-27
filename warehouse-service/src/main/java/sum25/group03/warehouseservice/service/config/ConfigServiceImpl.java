@@ -12,10 +12,7 @@ import sum25.group03.warehouseservice.dto.request.GlobalConfigReq;
 import sum25.group03.warehouseservice.dto.request.SpecificConfigReq;
 import sum25.group03.warehouseservice.dto.request.UpdateGlobalConfigReq;
 import sum25.group03.warehouseservice.dto.request.UpdateSpecificConfigReq;
-import sum25.group03.warehouseservice.entity.GlobalConfiguration;
-import sum25.group03.warehouseservice.entity.SpecificConfiguration;
-import sum25.group03.warehouseservice.entity.Instrument;
-import sum25.group03.warehouseservice.entity.enums.ConfigType;
+import sum25.group03.warehouseservice.entity.Configuration;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.ConfigMapper;
 import sum25.group03.warehouseservice.repository.GlobalConfigRepo;
@@ -58,10 +55,10 @@ public class ConfigServiceImpl implements ConfigService {
         GlobalConfiguration globalConfiguration = globalConfigRepo.findById(config.getGlobalConfigurationId()).orElseThrow(
                 () -> new NotFoundException("Global Configuration not found with id: " + config.getGlobalConfigurationId())
         );
-        SpecificConfiguration specificConfiguration = configMapper.toEntity(config);
-        specificConfiguration.setGlobalConfiguration(globalConfiguration);
-        specificConfigRepo.save(specificConfiguration);
-        log.info("Created new specific configuration with id: {}", specificConfiguration.getSpecificConfigurationId());
+        Configuration configuration = configMapper.toEntity(config);
+        configuration.setGlobalConfiguration(globalConfiguration);
+        specificConfigRepo.save(configuration);
+        log.info("Created new specific configuration with id: {}", configuration.getSpecificConfigurationId());
     }
 
     @Override
@@ -79,7 +76,7 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     public void updateSpecificConfig(UpdateSpecificConfigReq config) {
-        SpecificConfiguration existingConfig = specificConfigRepo.findById(config.getSpecificConfigurationId())
+        Configuration existingConfig = specificConfigRepo.findById(config.getSpecificConfigurationId())
                 .orElseThrow(() -> new NotFoundException("Configuration not found with id: " + config.getSpecificConfigurationId()));
         existingConfig.setSupportedTests(config.getSupportedTests());
         existingConfig.setParameterSettings(config.getParameterSettings());
@@ -93,7 +90,7 @@ public class ConfigServiceImpl implements ConfigService {
 
     @Override
     public void deleteSpecificById(Long id) {
-        SpecificConfiguration config = specificConfigRepo.findById(id)
+        Configuration config = specificConfigRepo.findById(id)
                 .orElseThrow(() -> new NotFoundException("Configuration not found with id: " + id));
         config.setActive(false);
         specificConfigRepo.save(config);
@@ -116,7 +113,7 @@ public class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
-    public Page<SpecificConfiguration> getAllSpecificConfig(int page, int size) {
+    public Page<Configuration> getAllSpecificConfig(int page, int size) {
         return specificConfigRepo.findAllByActiveTrue(PageRequest.of(page, size));
     }
 

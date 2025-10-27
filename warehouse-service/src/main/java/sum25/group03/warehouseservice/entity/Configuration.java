@@ -5,11 +5,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import sum25.group03.warehouseservice.entity.enums.ConfigType;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,18 +16,15 @@ import java.util.List;
 @Setter
 @Builder
 @Entity
-@Table(name = "specific_configurations")
-public class SpecificConfiguration {
+@Table(name = "configurations")
+public class Configuration {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "specific_configuration_id")
-    private Long specificConfigurationId;
+    @Column(name = "configuration_id")
+    private Long configurationId;
 
     @Column(name = "supported_tests", nullable = false)
     private String supportedTests;
-
-    @Column(name = "parameter_settings", nullable = false, columnDefinition = "TEXT")
-    private String parameterSettings;
 
     @Column(name = "data_output_format", nullable = false)
     private String dataOutputFormat;
@@ -41,6 +37,9 @@ public class SpecificConfiguration {
 
     @Column(name = "firmware_version", nullable = false)
     private String firmwareVersion;
+
+    @Column(name = "use_per_run", nullable = false)
+    private int usePerRun;
 
     @Column(name = "active", nullable = false)
     private boolean active;
@@ -59,12 +58,7 @@ public class SpecificConfiguration {
     @Column(name = "updated_by", nullable = true)
     private int updatedBy;
 
-    @OneToOne(mappedBy = "specificConfiguration")
+    @OneToOne(mappedBy = "configuration")
     private Instrument instrument;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "global_configuration_id", nullable = false)
-    @JsonIgnore
-    private GlobalConfiguration globalConfiguration;
 
 }
