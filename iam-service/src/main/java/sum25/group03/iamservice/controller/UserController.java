@@ -12,13 +12,6 @@ import sum25.group03.iamservice.dto.request.UserUpdateRequest;
 import sum25.group03.iamservice.dto.response.UserResponse;
 import sum25.group03.iamservice.service.UserService;
 
-import java.util.List;
-
-
-
-import org.springframework.web.bind.annotation.*;
-
-
 
 @RestController
 @RequestMapping("/api/v1/users")

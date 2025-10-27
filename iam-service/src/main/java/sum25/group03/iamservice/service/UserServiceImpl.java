@@ -206,8 +206,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {
-        Page<User> usersPage = userRepository.findAll(pageable); // <-- đây là page, không phải list
-
+        Page<User> usersPage = userRepository.findAll(pageable);
         List<UserResponse> responses = usersPage.getContent().stream()
                 .map(user -> UserResponse.builder()
                         .id(user.getId())
