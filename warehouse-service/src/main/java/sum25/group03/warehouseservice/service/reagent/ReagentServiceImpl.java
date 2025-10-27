@@ -100,4 +100,9 @@ public class ReagentServiceImpl implements ReagentService {
                 .message("Reagent is valid and ready for installation")
                 .build();
     }
+
+    @Override
+    public List<Reagents> findAllByInstrumentId(Long instrumentId) {
+        return reagentRepo.findAllByInstrumentId(instrumentId);
+    }
 }

@@ -9,6 +9,8 @@ import sum25.group03.warehouseservice.dto.request.UpdateSpecificConfigReq;
 import sum25.group03.warehouseservice.entity.GlobalConfiguration;
 import sum25.group03.warehouseservice.entity.SpecificConfiguration;
 
+import java.util.Optional;
+
 public interface ConfigService {
     ConfigurationDTO findByInstrumentId(Long id);
     boolean existsById(Long id);
@@ -21,4 +23,6 @@ public interface ConfigService {
     void deleteGlobalById(Long id);
     Page<GlobalConfiguration> getAllGlobalConfig(int page, int size);
     Page<SpecificConfiguration> getAllSpecificConfig(int page, int size);
+    SpecificConfiguration getSpecificConfigByInstrumentId(Long id);
+    GlobalConfiguration getGlobalConfigById(Long id);
 }

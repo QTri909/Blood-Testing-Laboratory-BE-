@@ -43,16 +43,16 @@ public class Instrument {
     private String notes;
 
 
-    @Column(name = "deactivated_at")
+    @Column(name = "deactivated_at", nullable = true)
     private LocalDate deactivatedAt;
 
-    @Column(name = "deactivated_by")
+    @Column(name = "deactivated_by", nullable = true)
     private Integer deactivatedBy;
 
-    @Column(name = "auto_delete_scheduled_at")
+    @Column(name = "auto_delete_scheduled_at", nullable = true)
     private LocalDate autoDeleteScheduledAt;
 
-    @Column(name = "installation_date")
+    @Column(name = "installation_date",  nullable = true)
     private LocalDate installationDate;
 
     @Column(name = "last_calibration_date", nullable = true)

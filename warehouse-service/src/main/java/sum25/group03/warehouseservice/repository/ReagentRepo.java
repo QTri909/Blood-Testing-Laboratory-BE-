@@ -2,6 +2,7 @@ package sum25.group03.warehouseservice.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import sum25.group03.warehouseservice.entity.Reagents;
 
@@ -14,5 +15,13 @@ public interface ReagentRepo extends JpaRepository<Reagents, Long> {
     @Query("SELECT r.reagentId FROM Reagents r WHERE r.reagentId IN :reagentIds AND r.status = 'AVAILABLE'")
     List<Long> findExistingIds(List<Long> reagentIds);
 
-
+    @Query("""
+    SELECT DISTINCT r
+    FROM Reagents r
+    JOIN r.reagentHistoryUsages rhu
+    JOIN rhu.instrument i
+    WHERE i.instrumentId = :instrumentId
+      AND r.status = 'ACTIVE'
+""")
+    List<Reagents> findAllByInstrumentId(@Param("instrumentId") Long instrumentId);
 }

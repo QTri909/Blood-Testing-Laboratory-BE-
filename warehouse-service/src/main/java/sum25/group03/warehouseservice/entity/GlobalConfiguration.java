@@ -36,6 +36,9 @@ public class GlobalConfiguration {
     @Column(name = "default_timeout", nullable = false)
     private int defaultTimeout;
 
+    @Column(name = "use_per_run", nullable = false)
+    private int usePerRun;
+
     @Column(name = "active", nullable = false)
     private boolean active;
 

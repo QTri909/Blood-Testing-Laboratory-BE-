@@ -2,12 +2,16 @@ package sum25.group03.warehouseservice.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import sum25.group03.warehouseservice.dto.internal.ConfigurationDTO;
 import sum25.group03.warehouseservice.entity.SpecificConfiguration;
+
+import java.util.Optional;
+
 
 @Repository
 public interface SpecificConfigRepo extends JpaRepository<SpecificConfiguration, Long> {
@@ -33,4 +37,13 @@ public interface SpecificConfigRepo extends JpaRepository<SpecificConfiguration,
         WHERE c.active = true
     """)
     Page<SpecificConfiguration> findAllByActiveTrue(Pageable pageable);
+
+    @EntityGraph(attributePaths = {"globalConfiguration"})
+    @Query("""
+    SELECT i.specificConfiguration
+    FROM Instrument i
+    WHERE i.instrumentId = :id AND i.specificConfiguration.active = true
+""")
+    SpecificConfiguration findByInstrumentIdWithGlobalConfig(@Param("id") Long id);
+
 }

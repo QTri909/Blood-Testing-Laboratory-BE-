@@ -20,4 +20,6 @@ public class GlobalConfigReq {
     private String sampleVolumeUnit;
     @Positive
     private int defaultTimeout;
+    @Positive
+    private int usePerRun;
 }

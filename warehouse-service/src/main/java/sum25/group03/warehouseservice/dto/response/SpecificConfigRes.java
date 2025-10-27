@@ -15,5 +15,4 @@ public class SpecificConfigRes {
     private String communicationProtocol;
     private int mixingSpeed;
     private String firmwareVersion;
-    private GlobalConfigRes globalConfigRes;
 }

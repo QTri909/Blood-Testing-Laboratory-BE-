@@ -24,6 +24,7 @@ import sum25.group03.warehouseservice.service.instrument.InstrumentService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -117,5 +118,15 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     public Page<SpecificConfiguration> getAllSpecificConfig(int page, int size) {
         return specificConfigRepo.findAllByActiveTrue(PageRequest.of(page, size));
+    }
+
+    @Override
+    public SpecificConfiguration getSpecificConfigByInstrumentId(Long id) {
+        return specificConfigRepo.findByInstrumentIdWithGlobalConfig(id);
+    }
+
+    @Override
+    public GlobalConfiguration getGlobalConfigById(Long id) {
+        return null;
     }
 }
