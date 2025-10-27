@@ -57,7 +57,8 @@ public class UserServiceImpl implements UserService {
                 .phoneNumber(request.getPhoneNumber())
                 .identityNumber(request.getIdentityNumber())
                 .address(request.getAddress())
-                .cognitoUserId(cognitoUserId) // lưu Cognito ID
+                .cognitoUserId(cognitoUserId)
+                .accountNonLocked(false)
                 .build();
 
         user = userRepository.save(user);
@@ -130,6 +131,8 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
 
+        cognitoService.updateUserAttributes(user);
+
         auditLogService.record(
                 "UPDATE",
                 "User",
@@ -149,6 +152,8 @@ public class UserServiceImpl implements UserService {
                         .map(ur -> ur.getRole().getRoleName())
                         .collect(Collectors.toSet()))
                 .build();
+
+
     }
 
     @Transactional
@@ -159,6 +164,8 @@ public class UserServiceImpl implements UserService {
 
         user.setIsActive(false);
         userRepository.save(user);
+
+        cognitoService.disableUser(user.getEmail());
 
         auditLogService.record(
                 "DEACTIVATE",
@@ -174,8 +181,13 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+
+
         userRoleRepository.deleteByUserId(user.getId());
         userRepository.delete(user);
+
+        cognitoService.deleteUser(user.getEmail());
 
         auditLogService.record(
                 "DELETE",

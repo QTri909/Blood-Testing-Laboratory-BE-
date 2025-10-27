@@ -6,6 +6,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityPr
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 import sum25.group03.iamservice.dto.CognitoConfig;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
+import sum25.group03.iamservice.entity.User;
 
 import java.util.List;
 
@@ -64,6 +65,58 @@ public class CognitoServiceImpl implements CognitoService {
         AdminCreateUserResponse response = cognitoClient.adminCreateUser(request);
 
         return response.user().username();
+    }
+
+    @Override
+    public void updateUserAttributes(User user) {
+        CognitoConfig config = getConfig();
+
+        AdminUpdateUserAttributesRequest updateRequest = AdminUpdateUserAttributesRequest.builder()
+                .userPoolId(config.getUserPoolId())
+                .username(user.getEmail())
+                .userAttributes(List.of(
+                        AttributeType.builder().name("name").value(user.getFullName()).build(),
+                        AttributeType.builder().name("phone_number").value(user.getPhoneNumber()).build()
+                ))
+                .build();
+
+        cognitoClient.adminUpdateUserAttributes(updateRequest);
+    }
+
+    @Override
+    public void disableUser(String email) {
+        CognitoConfig config = getConfig();
+
+        AdminDisableUserRequest disableRequest = AdminDisableUserRequest.builder()
+                .userPoolId(config.getUserPoolId())
+                .username(email)
+                .build();
+
+        cognitoClient.adminDisableUser(disableRequest);
+    }
+
+    @Override
+    public void enableUser(String email) {
+        CognitoConfig config = getConfig();
+
+        AdminEnableUserRequest enableRequest = AdminEnableUserRequest.builder()
+                .userPoolId(config.getUserPoolId())
+                .username(email)
+                .build();
+
+        cognitoClient.adminEnableUser(enableRequest);
+    }
+
+    @Override
+    public void deleteUser(String email) {
+        CognitoConfig config = getConfig();
+
+        AdminDeleteUserRequest deleteRequest = AdminDeleteUserRequest.builder()
+                .userPoolId(config.getUserPoolId())
+                .username(email)
+                .build();
+
+        cognitoClient.adminDeleteUser(deleteRequest);
     }
 
 
