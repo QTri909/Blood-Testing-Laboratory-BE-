@@ -191,9 +191,9 @@ public class InstrumentServiceImpl implements InstrumentService {
         List<InstalledReagent> reagents = installedReagentRepository
                 .findByInstrumentIdAndStatusIsNot(request.getInstrumentId(), InstalledReagentStatus.REMOVED);
         for (InstalledReagent reagent : reagents) {
-            if (reagent.getReagentId().equals(request.getInstrumentId())) {
+            if (reagent.getReagentId().equals(reagentValidation.getReagentId()) && reagent.getLotReagentId()!=null ) {
                 log.warn("Reagent with ID {} is already installed on instrument ID {}",
-                        reagent.getReagentId(), request.getInstrumentId());
+                        reagent.getReagentId(), reagentValidation.getReagentId());
                 throw new InstrumentModeChangeException(
                         "Reagent with ID " + reagent.getReagentId() +
                                 " is already installed on this instrument. Please remove it before installing a new one.");

@@ -9,7 +9,9 @@ import sum25.group03.warehouseservice.entity.enums.ConfigType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -66,5 +68,8 @@ public class SpecificConfiguration {
     @JoinColumn(name = "global_configuration_id", nullable = false)
     @JsonIgnore
     private GlobalConfiguration globalConfiguration;
+
+    @OneToMany(mappedBy = "configuration", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ConfigHasReagent> configHasReagents = new HashSet<>();
 
 }

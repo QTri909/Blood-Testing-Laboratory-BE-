@@ -8,7 +8,9 @@ import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -67,4 +69,7 @@ public class Reagents {
 
     @OneToMany(mappedBy = "reagent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReagentInventory> reagentInventories;
+
+    @OneToMany(mappedBy = "reagent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<ConfigHasReagent> configHasReagents = new HashSet<>();
 }
