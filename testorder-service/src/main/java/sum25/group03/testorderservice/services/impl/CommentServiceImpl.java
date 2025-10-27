@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.service.impl;
+package sum25.group03.testorderservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import sum25.group03.testorderservice.mapper.CommentMapper;
 import sum25.group03.testorderservice.repositories.CommentRepository;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
 import sum25.group03.testorderservice.repositories.TestResultRepository;
-import sum25.group03.testorderservice.service.interfaces.CommentService;
+import sum25.group03.testorderservice.services.interfaces.CommentService;
 
 import java.time.LocalDateTime;
 import java.util.List;
