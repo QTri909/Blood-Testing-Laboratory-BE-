@@ -4,11 +4,13 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -23,6 +25,9 @@ public class TestOrder {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @UuidGenerator
+    @Column(name = "code", nullable = false, unique = true, updatable = false)
+    private UUID code;
 
     @Column(name = "external_medical_record_id", nullable = false)
     private Long externalMedicalRecordId;
