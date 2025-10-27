@@ -2,6 +2,7 @@ package sum25.group03.testorderservice.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import sum25.group03.testorderservice.enums.FlagStatus;
 import sum25.group03.testorderservice.enums.TestResultStatus;
 import sum25.group03.testorderservice.enums.TestType;
 
@@ -32,7 +33,8 @@ public class TestResult {
     private Long parameterSnapshotId; // ID ParameterService
 
     @Column(name = "flag_status", nullable = false)
-    private String flagStatus;
+    @Enumerated(EnumType.STRING)
+    private FlagStatus flagStatus;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)

@@ -6,6 +6,11 @@ import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import java.util.List;
 
 public interface TestResultService {
+
+    // tai:
+    void reviewTestResult(Long testResultId, Double adjustedValue, Long reviewId);
+
+    // huy:
     TestResultResponseDTO createTestResult(TestResultRequestDTO requestDTO);
     TestResultResponseDTO getTestResultById(Long id);
     List<TestResultResponseDTO> getTestResultsByTestOrderId(Long testOrderId);

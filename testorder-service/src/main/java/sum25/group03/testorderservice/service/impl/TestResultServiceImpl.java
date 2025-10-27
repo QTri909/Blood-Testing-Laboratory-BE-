@@ -1,11 +1,13 @@
 package sum25.group03.testorderservice.service.impl;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
+import sum25.group03.testorderservice.entities.Parameter;
 import sum25.group03.testorderservice.entities.TestResult;
 import sum25.group03.testorderservice.enums.TestResultStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
@@ -15,6 +17,7 @@ import sum25.group03.testorderservice.service.interfaces.TestResultService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,35 @@ public class TestResultServiceImpl implements TestResultService {
     private final TestResultRepository testResultRepository;
     private final TestResultMapper testResultMapper;
 
+    // Tai
+    @Override
+    public void reviewTestResult(Long testResultId, Double adjustedValue, Long reviewId){
+        TestResult testResult;
+        Optional<TestResult> testResultOpt = testResultRepository.findById(testResultId);
+        if (testResultOpt.isPresent()) {
+            testResult = testResultOpt.get();
+        } else {
+            throw new EntityNotFoundException("Test result not found");
+        }
+        if (testResult.getStatus() != TestResultStatus.COMPLETED) {
+            throw new IllegalStateException("Only completed results can be reviewed");
+        }
+        Parameter para = testResult.getParameter();
+        Double min = para.getMin();
+        Double max = para.getMax();
+        if(adjustedValue != null){
+            if (min != null && adjustedValue < min)
+                throw new IllegalArgumentException("Value below minimum: " + min);
+            if (max != null && adjustedValue > max)
+                throw new IllegalArgumentException("Value exceeds maximum: " + max);
+            testResult.setValue(adjustedValue);
+        }
+        testResult.setStatus(TestResultStatus.REVIEWED);
+        testResult.setUpdatedAt(LocalDateTime.now());
+        testResultRepository.save(testResult);
+    }
+
+    // Huy
     @Override
     public TestResultResponseDTO createTestResult(TestResultRequestDTO requestDTO) {
         log.info("Creating test result for test order id: {}", requestDTO.getTestOrderId());

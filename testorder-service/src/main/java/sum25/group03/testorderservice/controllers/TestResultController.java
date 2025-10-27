@@ -7,14 +7,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import sum25.group03.testorderservice.services.impl.TestResultServiceImpl;
+import sum25.group03.testorderservice.service.interfaces.TestResultService;
 
 @RestController
 @RequestMapping("/test-result")
 public class TestResultController {
 
     @Autowired
-    private TestResultServiceImpl testResultService;
+    private TestResultService testResultService;
 
     @PostMapping("/review-test-result")
     public ResponseEntity<?> reviewTestResult(
