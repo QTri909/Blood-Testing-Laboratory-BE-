@@ -47,7 +47,7 @@ public class User {
     private Boolean isActive = true;
 
 
-    @Column(name = "failed_attempts", nullable = false)
+    @Column(name = "failed_attempts")
     private Integer failedAttempts = 0;
 
     @Column(name = "account_locked", nullable = false)
