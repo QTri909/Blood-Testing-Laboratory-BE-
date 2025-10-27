@@ -7,10 +7,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import sum25.group03.warehouseservice.dto.internal.ConfigurationDTO;
-import sum25.group03.warehouseservice.entity.SpecificConfiguration;
+import sum25.group03.warehouseservice.entity.Configuration;
 
 @Repository
-public interface SpecificConfigRepo extends JpaRepository<SpecificConfiguration, Long> {
+public interface SpecificConfigRepo extends JpaRepository<Configuration, Long> {
     @Query("""
         SELECT new sum25.group03.warehouseservice.dto.internal.ConfigurationDTO(
             g.globalConfigurationId,
@@ -20,8 +20,8 @@ public interface SpecificConfigRepo extends JpaRepository<SpecificConfiguration,
             c.communicationProtocol,
             c.mixingSpeed
         )
-        FROM SpecificConfiguration c
-        JOIN Instrument i ON c.specificConfigurationId = i.specificConfiguration.specificConfigurationId
+        FROM Configuration c
+        JOIN Instrument i ON c.specificConfigurationId = i.configuration.specificConfigurationId
         JOIN GlobalConfiguration g ON c.globalConfiguration.globalConfigurationId = g.globalConfigurationId
         WHERE i.instrumentId = :id AND c.active = true AND g.active = true
     """)
@@ -29,8 +29,8 @@ public interface SpecificConfigRepo extends JpaRepository<SpecificConfiguration,
 
     @Query("""
         SELECT c
-        FROM SpecificConfiguration c
+        FROM Configuration c
         WHERE c.active = true
     """)
-    Page<SpecificConfiguration> findAllByActiveTrue(Pageable pageable);
+    Page<Configuration> findAllByActiveTrue(Pageable pageable);
 }

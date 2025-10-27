@@ -4,7 +4,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.annotation.Configurations;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.internal.ConfigurationDTO;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
@@ -19,7 +18,6 @@ import sum25.group03.warehouseservice.service.reagent.ReagentService;
 import sum25.group03.warehouseservice.service.reagentusage.ReagentUsageService;
 
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -47,10 +45,10 @@ public class InstrumentServiceImpl implements InstrumentService {
     public void getConfigAndReagentByInstrument(Instrument instrument, Long cloneFromInstrumentId) {
         ConfigurationDTO configurationDTO = configService.findByInstrumentId(cloneFromInstrumentId);
         if (configurationDTO != null) {
-            SpecificConfiguration configRef = mapConfigurations(configurationDTO);
+            Configuration configRef = mapConfigurations(configurationDTO);
             GlobalConfiguration globalConfigRef = entityManager.getReference(GlobalConfiguration.class, configurationDTO.getGlobalConfigurationId());
             configRef.setGlobalConfiguration(globalConfigRef);
-            instrument.setSpecificConfiguration(configRef);
+            instrument.setConfiguration(configRef);
         }
         List<Long> reagentIds = reagentUsageService.getReagentUsageIdsByInstrumentId(cloneFromInstrumentId);
         if (!reagentIds.isEmpty()) {
@@ -61,8 +59,8 @@ public class InstrumentServiceImpl implements InstrumentService {
             instrument.setReagentHistoryUsages(reagentUsages);
         }
     }
-    public SpecificConfiguration mapConfigurations (ConfigurationDTO config) {
-        return SpecificConfiguration.builder()
+    public Configuration mapConfigurations (ConfigurationDTO config) {
+        return Configuration.builder()
                 .parameterSettings(config.getParameterSettings())
                 .supportedTests(config.getSupportedTests())
                 .dataOutputFormat(config.getDataOutputFormat())

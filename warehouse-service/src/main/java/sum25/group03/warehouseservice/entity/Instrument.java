@@ -31,7 +31,6 @@ public class Instrument {
     @Column(name = "serial_number", nullable = false, unique = true)
     private String serialNumber;
 
-
     @Column(name = "location", nullable = false)
     private String location;
 
@@ -41,7 +40,6 @@ public class Instrument {
 
     @Column(name = "notes", nullable = true, columnDefinition = "TEXT")
     private String notes;
-
 
     @Column(name = "deactivated_at")
     private LocalDate deactivatedAt;
@@ -67,7 +65,6 @@ public class Instrument {
     @Column(name = "next_maintenance_date", nullable = true)
     private LocalDate nextMaintenanceDate;
 
-
     @CreationTimestamp
     @Column(name = "created_at")
     private LocalDate createdAt;
@@ -83,15 +80,12 @@ public class Instrument {
     @Column(name = "updated_by", nullable = true)
     private int updatedBy;
 
-
     @OneToOne(fetch = FetchType.LAZY, cascade =  {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "specific_configuration_id", nullable = true)
-    private SpecificConfiguration specificConfiguration;
+    @JoinColumn(name = "configuration_id", nullable = true)
+    private Configuration configuration;
 
-
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "manufacturer_id")
-    private Manufacturer manufacturer;
+    @Column(name = "manufacturer", nullable = false)
+    private String manufacturer;
 
     @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReagentHistoryUsage> reagentHistoryUsages;

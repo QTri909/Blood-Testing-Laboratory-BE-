@@ -5,11 +5,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import sum25.group03.warehouseservice.entity.enums.ConfigType;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,24 +16,27 @@ import java.util.List;
 @Setter
 @Builder
 @Entity
-@Table(name = "global_configurations")
-public class GlobalConfiguration {
+@Table(name = "configurations")
+public class Configuration {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "gobal_configuration_id")
-    private Long globalConfigurationId;
+    @Column(name = "configuration_id")
+    private Long configurationId;
 
-    @Column(name = "sample_volume", nullable = false)
-    private BigDecimal sampleVolume;
+    @Column(name = "supported_tests", nullable = false)
+    private String supportedTests;
 
-    @Column(name = "sample_volume_unit", nullable = false)
-    private String sampleVolumeUnit;
+    @Column(name = "data_output_format", nullable = false)
+    private String dataOutputFormat;
 
-    @Column(name = "max_concurrent_samples", nullable = false)
-    private int maxConcurrentSamples;
+    @Column(name = "communication_protocol", nullable = false)
+    private String communicationProtocol;
 
-    @Column(name = "default_timeout", nullable = false)
-    private int defaultTimeout;
+    @Column(name = "mixing_speed", nullable = false)
+    private int  mixingSpeed;
+
+    @Column(name = "firmware_version", nullable = false)
+    private String firmwareVersion;
 
     @Column(name = "active", nullable = false)
     private boolean active;
@@ -53,6 +55,7 @@ public class GlobalConfiguration {
     @Column(name = "updated_by", nullable = true)
     private int updatedBy;
 
-    @OneToMany(mappedBy = "globalConfiguration", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<SpecificConfiguration> specificConfigurations;
+    @OneToOne(mappedBy = "configuration")
+    private Instrument instrument;
+
 }

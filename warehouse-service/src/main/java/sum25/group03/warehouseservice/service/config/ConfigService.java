@@ -6,8 +6,7 @@ import sum25.group03.warehouseservice.dto.request.GlobalConfigReq;
 import sum25.group03.warehouseservice.dto.request.SpecificConfigReq;
 import sum25.group03.warehouseservice.dto.request.UpdateGlobalConfigReq;
 import sum25.group03.warehouseservice.dto.request.UpdateSpecificConfigReq;
-import sum25.group03.warehouseservice.entity.GlobalConfiguration;
-import sum25.group03.warehouseservice.entity.SpecificConfiguration;
+import sum25.group03.warehouseservice.entity.Configuration;
 
 public interface ConfigService {
     ConfigurationDTO findByInstrumentId(Long id);
@@ -20,5 +19,5 @@ public interface ConfigService {
     void deleteSpecificById(Long id);
     void deleteGlobalById(Long id);
     Page<GlobalConfiguration> getAllGlobalConfig(int page, int size);
-    Page<SpecificConfiguration> getAllSpecificConfig(int page, int size);
+    Page<Configuration> getAllSpecificConfig(int page, int size);
 }

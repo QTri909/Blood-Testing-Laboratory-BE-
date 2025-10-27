@@ -69,7 +69,4 @@ public class Reagents {
 
     @OneToMany(mappedBy = "reagent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReagentInventory> reagentInventories;
-
-    @OneToMany(mappedBy = "reagent", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Set<ConfigHasReagent> configHasReagents = new HashSet<>();
 }
