@@ -11,5 +11,5 @@ public class RoleResponse {
     private String roleName;
     private String roleCode;
     private String roleDescription;
-    private Set<String> privileges; // tên quyền
+    private Set<String> privileges;
 }

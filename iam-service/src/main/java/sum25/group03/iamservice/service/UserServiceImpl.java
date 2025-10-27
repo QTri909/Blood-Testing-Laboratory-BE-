@@ -55,6 +55,8 @@ public class UserServiceImpl implements UserService {
                 .email(request.getEmail())
                 .fullName(request.getFullName())
                 .phoneNumber(request.getPhoneNumber())
+                .gender(request.getGender())
+                .dateOfBirth(request.getDateOfBirth())
                 .identityNumber(request.getIdentityNumber())
                 .address(request.getAddress())
                 .cognitoUserId(cognitoUserId)
@@ -96,6 +98,8 @@ public class UserServiceImpl implements UserService {
         response.setEmail(user.getEmail());
         response.setPhoneNumber(user.getPhoneNumber());
         response.setAddress(user.getAddress());
+        response.setGender(user.getGender());
+        response.setDateOfBirth(user.getDateOfBirth());
         response.setIdentityNumber(user.getIdentityNumber());
         response.setRoles(
                 user.getUserRoles().stream()
@@ -115,8 +119,13 @@ public class UserServiceImpl implements UserService {
 
         if (request.getFullName() != null) user.setFullName(request.getFullName());
         if (request.getEmail() != null) user.setEmail(request.getEmail());
-        if (request.getPhone() != null) user.setPhoneNumber(request.getPhone());
-        if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
+        if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
+        if (request.getEmail() != null) user.setEmail(request.getEmail());
+        if (request.getAddress() != null) user.setAddress(request.getAddress());
+        if (request.getDateOfBirth() != null) user.setDateOfBirth(request.getDateOfBirth());
+        if (request.getIdentityNumber() != null) user.setIdentityNumber(request.getIdentityNumber());
+
+        if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()){
 
             userRoleRepository.deleteByUserId(user.getId());
 
@@ -148,6 +157,10 @@ public class UserServiceImpl implements UserService {
                 .fullName(user.getFullName())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
+                .gender(user.getGender())
+                .dateOfBirth(user.getDateOfBirth())
+                .identityNumber(user.getIdentityNumber())
+                .address(user.getAddress())
                 .roles(user.getUserRoles().stream()
                         .map(ur -> ur.getRole().getRoleName())
                         .collect(Collectors.toSet()))
@@ -209,6 +222,8 @@ public class UserServiceImpl implements UserService {
                         .email(user.getEmail())
                         .phoneNumber(user.getPhoneNumber())
                         .address(user.getAddress())
+                        .gender(user.getGender())
+                        .dateOfBirth(user.getDateOfBirth())
                         .identityNumber(user.getIdentityNumber())
                         .build())
                 .collect(Collectors.toList());
@@ -226,6 +241,8 @@ public class UserServiceImpl implements UserService {
                         .email(user.getEmail())
                         .phoneNumber(user.getPhoneNumber())
                         .address(user.getAddress())
+                        .gender(user.getGender())
+                        .dateOfBirth(user.getDateOfBirth())
                         .identityNumber(user.getIdentityNumber())
                         .roles(
                                 user.getUserRoles().stream()
