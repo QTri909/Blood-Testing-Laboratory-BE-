@@ -1,5 +1,6 @@
 package sum25.group03.iamservice.config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,6 +24,15 @@ public class SecurityConfig {
                         .jwt(jwt -> jwt
                                 .jwkSetUri("https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_7UGXSOgJj/.well-known/jwks.json")
                         )
+                        .authenticationEntryPoint((request, response, authException) -> {
+
+                            String path = request.getRequestURI();
+                            if (path.startsWith("/auth/login")) {
+                                response.setStatus(HttpServletResponse.SC_OK);
+                            } else {
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                            }
+                        })
                 );
         return http.build();
     }

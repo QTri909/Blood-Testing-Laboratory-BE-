@@ -25,6 +25,17 @@ public class DynamicAuthorizationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
+
+        String path = request.getRequestURI();
+
+
+        if (path.startsWith("/auth/login") ||
+                path.startsWith("/auth/refresh") )
+                 {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String cognitoUserId = extractCognitoUserId(request);
 
         if (cognitoUserId != null) {
