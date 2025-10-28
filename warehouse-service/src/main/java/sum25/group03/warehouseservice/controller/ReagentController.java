@@ -28,4 +28,9 @@ public class ReagentController {
 
         return ResponseEntity.ok(response);
     }
+    @DeleteMapping("")
+    public ResponseEntity<?> deleteReagent(@RequestParam Long reagentId) {
+        reagentService.deleteReagent(reagentId);
+        return ResponseEntity.ok("Reagent deleted successfully.");
+    }
 }
