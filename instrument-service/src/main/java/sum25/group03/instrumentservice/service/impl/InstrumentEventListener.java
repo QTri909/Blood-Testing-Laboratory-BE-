@@ -7,6 +7,8 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import sum25.group03.instrumentservice.common.InstrumentStatus;
 import sum25.group03.instrumentservice.event.NewInstrumentEvent;
+import sum25.group03.instrumentservice.event.UpdateConfigEvent;
+import sum25.group03.instrumentservice.exception.ResourceNotFoundException;
 import sum25.group03.instrumentservice.model.Configuration;
 import sum25.group03.instrumentservice.model.InstalledReagent;
 import sum25.group03.instrumentservice.model.Instrument;
@@ -53,5 +55,23 @@ public class InstrumentEventListener {
                 .build();
         instrumentRepository.save(instrument);
         log.info("Instrument {} has been sync", instrument.getId());
+    }
+
+    @KafkaListener(topics = "config-updates", groupId = "instrument-service-group", containerFactory = "configUpdateListenerContainerFactory")
+    public void handleConfigUpdateEvent(UpdateConfigEvent config) {
+        Instrument instrument = instrumentRepository.findById(config.getInstrumentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Instrument not found with ID: " + config.getInstrumentId()));
+
+        Configuration updatedConfig = instrument.getConfiguration();
+        updatedConfig.setSupportedTests(config.getConfigEvent().getSupportedTests());
+        updatedConfig.setDataOutputFormat(config.getConfigEvent().getDataOutputFormat());
+        updatedConfig.setCommunicationProtocol(config.getConfigEvent().getCommunicationProtocol());
+        updatedConfig.setMixingSpeed(config.getConfigEvent().getMixingSpeed());
+        updatedConfig.setFirmwareVersion(config.getConfigEvent().getFirmwareVersion());
+        updatedConfig.setUsePerRun(config.getConfigEvent().getUsePerRun());
+
+        instrument.setConfiguration(updatedConfig);
+        instrumentRepository.save(instrument);
+        log.info("Configuration for Instrument {} has been updated", instrument.getId());
     }
 }

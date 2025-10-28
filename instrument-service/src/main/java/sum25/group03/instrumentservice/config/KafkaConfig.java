@@ -15,10 +15,7 @@ import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.FixedBackOff;
-import sum25.group03.instrumentservice.event.InstrumentModeChangedEvent;
-import sum25.group03.instrumentservice.event.NewInstrumentEvent;
-import sum25.group03.instrumentservice.event.ReagentInstalledEvent;
-import sum25.group03.instrumentservice.event.UpdateExpiryReagent;
+import sum25.group03.instrumentservice.event.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -98,6 +95,25 @@ public class KafkaConfig {
         ConcurrentKafkaListenerContainerFactory<String, NewInstrumentEvent> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(newInstrumentEventConsumerFactory());
+        factory.setCommonErrorHandler(errorHandler());
+        return factory;
+    }
+    @Bean
+    public ConsumerFactory<String, UpdateConfigEvent> configUpdateEventConsumerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+        configProps.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
+        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        return new DefaultKafkaConsumerFactory<>(configProps);
+    }
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, UpdateConfigEvent> configUpdateListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, UpdateConfigEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(configUpdateEventConsumerFactory());
         factory.setCommonErrorHandler(errorHandler());
         return factory;
     }
