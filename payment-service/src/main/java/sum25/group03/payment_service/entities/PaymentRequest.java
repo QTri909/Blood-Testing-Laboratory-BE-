@@ -23,5 +23,7 @@ public class PaymentRequest implements Serializable {
     @Column(name = "id", unique = true, updatable = false, nullable = false)
     private String id;
 
+    private String orderCode; // reference to the order being paid
+
 
 }
