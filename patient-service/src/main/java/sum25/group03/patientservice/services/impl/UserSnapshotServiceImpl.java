@@ -47,7 +47,7 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
             if (entity == null) continue;
             if (updateInfo.getRoles() != null) entity.setRoles(updateInfo.getRoles());
             if (updateInfo.getEmail() != null) entity.setEmail(updateInfo.getEmail());
-            if (updateInfo.getPhone() != null) entity.setPhone(updateInfo.getPhone());
+            if (updateInfo.getPhoneNumber() != null) entity.setPhoneNumber(updateInfo.getPhoneNumber());
             if (updateInfo.getFullName() != null) entity.setFullName(updateInfo.getFullName());
         }
     }

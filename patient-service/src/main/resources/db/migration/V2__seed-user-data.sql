@@ -1,7 +1,7 @@
 -- V2__seed_user_snapshot.sql
 -- Seed initial 15 user_snapshot entries for testing
 
-INSERT INTO user_snapshot (external_user_id, full_name, email, phone, last_updated, roles)
+INSERT INTO user_snapshot (external_user_id, full_name, email, phone_number, last_updated, roles)
 VALUES
     (1001, 'Nguyễn Văn An', 'nguyenvanan@example.com', '0901122331', TIMESTAMP '2025-01-10 09:15:00', '["PATIENT"]'::jsonb),
     (1002, 'Trần Thị Bích', 'tranthibich@example.com', '0901234562', TIMESTAMP '2025-01-11 10:45:00', '["PATIENT"]'::jsonb),

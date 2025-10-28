@@ -22,6 +22,7 @@ public interface UserSnapshotMapper {
 
     UserSnapshotResponse toResponse(UserSnapshotEntity entity);
 
+
     UserFilterUpdate toUpdateInfoDTO(FeignUserDTO feignDto);
     List<UserFilterUpdate> toUpdateInfoDTOs(List<FeignUserDTO> feignDtos);
 }
