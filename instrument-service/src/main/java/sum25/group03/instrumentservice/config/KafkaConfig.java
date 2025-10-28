@@ -1,16 +1,22 @@
 package sum25.group03.instrumentservice.config;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.core.*;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import org.springframework.util.backoff.FixedBackOff;
 import sum25.group03.instrumentservice.event.InstrumentModeChangedEvent;
+import sum25.group03.instrumentservice.event.NewInstrumentEvent;
 import sum25.group03.instrumentservice.event.ReagentInstalledEvent;
 import sum25.group03.instrumentservice.event.UpdateExpiryReagent;
 
@@ -26,6 +32,9 @@ public class KafkaConfig {
 
     @Value("${spring.kafka.bootstrap-servers:localhost:9092}")
     private String bootstrapServers;
+
+    @Value("${spring.kafka.consumer.group-id:instrument-service-group}")
+    private String groupId;
 
     @Bean
     public ProducerFactory<String, ReagentInstalledEvent> producerFactory() {
@@ -73,4 +82,36 @@ public class KafkaConfig {
     public KafkaTemplate<String, InstrumentModeChangedEvent> instrumentModeKafkaTemplate() {
         return new KafkaTemplate<>(producerInstrumentFactory());
     }
+    @Bean
+    public ConsumerFactory<String, NewInstrumentEvent> newInstrumentEventConsumerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+        configProps.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
+        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        return new DefaultKafkaConsumerFactory<>(configProps);
+    }
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, NewInstrumentEvent> newInstrumentListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, NewInstrumentEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(newInstrumentEventConsumerFactory());
+        factory.setCommonErrorHandler(errorHandler());
+        return factory;
+    }
+    @Bean
+    public DefaultErrorHandler errorHandler() {
+        DefaultErrorHandler errorHandler = new DefaultErrorHandler((record, exception) -> {
+            System.err.println("[Kafka Error] Failed to deserialize message from topic: " + record.topic() +
+                    ", partition: " + record.partition() + ", offset: " + record.offset());
+            System.err.println("[Kafka Error] Exception: " + exception.getMessage());
+        }, new FixedBackOff(1000, 3));
+        errorHandler.addNotRetryableExceptions(org.springframework.messaging.converter.MessageConversionException.class);
+        return errorHandler;
+    }
+
+
+
 }
