@@ -7,26 +7,20 @@ import sum25.group03.patientservice.dtos.response.PatientResponseDTO;
 import sum25.group03.patientservice.feign.IAMFeignClient;
 import sum25.group03.patientservice.feign.dtos.FeignPatientResponseWrapper;
 import sum25.group03.patientservice.mapper.PatientMapper;
+import sum25.group03.patientservice.services.interfaces.PatientService;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PatientServiceImpl {
+public class PatientServiceImpl implements PatientService {
 
     private final IAMFeignClient iamFeignClient;
     private final PatientMapper patientMapper;
 
-    private static final Integer DEFAULT_PAGE_SIZE = 10;
-    private static final Integer DEFAULT_PAGE_NUMBER = 0;
-
+    @Override
     public List<PatientResponseDTO> getAllPatientsWith(Integer size, Integer page) {
-        if (size == null)
-            size = DEFAULT_PAGE_SIZE;
-        if (page == null)
-            page = DEFAULT_PAGE_NUMBER;
-
         // Call IAM service to fetch patients info
         FeignPatientResponseWrapper wrapper = iamFeignClient.fetchPatientsInfo(page, size);
         if (wrapper == null || wrapper.getContent() == null)
