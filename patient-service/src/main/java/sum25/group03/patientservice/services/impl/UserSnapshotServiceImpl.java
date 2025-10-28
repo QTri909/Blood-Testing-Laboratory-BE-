@@ -17,6 +17,7 @@ import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository
 import sum25.group03.patientservice.services.interfaces.UserSnapshotService;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,23 +31,54 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
     private final IAMFeignClient userFeignClient;
     private final JdbcTemplate jdbcTemplate;
 
+
+    @Transactional
+    public void syncByPage(List<UserDTO> updatedList, List<UserSnapshotEntity> allUserSnapshots) {
+        if (updatedList == null || updatedList.isEmpty()) return;
+
+        // look up map by externalUserId and proper entity
+        Map<Long, UserSnapshotEntity> userSnapshotMap = allUserSnapshots.stream()
+                .collect(Collectors.toMap(UserSnapshotEntity::getExternalUserId, e -> e));
+
+        // map to UserFilterUpdate DTOs
+        List<UserFilterUpdate> updateInfoDTOs = mapper.toUpdateInfoDTOs(updatedList);
+        for (UserFilterUpdate updateInfo: updateInfoDTOs) {
+            UserSnapshotEntity entity = userSnapshotMap.get(updateInfo.getId()); // search by externalUserId
+            if (entity == null || updateInfo.getRoles() == null) continue;
+            // update roles in the database
+            entity.setRoles(updateInfo.getRoles());
+        }
+    }
+
     // sync user information from IAM service
     @Override
-    @Transactional
     public void syncUserSnapshots() {
-        UserFeignResponseWrapper usersWrapper = userFeignClient.fetchUsersInfo();
+        int size = 5;
+        int number = 0; // page
+        boolean last = false;
 
-        // debug:
-        log.info("usersWrapper={}", usersWrapper);
+        // load all users entities:
+        List<UserSnapshotEntity> allUserSnapshots = repository.findAll();
+        if (allUserSnapshots == null || allUserSnapshots.isEmpty()) {
+            throw new RuntimeException("No user snapshots found in the database.");
+        }
 
-        if (usersWrapper == null)
-            throw new RuntimeException("usersWrapper is null");
+        do {
+            // fetch data from IAM service with pagination
+            UserFeignResponseWrapper usersWrapper = userFeignClient.fetchUsersInfo(number, size);
+            System.out.println("usersWrapper={}\n" + usersWrapper);
 
-        List<UserDTO> users = usersWrapper.getContent();
-        List<UserFilterUpdate> updateInfos = mapper.toUpdateInfoDTOs(users);
+            List<UserDTO> updatedList = usersWrapper.getContent();
 
-        // debug:
-        updateInfos.stream().forEach(System.out::println);
+            // sync data
+            syncByPage(updatedList, allUserSnapshots);
+
+            last = usersWrapper.getLast();
+            number++;
+
+        } while(!last);
+
+        log.info("Finished syncing all user snapshots from IAM service.");
     }
 
     @Override

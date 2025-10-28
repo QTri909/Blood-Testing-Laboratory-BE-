@@ -11,8 +11,24 @@ import java.util.List;
 @AllArgsConstructor
 public class UserFeignResponseWrapper {
     private List<UserDTO> content;
-    private Boolean isLast;
+    private Boolean last;
     private Integer totalElements;
     private Integer totalPages;
     private Integer size;
+    private Integer number;
+
+    @Override
+    public String toString() {
+        return """
+                UserFeignResponseWrapper{
+                    content=%s,
+                    last=%s,
+                    totalElements=%s,
+                    totalPages=%s,
+                    size=%s,
+                    number=%s
+                }
+                """.formatted(
+                content, last, totalElements, totalPages, size, number);
+    }
 }
