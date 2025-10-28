@@ -1,5 +1,8 @@
 package sum25.group03.warehouseservice.service.reagentsupply;
 
-public interface ReagentSupplyService {
+import sum25.group03.warehouseservice.dto.response.HistorySupplyRes;
+import sum25.group03.warehouseservice.dto.response.PageRes;
 
+public interface ReagentSupplyService {
+    PageRes<HistorySupplyRes> getAll(int page, int size);
 }

@@ -37,9 +37,6 @@ public class Reagents {
     @Column(name = "unit", nullable = false)
     private String unit;
 
-    @Column(name = "expiration_date", nullable = false)
-    private LocalDate expirationDate;
-
     @Column(name = "storage_conditions", nullable = false)
     private String storageConditions;
 

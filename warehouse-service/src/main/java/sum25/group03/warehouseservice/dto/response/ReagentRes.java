@@ -1,5 +1,6 @@
 package sum25.group03.warehouseservice.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 @AllArgsConstructor
@@ -7,12 +8,12 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ReagentRes {
     private Long reagentId;
     private String reagentName;
     private String catalogNumber;
     private String casNumber;
     private String unit;
-    private String expirationDate;
     private int quantity;
 }
