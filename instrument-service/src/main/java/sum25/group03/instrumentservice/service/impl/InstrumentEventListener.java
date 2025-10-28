@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
+import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.common.InstrumentStatus;
 import sum25.group03.instrumentservice.event.NewInstrumentEvent;
 import sum25.group03.instrumentservice.event.UpdateConfigEvent;
@@ -24,10 +25,19 @@ public class InstrumentEventListener {
 
     @KafkaListener(topics = "new-instrument-events", groupId = "instrument-service-group", containerFactory = "newInstrumentListenerContainerFactory")
     public void handleNewInstrumentEvent(NewInstrumentEvent newInstrumentEvent) {
+        Instrument newInstrument = instrumentRepository.findById(newInstrumentEvent.getInstrumentId())
+                .orElseGet(() -> {
+                    Instrument i = new Instrument();
+                    i.setId(newInstrumentEvent.getInstrumentId());
+                    i.setInstrumentName(newInstrumentEvent.getInstrumentName());
+                    i.setStatus(InstrumentStatus.READY);
+                    return i;
+                });
         Configuration config = null;
         List<InstalledReagent> installedReagents = null;
         if(newInstrumentEvent.getConfigEvent() !=null){
              config = Configuration.builder()
+                     .configurationName(newInstrumentEvent.getConfigEvent().getConfigurationName())
                     .communicationProtocol(newInstrumentEvent.getConfigEvent().getCommunicationProtocol())
                     .dataOutputFormat(newInstrumentEvent.getConfigEvent().getDataOutputFormat())
                     .firmwareVersion(newInstrumentEvent.getConfigEvent().getFirmwareVersion())
@@ -37,24 +47,20 @@ public class InstrumentEventListener {
                     .active(true)
                     .build();
         }
-        if(!newInstrumentEvent.getNewReagentEvents().isEmpty()){
+        if(newInstrumentEvent.getNewReagentEvents()!=null && !newInstrumentEvent.getNewReagentEvents().isEmpty() ){
             installedReagents = newInstrumentEvent.getNewReagentEvents().stream()
                     .map(reagentEvent -> InstalledReagent.builder()
                             .reagentId(reagentEvent.getReagentId())
                             .reagentName(reagentEvent.getReagentName())
+                            .instrument(newInstrument)
+                            .status(InstalledReagentStatus.EMPTY)
                             .build())
                     .toList();
         }
-
-        Instrument instrument = Instrument.builder()
-                .id(newInstrumentEvent.getInstrumentId())
-                .instrumentName(newInstrumentEvent.getInstrumentName())
-                .configuration(config)
-                .installedReagents(installedReagents)
-                .status(InstrumentStatus.READY)
-                .build();
-        instrumentRepository.save(instrument);
-        log.info("Instrument {} has been sync", instrument.getId());
+        newInstrument.setConfiguration(config);
+        newInstrument.setInstalledReagents(installedReagents);
+        instrumentRepository.save(newInstrument);
+        log.info("Instrument {} has been sync", newInstrument.getId());
     }
 
     @KafkaListener(topics = "config-updates", groupId = "instrument-service-group", containerFactory = "configUpdateListenerContainerFactory")
@@ -63,6 +69,7 @@ public class InstrumentEventListener {
                 .orElseThrow(() -> new ResourceNotFoundException("Instrument not found with ID: " + config.getInstrumentId()));
 
         Configuration updatedConfig = instrument.getConfiguration();
+        updatedConfig.setConfigurationName(config.getConfigEvent().getConfigurationName());
         updatedConfig.setSupportedTests(config.getConfigEvent().getSupportedTests());
         updatedConfig.setDataOutputFormat(config.getConfigEvent().getDataOutputFormat());
         updatedConfig.setCommunicationProtocol(config.getConfigEvent().getCommunicationProtocol());

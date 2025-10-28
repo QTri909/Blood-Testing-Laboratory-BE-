@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class RawTestResultResponse {
-    private
+    private Long id;
 }

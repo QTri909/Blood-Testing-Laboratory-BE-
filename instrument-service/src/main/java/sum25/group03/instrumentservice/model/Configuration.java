@@ -20,7 +20,10 @@ public class Configuration {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "configuration_id")
-    private Long configurationId;
+    private Long id;
+
+    @Column(name = "configuration_name", nullable = false)
+    private String configurationName;
 
     @Column(name = "supported_tests", nullable = false)
     private String supportedTests;
@@ -43,7 +46,7 @@ public class Configuration {
     @Column(name = "active", nullable = false)
     private boolean active;
 
-    @OneToOne(mappedBy = "configuration")
+    @OneToOne(mappedBy = "configuration", cascade = CascadeType.ALL)
     private Instrument instrument;
 
 }

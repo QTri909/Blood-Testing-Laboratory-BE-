@@ -43,6 +43,7 @@ aws:
   secret-key-secret: ${AWS_SECRET_ACCESS_KEY}
 
 
+
 audit:
   cloudwatch:
     log-group: Instrument-service

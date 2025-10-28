@@ -45,6 +45,7 @@ public class InstrumentServiceImpl implements InstrumentService {
     }
     public ConfigEvent buildConfigEventFromConfiguration(Configuration configuration) {
         return ConfigEvent.builder()
+                .configurationName(configuration.getConfigurationName())
                 .supportedTests(configuration.getSupportedTests())
                 .dataOutputFormat(configuration.getDataOutputFormat())
                 .communicationProtocol(configuration.getCommunicationProtocol())
@@ -68,6 +69,17 @@ public class InstrumentServiceImpl implements InstrumentService {
                         .build())
                 .toList();
     }
+    public Configuration cloneConfiguration(Configuration config) {
+        return Configuration.builder()
+                .configurationName(config.getConfigurationName())
+                .supportedTests(config.getSupportedTests())
+                .dataOutputFormat(config.getDataOutputFormat())
+                .communicationProtocol(config.getCommunicationProtocol())
+                .mixingSpeed(config.getMixingSpeed())
+                .firmwareVersion(config.getFirmwareVersion())
+                .active(true)
+                .build();
+    }
     @Override
     public void addInstrumentToWarehouse(InstrumentReq instrument) {
         Instrument newInstrument = instrumentMapper.toEntity(instrument);
@@ -83,14 +95,7 @@ public class InstrumentServiceImpl implements InstrumentService {
             if(configuration == null){
                 log.info("No configuration found to clone for instrument id: {}", instrument.getCloneFromInstrumentId());
             }else{
-                Configuration newConfig = Configuration.builder()
-                        .supportedTests(configuration.getSupportedTests())
-                        .dataOutputFormat(configuration.getDataOutputFormat())
-                        .communicationProtocol(configuration.getCommunicationProtocol())
-                        .mixingSpeed(configuration.getMixingSpeed())
-                        .firmwareVersion(configuration.getFirmwareVersion())
-                        .active(true)
-                        .build();
+                Configuration newConfig = cloneConfiguration(configuration);
                 newInstrument.setConfiguration(newConfig);
                 configEvent = buildConfigEventFromConfiguration(newConfig);
             }
@@ -120,18 +125,25 @@ public class InstrumentServiceImpl implements InstrumentService {
     @Override
     public InstrumentConfigReagentRes addConfigAndReagentToInstrument(AssignConfigAndReagentReq assignConfigAndReagentReq) {
         // Validate configuration and reagents existence
-        if(assignConfigAndReagentReq.getConfigurationId() == null && assignConfigAndReagentReq.getReagentIds().isEmpty()){
+        if(assignConfigAndReagentReq.getConfigurationId() == null && assignConfigAndReagentReq.getReagentIds().isEmpty() ){
             throw new MissingRequiredFieldsException("No configuration and reagents provided to assign");
         }
         Instrument instrument = instrumentRepo.findById(assignConfigAndReagentReq.getInstrumentId())
                 .orElseThrow(() -> new NotFoundException("Instrument not found with id: " + assignConfigAndReagentReq.getInstrumentId()));
-        Configuration config = configService.getConfigById(assignConfigAndReagentReq.getConfigurationId());
+        Configuration config = configService.getConfigById(assignConfigAndReagentReq.getConfigurationId()!=null?
+                assignConfigAndReagentReq.getConfigurationId() : null);
 
         ConfigEvent configEvent = null;
         List<NewReagentEvent> reagentEvents = null;
         List<ReagentForInstrumentRes> reagentForInstrumentResList = null;
         if(config != null){
-            instrument.setConfiguration(config);
+            if (config.getInstrument() != null) {
+                Configuration cloneConfig = cloneConfiguration(config);
+                instrument.setConfiguration(cloneConfig);
+            }else{
+                instrument.setConfiguration(config);
+            }
+
             configEvent = buildConfigEventFromConfiguration(config);
         }
 
@@ -151,7 +163,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .configEvent(configEvent)
                 .newReagentEvents(reagentEvents)
                 .build();
-        kafkaTemplate.send("update-configOrReagent-instrument-events", event);
+        kafkaTemplate.send("new-instrument-events", event);
         log.info("Published Kafka event (update instrument): {}", event);
 
         return InstrumentConfigReagentRes.builder()

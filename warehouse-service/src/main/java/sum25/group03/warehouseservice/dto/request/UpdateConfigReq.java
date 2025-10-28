@@ -13,6 +13,8 @@ public class UpdateConfigReq {
     @NonNull
     private Long configurationId;
     @NotBlank
+    private String configurationName;
+    @NotBlank
     private String supportedTests;
     @NotBlank
     private String dataOutputFormat;

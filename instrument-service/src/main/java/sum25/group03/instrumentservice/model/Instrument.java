@@ -28,7 +28,7 @@ public class Instrument {
     @Column(name = "status")
     private InstrumentStatus status;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "configuration_id")
     private Configuration configuration;
 

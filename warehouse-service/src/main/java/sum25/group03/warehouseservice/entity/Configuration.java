@@ -23,6 +23,9 @@ public class Configuration {
     @Column(name = "configuration_id")
     private Long configurationId;
 
+    @Column(name = "configuration_name", nullable = false)
+    private String configurationName;
+
     @Column(name = "supported_tests", nullable = false)
     private String supportedTests;
 

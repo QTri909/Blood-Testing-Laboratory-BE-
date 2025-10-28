@@ -11,6 +11,8 @@ import lombok.*;
 @Builder
 public class ConfigReq {
     @NotBlank
+    private String configurationName;
+    @NotBlank
     private String supportedTests;
     @NotBlank
     private String dataOutputFormat;

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConfigEvent {
+    private String configurationName;
     private String supportedTests;
     private String dataOutputFormat;
     private String communicationProtocol;
