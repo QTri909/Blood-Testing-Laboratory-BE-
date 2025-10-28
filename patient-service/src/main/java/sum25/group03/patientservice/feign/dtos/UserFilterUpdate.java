@@ -13,4 +13,7 @@ import java.util.List;
 public class UserFilterUpdate implements Serializable {
     private Long id;
     private List<String> roles;
+    private String phone;
+    private String email;
+    private String fullName;
 }

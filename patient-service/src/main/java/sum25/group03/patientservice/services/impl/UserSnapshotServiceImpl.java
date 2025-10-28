@@ -44,9 +44,11 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
         List<UserFilterUpdate> updateInfoDTOs = mapper.toUpdateInfoDTOs(updatedList);
         for (UserFilterUpdate updateInfo: updateInfoDTOs) {
             UserSnapshotEntity entity = userSnapshotMap.get(updateInfo.getId()); // search by externalUserId
-            if (entity == null || updateInfo.getRoles() == null) continue;
-            // update roles in the database
-            entity.setRoles(updateInfo.getRoles());
+            if (entity == null) continue;
+            if (updateInfo.getRoles() != null) entity.setRoles(updateInfo.getRoles());
+            if (updateInfo.getEmail() != null) entity.setEmail(updateInfo.getEmail());
+            if (updateInfo.getPhone() != null) entity.setPhone(updateInfo.getPhone());
+            if (updateInfo.getFullName() != null) entity.setFullName(updateInfo.getFullName());
         }
     }
 
