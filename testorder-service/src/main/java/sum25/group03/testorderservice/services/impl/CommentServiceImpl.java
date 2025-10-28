@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.testorderservice.dtos.request.CommentRequestDTO;
 import sum25.group03.testorderservice.dtos.response.CommentResponseDTO;
 import sum25.group03.testorderservice.entities.Comment;
+import sum25.group03.testorderservice.enums.ActionCommentsLog;
 import sum25.group03.testorderservice.enums.CommentStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.CommentMapper;
@@ -29,25 +30,51 @@ public class CommentServiceImpl implements CommentService {
     private final TestOrderRepository testOrderRepository;
     private final TestResultRepository testResultRepository;
     private final CommentMapper commentMapper;
+    private final  CommentLogServiceImpl commentLogService;
+
 
     @Override
     public CommentResponseDTO createComment(CommentRequestDTO requestDTO) {
         log.info("Creating new comment for testOrderId: {} or testResultId: {}",
                 requestDTO.getTestOrderId(), requestDTO.getTestResultId());
 
-        validateCommentRequest(requestDTO);
-
         Comment comment = commentMapper.toEntity(requestDTO);
+
+        if (requestDTO.getTestOrderId() != null) {
+            comment.setTestOrder(
+                    testOrderRepository.findById(requestDTO.getTestOrderId())
+                            .orElseThrow(() -> new ResourceNotFoundException(
+                                    "Test order not found with id: " + requestDTO.getTestOrderId()))
+            );
+        }
+
+        if (requestDTO.getTestResultId() != null) {
+            comment.setTestResult(
+                    testResultRepository.findById(requestDTO.getTestResultId())
+                            .orElseThrow(() -> new ResourceNotFoundException(
+                                    "Test result not found with id: " + requestDTO.getTestResultId()))
+            );
+        }
+
         comment.setStatus(CommentStatus.ACTIVE);
         comment.setCreatedAt(LocalDateTime.now());
         comment.setUpdatedAt(LocalDateTime.now());
-//        comment.setCreatedBy("SYSTEM"); // TODO: Replace with actual user from IAM
 
         Comment savedComment = commentRepository.save(comment);
         log.info("Comment created successfully with id: {}", savedComment.getId());
 
+        //create comment  log
+        commentLogService.logAction(
+                ActionCommentsLog.CREATE_COMMENT,
+                requestDTO.getUserId(),
+                savedComment.getId(),
+                null,
+                savedComment.getCommentText()
+        );
+
         return commentMapper.toResponseDto(savedComment);
     }
+
 
     @Override
     public CommentResponseDTO updateComment(Long id, CommentRequestDTO requestDTO) {
@@ -61,6 +88,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         validateCommentRequest(requestDTO);
+        String oldCommentText = existingComment.getCommentText();
 
         commentMapper.updateEntity(requestDTO, existingComment);
         existingComment.setUpdatedAt(LocalDateTime.now());
@@ -68,6 +96,14 @@ public class CommentServiceImpl implements CommentService {
 
         Comment updatedComment = commentRepository.save(existingComment);
         log.info("Comment updated successfully with id: {}", updatedComment.getId());
+        //update comment log
+        commentLogService.logAction(
+                ActionCommentsLog.UPDATE_COMMENT,
+                requestDTO.getUserId(),
+                updatedComment.getId(),
+                oldCommentText,
+                updatedComment.getCommentText()
+        );
 
         return commentMapper.toResponseDto(updatedComment);
     }
@@ -89,6 +125,14 @@ public class CommentServiceImpl implements CommentService {
 
         commentRepository.save(comment);
         log.info("Comment deleted successfully with id: {}", id);
+        //delete comment log
+        commentLogService.logAction(
+                ActionCommentsLog.DELETE_COMMENT,
+                null,
+                comment.getId(),
+                comment.getCommentText(),
+                null
+        );
     }
 
     @Override

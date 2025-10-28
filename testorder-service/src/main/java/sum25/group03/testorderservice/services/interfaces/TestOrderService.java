@@ -11,9 +11,9 @@ import java.util.List;
 public interface TestOrderService{
 
     // -------- THUYEN---------
-    TestOrderResponse getTestOrderById(Long id, Long viewerId);
-    List<TestOrderResponse> getAllTestOrders(Long viewerId);
-    List<TestOrderResponse> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId);
+    TestOrderResponseDTO getTestOrderById(Long id, Long viewerId);
+    List<TestOrderResponseDTO> getAllTestOrders(Long viewerId);
+    List<TestOrderResponseDTO> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId);
 
     // -------- HUY -----------
     //3.5.1.3 Create Patient's Test Order

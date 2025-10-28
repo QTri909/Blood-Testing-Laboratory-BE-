@@ -25,17 +25,21 @@ public class TestOrderController {
 
     // -------- THUYEN --------
     @GetMapping
-    public ResponseEntity<List<TestOrderResponse>> getAllTestOrders(@RequestParam Long viewerId) {
+    public ResponseEntity<List<TestOrderResponseDTO>> getAllTestOrders(@RequestParam Long viewerId) {
+
+        log.info("GET /api/v1/test-orders - Fetching all test orders for viewerId: {}", viewerId);
         return ResponseEntity.ok(testOrderService.getAllTestOrders(viewerId));
+
+
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TestOrderResponse> getById(@PathVariable Long id, @RequestParam Long viewerId) {
+    public ResponseEntity<TestOrderResponseDTO> getById(@PathVariable Long id, @RequestParam Long viewerId) {
         return ResponseEntity.ok(testOrderService.getTestOrderById(id, viewerId));
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<TestOrderResponse>> filterTestOrders(
+    public ResponseEntity<List<TestOrderResponseDTO>> filterTestOrders(
             @ModelAttribute TestOrderFiltering filterInfo,
             @RequestParam Long viewerId
     ) {

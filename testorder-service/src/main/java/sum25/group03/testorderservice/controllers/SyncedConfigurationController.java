@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import sum25.group03.testorderservice.dtos.request.SyncedConfigurationDTO;
-import sum25.group03.testorderservice.service.impl.SyncedConfigurationServiceImpl;
+import sum25.group03.testorderservice.services.impl.SyncedConfigurationServiceImpl;
 
 @RestController
 @RequestMapping("/api/config")

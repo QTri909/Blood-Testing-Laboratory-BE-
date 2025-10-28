@@ -10,7 +10,13 @@ import sum25.group03.testorderservice.entities.TestOrder;
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, uses = {TestResultMapper.class, CommentMapper.class})
 public interface TestOrderMapper {
 
+
+    @Mapping(target = "testResults", source = "testResults")
+    @Mapping(target = "comments", source = "comments")
     TestOrderResponseDTO toResponseDto(TestOrder testOrder);
+
+    @Mapping(target = "testResults", source = "testResults")
+    @Mapping(target = "comments", source = "comments")
     TestOrderResponse toResponse(TestOrder testOrder);
 
     @Mapping(target = "id", ignore = true)
