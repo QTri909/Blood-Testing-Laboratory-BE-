@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -17,41 +19,31 @@ import java.time.LocalDateTime;
 public class Configuration {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "configuration_id")
+    private Long configurationId;
 
-    @Column(name = "config_key", nullable = false, unique = true)
-    private String configKey;
+    @Column(name = "supported_tests", nullable = false)
+    private String supportedTests;
 
-    @Column(name = "config_value", columnDefinition = "TEXT")
-    private String configValue;
+    @Column(name = "data_output_format", nullable = false)
+    private String dataOutputFormat;
 
-    @Column(name = "config_category")
-    private String configCategory;
+    @Column(name = "communication_protocol", nullable = false)
+    private String communicationProtocol;
 
-    @Column(name = "config_data_type")
-    private String configDataType;
+    @Column(name = "mixing_speed", nullable = false)
+    private int  mixingSpeed;
 
-    @Column(name = "instrument_type")
-    private String instrumentType;
+    @Column(name = "firmware_version", nullable = false)
+    private String firmwareVersion;
 
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    @Column(name = "use_per_run", nullable = false)
+    private int usePerRun;
 
-    @Column(name = "is_active")
-    private Boolean isActive;
+    @Column(name = "active", nullable = false)
+    private boolean active;
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted;
+    @OneToOne(mappedBy = "configuration")
+    private Instrument instrument;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at", insertable = false, updatable = false)
-    private LocalDateTime updatedAt;
-
-    @Column(name = "created_by")
-    private Integer createdBy;
-
-    @Column(name = "updated_by")
-    private Integer updatedBy;
 }
