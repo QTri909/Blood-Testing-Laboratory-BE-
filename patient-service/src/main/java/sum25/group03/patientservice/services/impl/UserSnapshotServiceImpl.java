@@ -2,6 +2,7 @@ package sum25.group03.patientservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.patientservice.dtos.request.UserSnapshotRequest;
@@ -10,6 +11,7 @@ import sum25.group03.patientservice.entities.UserSnapshotEntity;
 import sum25.group03.patientservice.feign.IAMFeignClient;
 import sum25.group03.patientservice.feign.dtos.UserDTO;
 import sum25.group03.patientservice.feign.dtos.UserFeignResponseWrapper;
+import sum25.group03.patientservice.feign.dtos.UserFilterUpdate;
 import sum25.group03.patientservice.mapper.UserSnapshotMapper;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
 import sum25.group03.patientservice.services.interfaces.UserSnapshotService;
@@ -26,8 +28,11 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
     private final UserSnapshotRepository repository;
     private final UserSnapshotMapper mapper;
     private final IAMFeignClient userFeignClient;
+    private final JdbcTemplate jdbcTemplate;
 
-    // Cuong
+    // sync user information from IAM service
+    @Override
+    @Transactional
     public void syncUserSnapshots() {
         UserFeignResponseWrapper usersWrapper = userFeignClient.fetchUsersInfo();
 
@@ -38,10 +43,11 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
             throw new RuntimeException("usersWrapper is null");
 
         List<UserDTO> users = usersWrapper.getContent();
-        //debug:
-        users.stream().forEach(System.out::println);
+        List<UserFilterUpdate> updateInfos = mapper.toUpdateInfoDTOs(users);
+
+        // debug:
+        updateInfos.stream().forEach(System.out::println);
     }
-    // -----
 
     @Override
     public UserSnapshotResponse create(UserSnapshotRequest request) {
