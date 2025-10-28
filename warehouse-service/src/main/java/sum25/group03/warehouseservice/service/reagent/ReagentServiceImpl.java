@@ -105,4 +105,9 @@ public class ReagentServiceImpl implements ReagentService {
     public List<Reagents> findAllByInstrumentId(Long instrumentId) {
         return reagentRepo.findAllByInstrumentId(instrumentId);
     }
+
+    @Override
+    public List<Reagents> findAllByReagentId(List<Long> reagentId) {
+        return reagentRepo.findAllByReagentId(reagentId);
+    }
 }

@@ -38,4 +38,13 @@ public class GlobalExceptionHandler {
                 req.getDescription(false),
                 LocalDateTime.now());
     }
+    @ExceptionHandler(MissingRequiredFieldsException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMissingRequiredFieldsException(MissingRequiredFieldsException ex, WebRequest req) {
+        return new ErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                ex.getMessage(),
+                req.getDescription(false),
+                LocalDateTime.now());
+    }
 }

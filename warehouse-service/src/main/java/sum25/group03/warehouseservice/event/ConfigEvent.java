@@ -5,19 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NewConfigEvent {
-    private BigDecimal sampleVolume;
-    private String sampleVolumeUnit;
-    private int maxConcurrentSamples;
-    private int defaultTimeout;
+public class ConfigEvent {
     private String supportedTests;
-    private String parameterSettings;
     private String dataOutputFormat;
     private String communicationProtocol;
     private int  mixingSpeed;

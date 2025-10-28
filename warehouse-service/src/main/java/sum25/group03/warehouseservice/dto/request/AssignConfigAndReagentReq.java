@@ -10,7 +10,8 @@ import java.util.List;
 @Setter
 @Builder
 public class AssignConfigAndReagentReq {
+    @NonNull
     private Long instrumentId;
-    private Long specificConfigurationId;
+    private Long configurationId;
     private List<Long> reagentIds;
 }

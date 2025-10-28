@@ -4,6 +4,7 @@ import lombok.*;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,7 +21,6 @@ public class InstrumentConfigReagentRes {
     private InstrumentStatus status;
     private LocalDate createdAt;
     private LocalDate updatedAt;
-    private GlobalConfigRes globalConfigRes;
-    private SpecificConfigRes specificConfigRes;
-    private ReagentForInstrumentRes reagentForInstrumentRes;
+    private ConfigRes configRes;
+    private List<ReagentForInstrumentRes> reagentForInstrumentRes;
 }

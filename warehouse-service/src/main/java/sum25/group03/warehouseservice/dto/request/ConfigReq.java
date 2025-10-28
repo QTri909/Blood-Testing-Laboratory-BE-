@@ -4,22 +4,22 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
-import java.math.BigDecimal;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @Builder
-public class GlobalConfigReq {
-    @NonNull
-    private BigDecimal sampleVolume;
-    @Positive
-    private int maxConcurrentSamples;
+public class ConfigReq {
     @NotBlank
-    private String sampleVolumeUnit;
+    private String supportedTests;
+    @NotBlank
+    private String dataOutputFormat;
+    @NotBlank
+    private String communicationProtocol;
     @Positive
-    private int defaultTimeout;
+    private int mixingSpeed;
+    @NotBlank
+    private String firmwareVersion;
     @Positive
     private int usePerRun;
 }

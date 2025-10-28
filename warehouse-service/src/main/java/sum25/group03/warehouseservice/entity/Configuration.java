@@ -59,6 +59,7 @@ public class Configuration {
     private int updatedBy;
 
     @OneToOne(mappedBy = "configuration")
+
     private Instrument instrument;
 
 }

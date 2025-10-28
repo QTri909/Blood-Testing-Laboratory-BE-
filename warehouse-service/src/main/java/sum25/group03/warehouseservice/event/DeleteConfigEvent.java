@@ -5,15 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NewInstrumentEvent {
+public class DeleteConfigEvent {
     private Long instrumentId;
-    private String instrumentName;
-    private ConfigEvent configEvent;
-    private List<NewReagentEvent> newReagentEvents;
 }

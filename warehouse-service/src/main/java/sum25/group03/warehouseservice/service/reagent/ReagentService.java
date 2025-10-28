@@ -10,4 +10,5 @@ public interface ReagentService {
 
     ReagentValidationResponse validateReagent(String batchNumber, Double requiredVolume);
     List<Reagents> findAllByInstrumentId(Long instrumentId);
+    List<Reagents> findAllByReagentId(List<Long> reagentId);
 }

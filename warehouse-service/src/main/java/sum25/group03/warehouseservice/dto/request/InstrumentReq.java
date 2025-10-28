@@ -26,8 +26,6 @@ public class InstrumentReq {
     private LocalDate nextMaintenanceDate;
     private String notes;
     @NotBlank
-    private ManufacturerReq manufacturer;
-    private Long configurationId;
-    private List<Long> reagentId;
+    private String manufacturer;
     private Long cloneFromInstrumentId;
 }
