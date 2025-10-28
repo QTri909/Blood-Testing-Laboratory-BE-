@@ -9,8 +9,8 @@ import sum25.group03.patientservice.dtos.request.UserSnapshotRequest;
 import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
 import sum25.group03.patientservice.feign.IAMFeignClient;
-import sum25.group03.patientservice.feign.dtos.UserDTO;
-import sum25.group03.patientservice.feign.dtos.UserFeignResponseWrapper;
+import sum25.group03.patientservice.feign.dtos.FeignUserDTO;
+import sum25.group03.patientservice.feign.dtos.FeignUserResponseWrapper;
 import sum25.group03.patientservice.feign.dtos.UserFilterUpdate;
 import sum25.group03.patientservice.mapper.UserSnapshotMapper;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
@@ -33,7 +33,7 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
 
 
     @Transactional
-    public void syncByPage(List<UserDTO> updatedList, List<UserSnapshotEntity> allUserSnapshots) {
+    public void syncByPage(List<FeignUserDTO> updatedList, List<UserSnapshotEntity> allUserSnapshots) {
         if (updatedList == null || updatedList.isEmpty()) return;
 
         // look up map by externalUserId and proper entity
@@ -51,6 +51,7 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
     }
 
     // sync user information from IAM service
+    // More optimize: IAM Service has an 'isUpdated' flag to filter only updated users since last sync.
     @Override
     public void syncUserSnapshots() {
         int size = 5;
@@ -65,10 +66,10 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
 
         do {
             // fetch data from IAM service with pagination
-            UserFeignResponseWrapper usersWrapper = userFeignClient.fetchUsersInfo(number, size);
+            FeignUserResponseWrapper usersWrapper = userFeignClient.fetchUsersInfo(number, size);
             System.out.println("usersWrapper={}\n" + usersWrapper);
 
-            List<UserDTO> updatedList = usersWrapper.getContent();
+            List<FeignUserDTO> updatedList = usersWrapper.getContent();
 
             // sync data
             syncByPage(updatedList, allUserSnapshots);

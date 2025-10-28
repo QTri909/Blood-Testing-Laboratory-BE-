@@ -4,13 +4,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserFeignResponseWrapper {
-    private List<UserDTO> content;
+public class FeignUserResponseWrapper implements Serializable {
+    private List<FeignUserDTO> content;
     private Boolean last;
     private Integer totalElements;
     private Integer totalPages;

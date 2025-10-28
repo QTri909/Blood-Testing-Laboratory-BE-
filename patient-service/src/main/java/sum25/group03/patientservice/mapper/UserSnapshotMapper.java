@@ -4,7 +4,7 @@ import org.mapstruct.*;
 import sum25.group03.patientservice.dtos.request.UserSnapshotRequest;
 import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
-import sum25.group03.patientservice.feign.dtos.UserDTO;
+import sum25.group03.patientservice.feign.dtos.FeignUserDTO;
 import sum25.group03.patientservice.feign.dtos.UserFilterUpdate;
 
 import java.util.List;
@@ -22,6 +22,6 @@ public interface UserSnapshotMapper {
 
     UserSnapshotResponse toResponse(UserSnapshotEntity entity);
 
-    UserFilterUpdate toUpdateInfoDTO(UserDTO feignDto);
-    List<UserFilterUpdate> toUpdateInfoDTOs(List<UserDTO> feignDtos);
+    UserFilterUpdate toUpdateInfoDTO(FeignUserDTO feignDto);
+    List<UserFilterUpdate> toUpdateInfoDTOs(List<FeignUserDTO> feignDtos);
 }
