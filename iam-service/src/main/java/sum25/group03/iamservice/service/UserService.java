@@ -17,6 +17,6 @@ public interface UserService {
     void deleteUser(Long id);
     Page<UserResponse> getAllUsers(Pageable pageable);
     Page<UserResponse> getAllPatients(Pageable pageable);
-
+    UserResponse getUserById(Long id);
 
 }

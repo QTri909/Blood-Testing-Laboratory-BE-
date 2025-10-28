@@ -244,15 +244,32 @@ public class UserServiceImpl implements UserService {
                         .gender(user.getGender())
                         .dateOfBirth(user.getDateOfBirth())
                         .identityNumber(user.getIdentityNumber())
-                        .roles(
-                                user.getUserRoles().stream()
-                                        .map(ur -> ur.getRole().getRoleCode())
-                                        .collect(Collectors.toSet())
-                        )
+
                         .build())
                 .collect(Collectors.toList());
 
         return new PageImpl<>(responses, pageable, usersPage.getTotalElements());
+    }
+
+    @Override
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        UserResponse response = UserResponse.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getAddress())
+                .gender(user.getGender())
+                .dateOfBirth(user.getDateOfBirth())
+                .identityNumber(user.getIdentityNumber())
+                .roles(user.getUserRoles().stream()
+                        .map(ur -> ur.getRole().getRoleName())
+                        .collect(Collectors.toSet()))
+                .build();
+        return response;
     }
 
 }
