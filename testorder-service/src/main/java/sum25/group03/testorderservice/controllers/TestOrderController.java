@@ -25,7 +25,9 @@ public class TestOrderController {
 
     // -------- THUYEN --------
     @GetMapping
-    public ResponseEntity<List<TestOrderResponse>> getAllTestOrders(@RequestParam Long viewerId) {
+    public ResponseEntity<List<TestOrderResponse>> getAllTestOrders(
+            @RequestHeader("X-User-Id") Long viewerId
+    ) {
         return ResponseEntity.ok(testOrderService.getAllTestOrders(viewerId));
     }
 
