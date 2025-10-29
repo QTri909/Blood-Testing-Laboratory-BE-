@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository;
 import sum25.group03.patientservice.entities.elasticsearch.MedicalRecord;
 
 @Repository
-public interface MedicalRecordElasticSearchRepository extends ElasticsearchRepository<MedicalRecord, Long> {
+public interface MedicalRecordESRepository extends ElasticsearchRepository<MedicalRecord, Long> {
     MedicalRecord findByPatientId(Long patientId);
     MedicalRecord findByAssignedUser(Long assignedUser);
 }
