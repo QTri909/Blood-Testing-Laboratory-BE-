@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.service.impl;
+package sum25.group03.testorderservice.services.impl;
 
 
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,8 @@ import sum25.group03.testorderservice.dtos.request.SyncedConfigurationDTO;
 import sum25.group03.testorderservice.entities.SyncedConfiguration;
 import sum25.group03.testorderservice.enums.SyncedConfigurationStatus;
 import sum25.group03.testorderservice.repositories.SyncedConfigurationRepository;
-import sum25.group03.testorderservice.service.interfaces.SyncedConfigurationService;
+import sum25.group03.testorderservice.services.interfaces.SyncedConfigurationService;
+import sum25.group03.testorderservice.services.impl.ParameterServiceImpl;
 
 import java.time.LocalDateTime;
 
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @Slf4j
 public class SyncedConfigurationServiceImpl implements SyncedConfigurationService {
-
+    @Autowired
     private SyncedConfigurationRepository  syncedConfigurationRepository;
     private ParameterServiceImpl parameterServiceImpl;
 

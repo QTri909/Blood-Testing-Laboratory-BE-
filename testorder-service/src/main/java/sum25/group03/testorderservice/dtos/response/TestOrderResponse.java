@@ -35,5 +35,5 @@ public class TestOrderResponse{
     // Nested
     private List<TestResultResponse> testResults;
 
-    private List<CommentResponse> comments;
+    private List<CommentResponseDTO> comments;
 }

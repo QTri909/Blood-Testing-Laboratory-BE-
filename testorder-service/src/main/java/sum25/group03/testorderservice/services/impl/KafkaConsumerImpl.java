@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.service.impl;
+package sum25.group03.testorderservice.services.impl;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,7 +12,7 @@ import sum25.group03.testorderservice.component.Hl7Parser;
 import sum25.group03.testorderservice.entities.TestResult;
 import sum25.group03.testorderservice.mapper.TestResultMapper;
 import sum25.group03.testorderservice.repositories.TestResultRepository;
-import sum25.group03.testorderservice.service.interfaces.IKafkaConsumer;
+import sum25.group03.testorderservice.services.interfaces.IKafkaConsumer;
 
 import java.io.IOException;
 

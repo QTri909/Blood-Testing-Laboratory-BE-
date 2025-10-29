@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.service.impl;
+package sum25.group03.testorderservice.services.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import sum25.group03.testorderservice.enums.ParameterStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.ParameterMapper;
 import sum25.group03.testorderservice.repositories.ParameterRepository;
-import sum25.group03.testorderservice.service.interfaces.ParameterService;
+import sum25.group03.testorderservice.services.interfaces.ParameterService;
 
 import java.security.InvalidParameterException;
 import java.time.LocalDate;
