@@ -1,0 +1,40 @@
+
+spring:
+  datasource:
+    url: ${PAYMENT_DB_URL:jdbc:postgresql://localhost:5435/paymentdb}
+    username: ${PAYMENT_DB_USERNAME:postgres}
+    password: ${PAYMENT_DB_PASSWORD:12345}
+    driver-class-name: "org.postgresql.Driver"
+    hikari:
+      pool-name: PaymentHikariCP
+      minimum-idle: 2
+      maximum-pool-size: 10
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      connection-test-query: "SELECT 1"
+
+  jpa:
+    hibernate:
+      ddl-auto: update # change to 'update' or 'none' if you prefer different behavior
+      naming:
+        physical-strategy: "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl"
+    properties:
+      hibernate:
+        dialect: "org.hibernate.dialect.PostgreSQLDialect"
+        format_sql: true
+    show-sql: true
+    open-in-view: false
+
+  sql:
+    init:
+      mode: never
+
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: [health, info]
+#  health:
+#    db:
+#      enabled: true
