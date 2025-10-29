@@ -18,11 +18,8 @@ import sum25.group03.iamservice.repository.RoleRepository;
 import sum25.group03.iamservice.repository.UserRepository;
 import sum25.group03.iamservice.repository.UserRoleRepository;
 
-import java.util.HashSet;
+import java.util.*;
 
-import java.util.List;
-
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -215,6 +212,33 @@ public class UserServiceImpl implements UserService {
 
         return new PageImpl<>(responses, pageable, usersPage.getTotalElements());
     }
+
+
+
+        @Override
+        public Map<String, List<String>> getRolesAndPrivilegesByEmail(String email) {
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + email));
+
+            // Lấy role
+            List<String> roles = user.getUserRoles().stream()
+                    .map(ur -> ur.getRole().getRoleCode())
+                    .toList();
+
+            // Lấy privilege
+            List<String> privileges = user.getUserRoles().stream()
+                    .flatMap(ur -> ur.getRole().getRolePrivileges().stream())
+                    .map(rp -> rp.getPrivilege().getPrivilegeCode())
+                    .distinct()
+                    .toList();
+
+            Map<String, List<String>> result = new HashMap<>();
+            result.put("roles", roles);
+            result.put("privileges", privileges);
+
+            return result;
+        }
+
 
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {

@@ -21,6 +21,10 @@ public class UserCreateRequest {
     @Size(min = 8, max = 64, message = "Password must be between 8 and 64 characters")
     private String password;
 
+    private String gender;
+
+    private String dateOfBirth;
+
     @NotBlank(message = "Phone number is required")
     @Pattern(regexp = "^(0[0-9]{9})$", message = "Phone number must start with 0 and have 10 digits")
     private String phoneNumber;

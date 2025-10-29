@@ -27,7 +27,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT u FROM User u JOIN u.userRoles ur JOIN ur.role r WHERE r.roleCode = :roleCode")
     Page<User> findByRoleCode(String roleCode, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"userRoles.role.rolePrivileges", "userPrivileges.privilege"})
     Optional<User> findByEmail(String email);
+
+
     Optional<User> findByIdentityNumber(String identityNumber);
 
 

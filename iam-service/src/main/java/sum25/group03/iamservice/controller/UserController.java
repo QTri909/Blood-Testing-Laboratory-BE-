@@ -13,7 +13,7 @@ import sum25.group03.iamservice.dto.response.UserResponse;
 import sum25.group03.iamservice.service.UserService;
 
 import java.util.List;
-
+import java.util.Map;
 
 
 import org.springframework.web.bind.annotation.*;
@@ -73,6 +73,12 @@ public class UserController {
 
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(userService.getAllUsers(pageable));
+    }
+
+    @GetMapping("/privileges")
+    public ResponseEntity<?> getUserPrivileges(@RequestParam String email) {
+        Map<String, List<String>> data = userService.getRolesAndPrivilegesByEmail(email);
+        return ResponseEntity.ok(data);
     }
 
 }
