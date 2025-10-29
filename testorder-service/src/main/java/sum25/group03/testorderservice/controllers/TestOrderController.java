@@ -32,7 +32,10 @@ public class TestOrderController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TestOrderResponse> getById(@PathVariable Long id, @RequestParam Long viewerId) {
+    public ResponseEntity<TestOrderResponse> getById(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") Long viewerId
+    ) {
         return ResponseEntity.ok(testOrderService.getTestOrderById(id, viewerId));
     }
 
