@@ -1,5 +1,6 @@
 package sum25.group03.warehouseservice.dto.request;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
 @Setter
 @Builder
 public class AssignConfigAndReagentReq {
-    @NonNull
+    @NotNull
     private Long instrumentId;
     private Long configurationId;
     private List<Long> reagentIds;

@@ -1,5 +1,6 @@
 package sum25.group03.warehouseservice.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import sum25.group03.warehouseservice.entity.enums.SupplyStatus;
 
@@ -12,8 +13,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class SupplyRes {
-    private String purchaseOrderNumber;
     private BigDecimal quantityReceived;
     private String lotNumber;
     private String unitOfMeasurement;

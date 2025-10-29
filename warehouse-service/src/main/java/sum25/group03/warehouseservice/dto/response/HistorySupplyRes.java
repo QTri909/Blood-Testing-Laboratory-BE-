@@ -15,6 +15,7 @@ import java.util.List;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class HistorySupplyRes {
+    private String purchaseOrderNumber;
     private VendorRes vendor;
     private List<SupplyRes> supply;
 }

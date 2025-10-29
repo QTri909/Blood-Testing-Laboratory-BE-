@@ -39,17 +39,17 @@ public class ReagentHistorySupply {
     @Column(name = "unit_of_measurement", nullable = false)
     private String unitOfMeasurement;
 
-    @Column(name = "received_date", nullable = false)
+    @Column(name = "received_date", nullable = true)
     private LocalDate receivedDate;
 
-    @Column(name = "received_by", nullable = false)
+    @Column(name = "received_by", nullable = true)
     private int receivedBy;
 
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
     private SupplyStatus status;
 
-    @Column(name = "notes", nullable = false)
+    @Column(name = "notes", nullable = true)
     private String notes;
 
     @CreationTimestamp
