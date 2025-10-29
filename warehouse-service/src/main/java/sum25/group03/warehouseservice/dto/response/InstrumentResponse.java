@@ -4,7 +4,6 @@ import lombok.*;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -21,6 +20,4 @@ public class InstrumentResponse {
     private InstrumentStatus status;
     private LocalDate createdAt;
     private LocalDate updatedAt;
-
-    private String manufacturerName;
 }

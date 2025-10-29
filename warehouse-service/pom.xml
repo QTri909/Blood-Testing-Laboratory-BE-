@@ -84,22 +84,23 @@
             <artifactId>mapstruct-processor</artifactId>
             <version>1.6.3</version>
         </dependency>
-<<<<<<< HEAD
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>cloudwatchlogs</artifactId>
+            <version>2.36.2</version>
+        </dependency>
+
         <dependency>
             <groupId>ca.pjer</groupId>
             <artifactId>logback-awslogs-appender</artifactId>
             <version>1.6.0</version>
         </dependency>
 
-
-
-=======
-        <!-- Kafka-->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
+            <version>3.3.10</version>
         </dependency>
->>>>>>> 862a868b2ef3aa44cd58eedb4658dbb5e7641a9c
     </dependencies>
 
     <build>

@@ -11,21 +11,21 @@ import sum25.group03.warehouseservice.entity.Configuration;
 
 @Repository
 public interface SpecificConfigRepo extends JpaRepository<Configuration, Long> {
-    @Query("""
-        SELECT new sum25.group03.warehouseservice.dto.internal.ConfigurationDTO(
-            g.globalConfigurationId,
-            c.supportedTests,
-            c.parameterSettings,
-            c.dataOutputFormat,
-            c.communicationProtocol,
-            c.mixingSpeed
-        )
-        FROM Configuration c
-        JOIN Instrument i ON c.specificConfigurationId = i.configuration.specificConfigurationId
-        JOIN GlobalConfiguration g ON c.globalConfiguration.globalConfigurationId = g.globalConfigurationId
-        WHERE i.instrumentId = :id AND c.active = true AND g.active = true
-    """)
-    ConfigurationDTO findByInstrumentId(@Param("id") Long id);
+//    @Query("""
+//        SELECT new sum25.group03.warehouseservice.dto.internal.ConfigurationDTO(
+//            g.globalConfigurationId,
+//            c.supportedTests,
+//            c.parameterSettings,
+//            c.dataOutputFormat,
+//            c.communicationProtocol,
+//            c.mixingSpeed
+//        )
+//        FROM Configuration c
+//        JOIN Instrument i ON c.specificConfigurationId = i.configuration.specificConfigurationId
+//        JOIN GlobalConfiguration g ON c.globalConfiguration.globalConfigurationId = g.globalConfigurationId
+//        WHERE i.instrumentId = :id AND c.active = true AND g.active = true
+//    """)
+//    ConfigurationDTO findByInstrumentId(@Param("id") Long id);
 
     @Query("""
         SELECT c
