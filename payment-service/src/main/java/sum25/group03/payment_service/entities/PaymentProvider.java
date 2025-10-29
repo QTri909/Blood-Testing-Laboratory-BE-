@@ -10,6 +10,7 @@ import sum25.group03.payment_service.enums.PaymentProviderStatus;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "payment_providers")
