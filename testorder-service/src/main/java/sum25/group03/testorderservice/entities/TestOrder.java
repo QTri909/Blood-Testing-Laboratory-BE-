@@ -1,11 +1,13 @@
 package sum25.group03.testorderservice.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
+import sum25.group03.testorderservice.enums.TestOrderType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,6 +30,13 @@ public class TestOrder {
     @UuidGenerator
     @Column(name = "code", nullable = false, unique = true, updatable = false)
     private UUID code;
+
+    @Pattern(regexp = "^BC-\\d{6}$", message = "Order number must follow the pattern 'BC-XXXXXX' where X is a digit.")
+    @Column(name = "barcode", nullable = false, unique = true)
+    private String barcode;
+
+    @Enumerated(EnumType.STRING)
+    private TestOrderType type;
 
     @Column(name = "external_medical_record_id", nullable = false)
     private Long externalMedicalRecordId;
