@@ -18,9 +18,7 @@ public class ReagentValidator {
             REAGENT_CONSUMPTION.put(reagentResponse.getReagentName(), reagentResponse.getUsageMax());
         }
 
-        for (InstalledReagent installedReagent : installedReagents) {
-            log.info("Reagent: {}", installedReagent.getReagentName());
-        }
+
 
         if (installedReagents == null || installedReagents.isEmpty()) {
             return false;
@@ -32,10 +30,8 @@ public class ReagentValidator {
         }
         for (Map.Entry<String, Double> entry : REAGENT_CONSUMPTION.entrySet()) {
             String reagentName = entry.getKey();
-            log.info("Reagent Name: {}", reagentName);
             Double requiredVolume = entry.getValue();
             InstalledReagent reagent = reagentMap.get(reagentName);
-            log.info(reagent.getReagentName()+": " +reagent.getCurrentVolume() + "    " + requiredVolume);
             if (reagent == null || reagent.getCurrentVolume() < requiredVolume || reagent.getStatus().equals(InstalledReagentStatus.QUARANTINED)|| reagent.getStatus().equals(InstalledReagentStatus.EMPTY)|| reagent.getStatus().equals(InstalledReagentStatus.EXPIRED)) {
 
                 return false;

@@ -5,8 +5,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import sum25.group03.instrumentservice.client.TestOrderServiceClient;
 import sum25.group03.instrumentservice.client.WarehouseServiceClient;
+import sum25.group03.instrumentservice.client.response.CreationTestOrderResponse;
 import sum25.group03.instrumentservice.client.response.ReagentResponse;
+import sum25.group03.instrumentservice.client.response.TestOrderResponse;
 import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.common.InstrumentStatus;
 import sum25.group03.instrumentservice.controller.request.BloodTestingRequest;
@@ -28,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 
 @Service
 @Slf4j
@@ -42,74 +46,99 @@ public class SimulatorServiceImpl implements SimulatorService {
     private final KafkaEventPublisher kafkaEventPublisher;
     private final ObjectMapper objectMapper;
     private final WarehouseServiceClient warehouseServiceClient;
-
+    private final TestOrderServiceClient testOrderServiceClient;
 
     @Override
     @Async("taskExecutor")
     public CompletableFuture<RawTestResultResponse> startTest(BloodTestingRequest request) {
+        TestOrderResponse testOrderResponse = null;
         try {
             if (instrumentRepository.existsByIdAndStatusIsNot(request.getInstrumentId(), InstrumentStatus.READY)) {
                 String errorMessage = "Instrument ID: " + request.getInstrumentId() + " is not READY";
                 log.warn(errorMessage);
                 throw new InstrumentNotReadyException(errorMessage);
             }
-            log.info("Starting MEK-6510 simulator for barcode: {} on instrument: {}",
+            log.info("Starting Blood Analyser simulator for barcode: {} on instrument: {}",
                     request.getBarcode(), request.getInstrumentId());
 
             List<InstalledReagent> installedReagents = installedReagentRepository
                     .findByInstrumentIdAndStatusIsNot(request.getInstrumentId(), InstalledReagentStatus.REMOVED);
+            if (installedReagents.isEmpty()) {
+                log.info("No installed reagents found for instrument ID: {}", request.getInstrumentId());
+                throw new RuntimeException("No installed reagents found for instrument ID");
+            }
             for (InstalledReagent installedReagent : installedReagents) {
                 log.info("Reagent: {}", installedReagent.getReagentName());
             }
-            if (installedReagents.isEmpty()) {
-                log.info("No installed reagents found for instrument ID: {}", request.getInstrumentId());
-            }
-            log.info("Found {} installed reagents", installedReagents.size());
+
+
+
             List<ReagentResponse> listReagentResponses = warehouseServiceClient.reagentResponseReagentList();
             if (!ReagentValidator.validateReagentVolume(installedReagents,listReagentResponses)) {
-                log.warn("Insufficient reagent volume for barcode: {}", request.getBarcode());
-                publishFailureEvent(request, "INSUFFICIENT_REAGENT");
                 throw new InsufficientReagentException(
                         "Insufficient reagent volume for barcode: " + request.getBarcode());
             }
+            testOrderResponse =
+                    testOrderServiceClient.getTestOrderByBarcode(request.getBarcode());
+            if(testOrderResponse==null){
+                CreationTestOrderResponse creationTestOrderResponse =
+                        testOrderServiceClient.createUnmatchedOrder(request.getBarcode());
+                testOrderResponse = TestOrderResponse.builder()
+                        .id(creationTestOrderResponse.getId())
+                        .barcode(creationTestOrderResponse.getBarcode())
+                        .code(creationTestOrderResponse.getCode())
+                        .status(creationTestOrderResponse.getStatus())
+                        .createdAt(creationTestOrderResponse.getCreatedAt())
+                        .build();
+
+            }
+
+            final String BARCODE_REGEX = "^BC-\\d{6}$";
+
+            if (request.getBarcode() == null || request.getBarcode().isEmpty() ) {
+                String errorMessage = "Barcode is null or empty";
+                publishFailureEvent(request, "NULL_OR_EMPTY_BARCODE",testOrderResponse.getId());
+                throw new RuntimeException(errorMessage);
+
+            }
+
+            if(!Pattern.matches(BARCODE_REGEX, request.getBarcode())){
+                String errorMessage = "Invalid barcode format: " + request.getBarcode();
+                log.warn(errorMessage);
+                publishFailureEvent(request, "INVALID_BARCODE_FORMAT",testOrderResponse.getId());
+                throw new RuntimeException(errorMessage);
+            }
+
+
+
             long simulationTime = 15_000 + (long) (Math.random() * 5_000);
             Thread.sleep(simulationTime);
 
-            Map<String, Double> allRawResults = new HashMap<>();
-            List<String> allObxResults = new ArrayList<>();
 
-            if (request.getTestTypes() != null) {
-                for (String testType : request.getTestTypes()) {
-                    switch (testType.toUpperCase()) {
-                        case "CBC":
-                            Map<String, Double> rawCbc = generateRawCbcResults();
-                            allRawResults.putAll(rawCbc);
-                            allObxResults.addAll(analyzeCbcResults(rawCbc));
-                            break;
-                        case "CHEMISTRY":
-                            Map<String, Double> rawChem = generateRawChemistryResults();
-                            allRawResults.putAll(rawChem);
-                            allObxResults.addAll(analyzeChemistryResults(rawChem));
-                            break;
-                        case "COAGULATION":
-                            Map<String, Double> rawCoag = generateRawCoagulationResults();
-                            allRawResults.putAll(rawCoag);
-                            allObxResults.addAll(analyzeCoagulationResults(rawCoag));
-                            break;
-                        default:
-                            break;
-                    }
-                }
+            for(ReagentResponse reagentResponse: listReagentResponses){
+                Double usageVolume = reagentResponse.getUsageMax()+ reagentResponse.getUsageMin()*rand.nextDouble();
+                InstalledReagent installedReagent = installedReagentRepository.findByReagentId(reagentResponse.getReagentId())
+                        .orElseThrow(() -> new RuntimeException("Installed reagent not found for reagent ID: " + reagentResponse.getReagentId()));
+                Double currentVolume = installedReagent.getCurrentVolume();
+                installedReagentRepository.updateCurrentVolumeById(currentVolume-usageVolume,installedReagent.getId());
+                log.info("🧪 REAGENT: {} | Initial Volume: {} {} | Used: {} {} | Final Volume: {} {}",
+                        installedReagent.getReagentName(),
+                        currentVolume, installedReagent.getUnit(),
+                        usageVolume, installedReagent.getUnit(),
+                        currentVolume-usageVolume, installedReagent.getUnit()
+                );
             }
+            Map<String, Double> rawCbc = generateRawCbcResults();
+            List<String> HL7Message =  analyzeCbcResults(rawCbc);
 
-            String rawDataJson = objectMapper.writeValueAsString(allRawResults);
-            String finalHl7Message = buildHl7Message(request.getBarcode(), allObxResults);
+            String rawDataJson = objectMapper.writeValueAsString(rawCbc);
+            String finalHl7Message = buildHl7Message(request.getBarcode(), HL7Message);
 
             Instrument instrument = instrumentRepository.findById(request.getInstrumentId())
                     .orElseThrow(() -> new RuntimeException("Instrument not found with ID: " + request.getInstrumentId()));
 
             RawTestResult newResult = RawTestResult.builder()
-                    .testOrderId(request.getTestOrderId())
+                    .testOrderId(testOrderResponse.getId())
                     .instrument(instrument)
                     .rawData(rawDataJson)
                     .hl7Message(finalHl7Message)
@@ -122,7 +151,7 @@ public class SimulatorServiceImpl implements SimulatorService {
             log.info("Raw test result saved with ID: {} for barcode: {}", savedResult.getResultId(), request.getBarcode());
 
             TestResultPublishedEvent event = TestResultPublishedEvent.builder()
-                    .testOrderId(request.getTestOrderId())
+                    .testOrderId(testOrderResponse.getId())
                     .instrumentId(request.getInstrumentId())
                     .barcode(request.getBarcode())
                     .hl7Message(finalHl7Message)
@@ -141,7 +170,7 @@ public class SimulatorServiceImpl implements SimulatorService {
                     .resultId(savedResult.getResultId())
                     .testOrderId(savedResult.getTestOrderId())
                     .instrumentId(savedResult.getInstrument().getId())
-                    .rawData(allRawResults)
+                    .rawData(rawCbc)
                     .hl7Message(finalHl7Message)
                     .isSentToMonitoring(savedResult.getIsSentToMonitoring())
                     .isSynced(savedResult.getIsSynced())
@@ -152,7 +181,7 @@ public class SimulatorServiceImpl implements SimulatorService {
 
         } catch (InterruptedException e) {
             log.error("Simulation thread interrupted for barcode: {}", request.getBarcode());
-            publishFailureEvent(request, "INTERRUPTED");
+            publishFailureEvent(request, "INTERRUPTED",testOrderResponse.getId());
             Thread.currentThread().interrupt();
             return CompletableFuture.failedFuture(e);
         } catch (InsufficientReagentException e) {
@@ -161,16 +190,16 @@ public class SimulatorServiceImpl implements SimulatorService {
         } catch (Exception e) {
             log.error("Critical error during simulation for barcode: {} | Error: {}",
                     request.getBarcode(), e.getMessage(), e);
-            publishFailureEvent(request, "ERROR");
+            publishFailureEvent(request, "ERROR",testOrderResponse.getId());
             return CompletableFuture.failedFuture(e);
         }
     }
 
 
-    private void publishFailureEvent(BloodTestingRequest request, String reason) {
+    private void publishFailureEvent(BloodTestingRequest request, String reason,Long testOrderId) {
         try {
             TestResultPublishedEvent failureEvent = TestResultPublishedEvent.builder()
-                    .testOrderId(request.getTestOrderId())
+                    .testOrderId(testOrderId)
                     .instrumentId(request.getInstrumentId())
                     .barcode(request.getBarcode())
                     .timestamp(LocalDateTime.now())
@@ -197,20 +226,7 @@ public class SimulatorServiceImpl implements SimulatorService {
         return rawResults;
     }
 
-    public static Map<String, Double> generateRawChemistryResults() {
-        Map<String, Double> rawResults = new HashMap<>();
-        rawResults.put("GLUCOSE", 70 + (100 - 70) * rand.nextDouble());
-        rawResults.put("ALT", 10 + (40 - 10) * rand.nextDouble());
-        rawResults.put("CREATININE", 0.6 + (1.2 - 0.6) * rand.nextDouble());
-        return rawResults;
-    }
 
-    public static Map<String, Double> generateRawCoagulationResults() {
-        Map<String, Double> rawResults = new HashMap<>();
-        rawResults.put("PT", 11.0 + (13.5 - 11.0) * rand.nextDouble());
-        rawResults.put("INR", 0.8 + (1.1 - 0.8) * rand.nextDouble());
-        return rawResults;
-    }
     public static List<String> analyzeCbcResults(Map<String, Double> rawResults) {
         List<String> obxSegments = new ArrayList<>();
         obxSegments.add(String.format("OBX||NM|WBC||%.1f|cells/µL|4000-10000||||F", rawResults.get("WBC")));
@@ -224,20 +240,7 @@ public class SimulatorServiceImpl implements SimulatorService {
         return obxSegments;
     }
 
-    public static List<String> analyzeChemistryResults(Map<String, Double> rawResults) {
-        List<String> obxSegments = new ArrayList<>();
-        obxSegments.add(String.format("OBX||NM|GLUCOSE||%.0f|mg/dL|70-100||||F", rawResults.get("GLUCOSE")));
-        obxSegments.add(String.format("OBX||NM|ALT||%.0f|U/L|10-40||||F", rawResults.get("ALT")));
-        obxSegments.add(String.format("OBX||NM|CREATININE||%.2f|mg/dL|0.6-1.2||||F", rawResults.get("CREATININE")));
-        return obxSegments;
-    }
 
-    public static List<String> analyzeCoagulationResults(Map<String, Double> rawResults) {
-        List<String> obxSegments = new ArrayList<>();
-        obxSegments.add(String.format("OBX||NM|PT||%.1f|seconds|11.0-13.5||||F", rawResults.get("PT")));
-        obxSegments.add(String.format("OBX||NM|INR||%.2f||0.8-1.1||||F", rawResults.get("INR")));
-        return obxSegments;
-    }
 
 
     public static String buildHl7Message(String barcode, List<String> obxSegments) {

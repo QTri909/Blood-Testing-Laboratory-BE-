@@ -17,12 +17,6 @@ import java.util.List;
 public class BloodTestingRequest {
     @NotNull(message = "Instrument ID is required")
     private Long instrumentId;
-    @NotNull(message = "Test Order ID is required")
-    private Long testOrderId;
-
     @NotBlank(message = "Barcode is required")
     private String barcode;
-    @NotNull
-    private List<String> testTypes;
-
 }

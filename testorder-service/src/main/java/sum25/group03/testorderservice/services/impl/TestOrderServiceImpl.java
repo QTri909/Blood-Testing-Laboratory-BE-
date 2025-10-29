@@ -7,9 +7,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
-import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
+import sum25.group03.testorderservice.dtos.response.*;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
-import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
 import sum25.group03.testorderservice.entities.TestOrder;
 import sum25.group03.testorderservice.enums.ActionTypeFeatures;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
@@ -195,5 +194,43 @@ public class TestOrderServiceImpl implements TestOrderService {
                 .map(testOrderMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public TestOrderResponseForInstrument findLatestByBarcode(String barcode) {
+        TestOrder testOrder = testOrderRepository
+                .findFirstByBarcodeOrderByCreatedAtDesc(barcode)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Không tìm thấy TestOrder nào cho barcode: " + barcode
+                ));
+        return TestOrderResponseForInstrument.builder()
+                .id(testOrder.getId())
+                .code(testOrder.getCode())
+                .externalMedicalRecordId(testOrder.getExternalMedicalRecordId())
+                .patientId(testOrder.getPatientId())
+                .createdBy(testOrder.getCreatedBy())
+                .runBy(testOrder.getRunBy())
+                .barcode(testOrder.getBarcode())
+                .runDate(testOrder.getRunDate())
+                .status(testOrder.getStatus())
+                .createdAt(testOrder.getCreatedAt())
+                .updatedAt(testOrder.getUpdatedAt())
+                .build();
+    }
+
+    @Override
+    public CreationTestOrderResponse createTestOrderForExternalSystem(String barcode) {
+        TestOrder newOrder = TestOrder.builder()
+                .barcode(barcode)
+                .build();
+        TestOrder savedOrder = testOrderRepository.save(newOrder);
+        return CreationTestOrderResponse.builder()
+                .id(savedOrder.getId())
+                .code(savedOrder.getCode())
+                .barcode(savedOrder.getBarcode())
+                .status(savedOrder.getStatus())
+                .createdAt(savedOrder.getCreatedAt())
+                .build();
+    }
+
 
 }

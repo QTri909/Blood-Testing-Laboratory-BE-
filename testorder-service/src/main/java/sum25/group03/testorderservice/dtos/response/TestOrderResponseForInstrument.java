@@ -5,15 +5,13 @@ import sum25.group03.testorderservice.enums.TestOrderStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TestOrderResponse{
-
+public class TestOrderResponseForInstrument {
     private Long id;
 
     private Long externalMedicalRecordId;
@@ -38,9 +36,4 @@ public class TestOrderResponse{
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-
-    // Nested
-    private List<TestResultResponse> testResults;
-
-    private List<CommentResponse> comments;
 }

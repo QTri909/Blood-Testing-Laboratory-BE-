@@ -1,7 +1,6 @@
-package sum25.group03.testorderservice.dtos.response;
+package sum25.group03.instrumentservice.client.response;
 
 import lombok.*;
-import sum25.group03.testorderservice.enums.TestOrderStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -33,14 +32,10 @@ public class TestOrderResponse{
 
     private LocalDate runDate;
 
-    private TestOrderStatus status;
+    private String status;
 
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
 
-    // Nested
-    private List<TestResultResponse> testResults;
-
-    private List<CommentResponse> comments;
 }

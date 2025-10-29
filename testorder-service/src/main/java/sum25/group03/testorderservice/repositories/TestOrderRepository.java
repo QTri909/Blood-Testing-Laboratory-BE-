@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import java.util.List;
+import java.util.Optional;
+
 import sum25.group03.testorderservice.entities.TestOrder;
 
 @Repository
@@ -12,4 +14,5 @@ public interface TestOrderRepository extends JpaRepository<TestOrder,Long>, JpaS
     List<TestOrder> findByPatientId(Long patientId);
     List<TestOrder> findByStatus(TestOrderStatus status);
     List<TestOrder> findByCreatedBy(Long createdBy);
+    Optional<TestOrder> findFirstByBarcodeOrderByCreatedAtDesc(String barcode);
 }
