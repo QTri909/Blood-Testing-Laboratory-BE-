@@ -56,4 +56,15 @@ public class PaymentRequest implements Serializable {
         if (this.status == null)
             this.status = PaymentRequestStatus.PENDING;
     }
+
+    public PaymentRequest(String orderCode, Long userId, Double amount, StandardCurrency currency, PaymentRequestStatus status, LocalDateTime createdAt, LocalDateTime updatedAt, PaymentProvider paymentProvider) {
+        this.orderCode = orderCode;
+        this.userId = userId;
+        this.amount = amount;
+        this.currency = currency;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.paymentProvider = paymentProvider;
+    }
 }
