@@ -19,13 +19,13 @@ public interface InstrumentRepository extends JpaRepository<Instrument, Long> {
 
     @Query("SELECT DISTINCT i FROM Instrument i LEFT JOIN i.configuration c WHERE " +
             "lower(i.instrumentName) LIKE lower(CONCAT('%', :keyword, '%')) OR " +
-            "lower(c.configKey) LIKE lower(CONCAT('%', :keyword, '%'))")
+            "lower(c.configurationName) LIKE lower(CONCAT('%', :keyword, '%'))")
     Page<Instrument> searchByKeywords(@Param("keyword") String keyword, Pageable pageable);
 
     @Query("SELECT DISTINCT i FROM Instrument i LEFT JOIN i.configuration c WHERE " +
             "i.status = :status AND (" +
             "lower(i.instrumentName) LIKE lower(CONCAT('%', :keyword, '%')) OR " +
-            "lower(c.configKey) LIKE lower(CONCAT('%', :keyword, '%')))")
+            "lower(c.configurationName) LIKE lower(CONCAT('%', :keyword, '%')))")
     Page<Instrument> searchByKeywordsAndStatus(@Param("keyword") String keyword,
                                                @Param("status") InstrumentStatus status,
                                                Pageable pageable);

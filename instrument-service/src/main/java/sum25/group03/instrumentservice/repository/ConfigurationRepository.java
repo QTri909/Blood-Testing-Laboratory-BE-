@@ -9,9 +9,9 @@ import java.util.List;
 
 @Repository
 public interface ConfigurationRepository extends JpaRepository<Configuration, Integer> {
-    Optional<Configuration> findByConfigKey(String configKey);
-    List<Configuration> findByConfigCategory(String configCategory);
-    List<Configuration> findByInstrumentType(String instrumentType);
-    List<Configuration> findByIsActiveTrueAndIsDeletedFalse();
+//    Optional<Configuration> findByConfigKey(String configKey);
+//    List<Configuration> findByConfigCategory(String configCategory);
+//    List<Configuration> findByInstrumentType(String instrumentType);
+//    List<Configuration> findByIsActiveTrueAndIsDeletedFalse();
 }
 

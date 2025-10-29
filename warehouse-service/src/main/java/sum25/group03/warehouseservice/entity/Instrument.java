@@ -31,6 +31,7 @@ public class Instrument {
     @Column(name = "serial_number", nullable = false, unique = true)
     private String serialNumber;
 
+
     @Column(name = "location", nullable = false)
     private String location;
 
@@ -41,16 +42,17 @@ public class Instrument {
     @Column(name = "notes", nullable = true, columnDefinition = "TEXT")
     private String notes;
 
-    @Column(name = "deactivated_at")
+
+    @Column(name = "deactivated_at", nullable = true)
     private LocalDate deactivatedAt;
 
-    @Column(name = "deactivated_by")
+    @Column(name = "deactivated_by", nullable = true)
     private Integer deactivatedBy;
 
-    @Column(name = "auto_delete_scheduled_at")
+    @Column(name = "auto_delete_scheduled_at", nullable = true)
     private LocalDate autoDeleteScheduledAt;
 
-    @Column(name = "installation_date")
+    @Column(name = "installation_date",  nullable = true)
     private LocalDate installationDate;
 
     @Column(name = "last_calibration_date", nullable = true)

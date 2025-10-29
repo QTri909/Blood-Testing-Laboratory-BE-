@@ -3,11 +3,13 @@ package sum25.group03.warehouseservice.service.reagent;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.response.ReagentValidationResponse;
 import sum25.group03.warehouseservice.entity.ReagentInventory;
 import sum25.group03.warehouseservice.entity.Reagents;
 import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
+import sum25.group03.warehouseservice.event.DeleteReagentEvent;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.repository.ReagentInventoryRepo;
 import sum25.group03.warehouseservice.repository.ReagentRepo;
@@ -21,6 +23,7 @@ import java.util.List;
 public class ReagentServiceImpl implements ReagentService {
     private final ReagentRepo reagentRepo;
     private final ReagentInventoryRepo reagentInventoryRepo;
+    private final KafkaTemplate<String, DeleteReagentEvent> kafkaDeleteTemplate;
 
     @Override
     public List<Long> findExistingIds(List<Long> reagentIds) {
@@ -99,5 +102,30 @@ public class ReagentServiceImpl implements ReagentService {
                 .isNotExpired(true)
                 .message("Reagent is valid and ready for installation")
                 .build();
+    }
+
+    @Override
+    public List<Reagents> findAllByInstrumentId(Long instrumentId) {
+        return reagentRepo.findAllByInstrumentId(instrumentId);
+    }
+
+    @Override
+    public List<Reagents> findAllByReagentId(List<Long> reagentId) {
+        return reagentRepo.findAllByReagentId(reagentId);
+    }
+
+    @Override
+    public void deleteReagent(Long reagentId) {
+        Reagents reagent = reagentRepo.findById(reagentId)
+                .orElseThrow(() -> new NotFoundException("Reagent not found with id: " + reagentId));
+        reagent.setStatus(ReagentStatus.DELETED);
+        reagentRepo.save(reagent);
+        log.info("Reagent with id {} has been marked as DELETED.", reagentId);
+        // Send delete event to Kafka
+        DeleteReagentEvent deleteReagentEvent = DeleteReagentEvent.builder()
+                .reagentId(reagentId)
+                .build();
+        kafkaDeleteTemplate.send("reagent-deletions", deleteReagentEvent);
+        log.info("Sent delete event for reagent id: {}", reagentId);
     }
 }

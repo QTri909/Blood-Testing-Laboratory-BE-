@@ -4,20 +4,26 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
-import java.math.BigDecimal;
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 @Builder
-public class UpdateSpecificConfigReq {
+public class UpdateConfigReq {
     @NonNull
-    private Long specificConfigurationId;
+    private Long configurationId;
+    @NotBlank
+    private String configurationName;
+    @NotBlank
     private String supportedTests;
-    private String parameterSettings;
+    @NotBlank
     private String dataOutputFormat;
+    @NotBlank
     private String communicationProtocol;
+    @Positive
     private int mixingSpeed;
+    @NotBlank
     private String firmwareVersion;
+    @Positive
+    private int usePerRun;
 }

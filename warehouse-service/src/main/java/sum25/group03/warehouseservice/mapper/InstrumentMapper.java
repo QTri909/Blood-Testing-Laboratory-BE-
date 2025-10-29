@@ -10,9 +10,15 @@ import sum25.group03.warehouseservice.entity.Instrument;
 
 @Mapper(componentModel = "spring")
 public interface InstrumentMapper {
-//    @Mapping(target = "status", expression = "java(sum25.group03.warehouseservice.entity.enums.InstrumentStatus.ACTIVE)")
-//    Instrument toEntity(InstrumentReq instrument);
+    @Mapping(target = "status", expression = "java(sum25.group03.warehouseservice.entity.enums.InstrumentStatus.ACTIVE)")
+    Instrument toEntity(InstrumentReq instrument);
 
     InstrumentResponse toResponse(Instrument instrument);
 
+//    @AfterMapping
+//    default void fillManufacturerName(@MappingTarget InstrumentResponse dto, Instrument entity) {
+//        if(entity.getManufacturer() != null) {
+//            dto.setManufacturerName(entity.getManufacturer().getManufacturerName());
+//        }
+//    }
 }

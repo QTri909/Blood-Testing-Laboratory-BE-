@@ -1,5 +1,4 @@
-package sum25.group03.instrumentservice.controller.response;
-
+package sum25.group03.warehouseservice.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,9 +6,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class RawTestResultResponse {
-    private Long id;
+public class DeleteReagentEvent {
+    private Long reagentId;
 }

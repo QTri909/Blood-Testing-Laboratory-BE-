@@ -400,7 +400,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .instrumentName(instrument.getInstrumentName())
                 .status(instrument.getStatus())
                 .configurationId(config != null ? config.getId() : null)
-                .configurationName(config != null ? config.getConfigKey() : null)
+                //.configurationName(config != null ? config.getConfigKey() : null)
                 .installedReagents(reagentResponses)
                 .build();
     }

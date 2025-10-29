@@ -38,20 +38,21 @@ spring:
     open-in-view: false
   kafka:
     bootstrap-servers: localhost:9092
-    listener:
-      missing-topics-fatal: false
     consumer:
       group-id: warehouse-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       auto-offset-reset: earliest
-
       properties:
         spring.json.trusted.packages: "*"
     producer:
       bootstrap-servers: localhost:9092
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+      retries: 3
+      properties:
+        spring.json.add.type.headers: false
 aws:
   region: ap-southeast-1
   access-key-id: ${AWS_ACCESS_KEY_ID}

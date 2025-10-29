@@ -23,6 +23,9 @@ public class Configuration {
     @Column(name = "configuration_id")
     private Long configurationId;
 
+    @Column(name = "configuration_name", nullable = false)
+    private String configurationName;
+
     @Column(name = "supported_tests", nullable = false)
     private String supportedTests;
 
@@ -37,6 +40,9 @@ public class Configuration {
 
     @Column(name = "firmware_version", nullable = false)
     private String firmwareVersion;
+
+    @Column(name = "use_per_run", nullable = false)
+    private int usePerRun;
 
     @Column(name = "active", nullable = false)
     private boolean active;
@@ -56,6 +62,7 @@ public class Configuration {
     private int updatedBy;
 
     @OneToOne(mappedBy = "configuration")
+
     private Instrument instrument;
 
 }
