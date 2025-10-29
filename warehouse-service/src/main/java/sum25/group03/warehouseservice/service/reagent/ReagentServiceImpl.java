@@ -1,9 +1,9 @@
 package sum25.group03.warehouseservice.service.reagent;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import sum25.group03.warehouseservice.dto.response.ReagentResponseForInstrument;
 import sum25.group03.warehouseservice.dto.response.ReagentValidationResponse;
 import sum25.group03.warehouseservice.entity.ReagentInventory;
 import sum25.group03.warehouseservice.entity.Reagents;
@@ -34,7 +34,7 @@ public class ReagentServiceImpl implements ReagentService {
 
         ReagentInventory reagent = reagentInventoryRepo.findByLotNumber(lotNumber)
                 .orElseThrow(() -> {
-                    log.warn("[v0] Reagent not found with batch number: {}", lotNumber);
+                    log.warn("Reagent not found with batch number: {}", lotNumber);
                     return new NotFoundException("Reagent not found with batch number: " + lotNumber);
                 });
 
@@ -99,5 +99,19 @@ public class ReagentServiceImpl implements ReagentService {
                 .isNotExpired(true)
                 .message("Reagent is valid and ready for installation")
                 .build();
+    }
+
+    @Override
+    public List<ReagentResponseForInstrument> listReagentsForInstrument() {
+        List<Reagents> reagents = reagentRepo.findAll();
+
+        return reagents.stream().map(reagent -> {
+            ReagentResponseForInstrument response = new ReagentResponseForInstrument();
+            response.setReagentId(reagent.getReagentId());
+            response.setReagentName(reagent.getReagentName());
+            response.setUsageMin(reagent.getUsageMin());
+            response.setUsageMax(reagent.getUsageMax());
+            return response;
+        }).toList();
     }
 }

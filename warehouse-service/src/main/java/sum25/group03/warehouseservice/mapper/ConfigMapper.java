@@ -11,7 +11,7 @@ public interface ConfigMapper {
 
     @Mapping(target = "active", expression = "java(true)")
     Configuration toEntity(SpecificConfigReq configDTO);
-    @Mapping(target = "active", expression = "java(true)")
-    GlobalConfiguration toEntity(GlobalConfigReq configDTO);
+//    @Mapping(target = "active", expression = "java(true)")
+//    GlobalConfiguration toEntity(GlobalConfigReq configDTO);
 
 }

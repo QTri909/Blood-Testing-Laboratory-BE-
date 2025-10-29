@@ -13,11 +13,11 @@ import sum25.group03.warehouseservice.service.instrument.InstrumentService;
 public class InstrumentController {
     private final InstrumentService instrumentService;
 
-    @PostMapping("/add")
-    public ResponseEntity<?> addInstrument(@RequestBody InstrumentReq instrument) {
-        instrumentService.addInstrumentToWarehouse(instrument);
-        return ResponseEntity.ok("success");
-    }
+//    @PostMapping("/add")
+//    public ResponseEntity<?> addInstrument(@RequestBody InstrumentReq instrument) {
+//        instrumentService.addInstrumentToWarehouse(instrument);
+//        return ResponseEntity.ok("success");
+//    }
 
 
 

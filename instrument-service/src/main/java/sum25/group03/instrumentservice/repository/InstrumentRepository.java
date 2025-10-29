@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.common.InstrumentStatus;
 import sum25.group03.instrumentservice.model.Instrument;
 
@@ -35,4 +36,6 @@ public interface InstrumentRepository extends JpaRepository<Instrument, Long> {
 
     @Query("SELECT i FROM Instrument i")
     Page<Instrument> findAllInstruments(Pageable pageable);
+
+    boolean existsByIdAndStatusIsNot(Long id, InstrumentStatus status);
 }
