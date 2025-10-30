@@ -120,6 +120,7 @@ public class RoleServiceImpl implements RoleService {
                 .id(role.getId())
                 .roleName(role.getRoleName())
                 .roleCode(role.getRoleCode())
+                .roleDescription(role.getRoleDescription())
                 .privileges(
                         rolePrivileges.stream().map(rp -> rp.getPrivilege().getPrivilegeName()).collect(Collectors.toSet())
                 )

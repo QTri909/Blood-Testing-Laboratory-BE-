@@ -12,11 +12,7 @@ import sum25.group03.iamservice.dto.request.UserUpdateRequest;
 import sum25.group03.iamservice.dto.response.UserResponse;
 import sum25.group03.iamservice.service.UserService;
 
-import java.util.List;
-import java.util.Map;
 
-
-import org.springframework.web.bind.annotation.*;
 
 
 
@@ -73,6 +69,12 @@ public class UserController {
 
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(userService.getAllUsers(pageable));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+        UserResponse response = userService.getUserById(id);
+        return ResponseEntity.ok(response);
     }
 
 

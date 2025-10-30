@@ -60,8 +60,6 @@ public class User {
     private LocalDateTime lockedUntil;
 
 
-
-
     // Quan hệ với UserRole
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<UserRole> userRoles = new HashSet<>();
