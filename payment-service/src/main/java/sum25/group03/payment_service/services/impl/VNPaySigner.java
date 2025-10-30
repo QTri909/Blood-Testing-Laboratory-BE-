@@ -11,6 +11,7 @@ public final class VNPaySigner {
 
     public static String canonicalQuery(Map<String, String> params) {
         return params.entrySet().stream()
+                .filter(e -> e.getKey() != null && e.getValue() != null)
                 .sorted(Map.Entry.comparingByKey())
                 .map(e -> e.getKey() + "=" + urlEncode(e.getValue()))
                 .collect(Collectors.joining("&"));

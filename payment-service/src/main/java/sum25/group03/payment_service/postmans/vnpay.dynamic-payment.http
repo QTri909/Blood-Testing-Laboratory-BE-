@@ -1,0 +1,45 @@
+
+#export VNP_TMN_CODE=SSQ21UPR && \
+#export VNP_HASH_SECRET=XJ1TNK555X8KDWJ96ESB15M53SXV9PNF && \
+#export VNP_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html && \
+#export VNP_IPN_URL=https://sandbox.vnpayment.vn/vnpaygw-sit-testing/user/login && \
+#export VNP_RETURN_URL=https://my.frontend.domain/payment/vnpay/return && \
+#export VNP_QUERY_URL=https://sandbox.vnpayment.vn/merchant_webapi/api/transaction && \
+#export VNP_REFUND_URL=https://sandbox.vnpayment.vn/merchant_webapi/api/refund && \
+#mvn spring-boot:run
+
+
+@host=localhost
+@port=8082
+@baseUrl=http://{{host}}:{{port}}
+
+### Create VNPay payment (dynamic QR)
+POST {{baseUrl}}/api/v1/payment/vnpay/create
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "orderCode": "ORDER-QR-001",
+  "amount": 150000,
+  "orderInfo": "Dynamic QR order",
+  "bankCode": "",
+  "locale": "vn",
+  "generateQRCode": true,
+  "qrWidth": 300,
+  "qrHeight": 300
+}
+
+### Poll by txnRef (replace {{txnRef}})
+GET {{baseUrl}}/api/v1/payment/vnpay/poll/{{txnRef}}
+
+### Query by txnRef (replace {{txnRef}})
+GET {{baseUrl}}/api/v1/payment/vnpay/query/{{txnRef}}
+
+### IPN callback (sample params placeholder)
+POST {{baseUrl}}/api/v1/payment/vnpay/ipn?params={{$random.alphanumeric(12)}}
+
+### Return callback (sample params placeholder)
+GET {{baseUrl}}/api/v1/payment/vnpay/return?params={{$random.alphanumeric(10)}}
+
+### Health/test endpoint
+GET {{baseUrl}}/api/v1/test

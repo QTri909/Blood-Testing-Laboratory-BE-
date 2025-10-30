@@ -1,5 +1,6 @@
 package sum25.group03.payment_service.services.impl;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
 import sum25.group03.payment_service.configs.VNPayProperties;
@@ -14,17 +15,20 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
+@RequiredArgsConstructor
 public class VNPayServiceImpl implements VNPayService {
     private final VNPayProperties props;
     private final PaymentCacheService cache;
     private final QRCodeService qr;
 
-    public VNPayServiceImpl(VNPayProperties props, PaymentCacheService cache, QRCodeService qr) {
-        this.props = props; this.cache = cache; this.qr = qr;
-    }
-
     @Override
     public VNPayCreatePaymentResponse create(VNPayCreatePaymentRequest req, String clientIp) {
+        // Validate required configuration early to avoid NPE during signing when values are missing
+        requireNonBlank(props.getTmnCode(), "VNPay configuration missing: tmnCode (env VNP_TMN_CODE or property vnpay.tmn-code)");
+        requireNonBlank(props.getHashSecret(), "VNPay configuration missing: hashSecret (env VNP_HASH_SECRET or property vnpay.hash-secret)");
+        requireNonBlank(props.getPaymentUrl(), "VNPay configuration missing: paymentUrl (env VNP_URL or property vnpay.payment-url)");
+        requireNonBlank(props.getReturnUrl(), "VNPay configuration missing: returnUrl (env VNP_RETURN_URL or property vnpay.return-url)");
+
         String txnRef = UUID.randomUUID().toString().replace("-", "").substring(0, 18);
         Map<String, String> params = new LinkedHashMap<>();
         params.put("vnp_Version", props.getVersion());
@@ -37,7 +41,8 @@ public class VNPayServiceImpl implements VNPayService {
         params.put("vnp_OrderType", props.getOrderType());
         params.put("vnp_Locale", Optional.ofNullable(req.getLocale()).orElse(props.getLocale()));
         params.put("vnp_ReturnUrl", props.getReturnUrl());
-        params.put("vnp_IpAddr", clientIp);
+        String safeClientIp = (clientIp == null || clientIp.isBlank()) ? "127.0.0.1" : clientIp;
+        params.put("vnp_IpAddr", safeClientIp);
         params.put("vnp_CreateDate", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
         if (req.getBankCode() != null && !req.getBankCode().isBlank()) params.put("vnp_BankCode", req.getBankCode());
 
@@ -67,6 +72,12 @@ public class VNPayServiceImpl implements VNPayService {
         resp.setCachedInRedis(true);
         resp.setCacheTTL(15L * 60);
         return resp;
+    }
+
+    private static void requireNonBlank(String value, String message) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException(message);
+        }
     }
 
     @Override

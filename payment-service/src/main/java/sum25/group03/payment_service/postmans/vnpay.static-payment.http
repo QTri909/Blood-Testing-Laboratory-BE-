@@ -1,0 +1,33 @@
+@host=localhost
+@port=8082
+@baseUrl=http://{{host}}:{{port}}
+
+### Create VNPay payment (static redirect)
+POST {{baseUrl}}/api/v1/payment/vnpay/create
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "orderCode": "ORDER-STATIC-001",
+  "amount": 100000,
+  "orderInfo": "Static redirect order",
+  "bankCode": "",
+  "locale": "vn",
+  "generateQRCode": false
+}
+
+### IPN callback (sample params placeholder)
+# Note: VNPay will call this; for local manual test you can simulate.
+POST {{baseUrl}}/api/v1/payment/vnpay/ipn?params={{$random.alphanumeric(12)}}
+
+### Poll by txnRef (replace {{txnRef}})
+GET {{baseUrl}}/api/v1/payment/vnpay/poll/{{txnRef}}
+
+### Query by txnRef (replace {{txnRef}})
+GET {{baseUrl}}/api/v1/payment/vnpay/query/{{txnRef}}
+
+### Return callback (sample params placeholder)
+GET {{baseUrl}}/api/v1/payment/vnpay/return?params={{$random.alphanumeric(10)}}
+
+### Health/test endpoint
+GET {{baseUrl}}/api/v1/test
