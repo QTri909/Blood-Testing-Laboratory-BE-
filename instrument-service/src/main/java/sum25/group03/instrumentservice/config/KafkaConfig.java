@@ -122,6 +122,27 @@ public class KafkaConfig {
         return factory;
     }
     @Bean
+    public ConsumerFactory<String, DeleteConfigEvent> configDeleteEventConsumerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+        configProps.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, UpdateConfigEvent.class.getName());
+        configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        return new DefaultKafkaConsumerFactory<>(configProps);
+    }
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, DeleteConfigEvent> configDeleteListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, DeleteConfigEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(configDeleteEventConsumerFactory());
+        factory.setCommonErrorHandler(errorHandler());
+        return factory;
+    }
+    @Bean
     public DefaultErrorHandler errorHandler() {
         DefaultErrorHandler errorHandler = new DefaultErrorHandler((record, exception) -> {
             System.err.println("[Kafka Error] Failed to deserialize message from topic: " + record.topic() +

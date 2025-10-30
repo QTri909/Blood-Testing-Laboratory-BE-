@@ -5,16 +5,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.warehouseservice.dto.request.ReagentSupplyReq;
 import sum25.group03.warehouseservice.dto.request.SupplyReq;
+import sum25.group03.warehouseservice.dto.request.UpdateStatusPOReq;
 import sum25.group03.warehouseservice.dto.response.*;
 import sum25.group03.warehouseservice.entity.ReagentHistorySupply;
+import sum25.group03.warehouseservice.entity.ReagentInventory;
 import sum25.group03.warehouseservice.entity.Reagents;
 import sum25.group03.warehouseservice.entity.Vendors;
+import sum25.group03.warehouseservice.entity.enums.ReagentInventoryStatus;
 import sum25.group03.warehouseservice.entity.enums.SupplyStatus;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.VendorMapper;
 import sum25.group03.warehouseservice.repository.HistorySupplyRepo;
+import sum25.group03.warehouseservice.repository.ReagentInventoryRepo;
 import sum25.group03.warehouseservice.repository.ReagentRepo;
 import sum25.group03.warehouseservice.repository.VendorRepo;
 
@@ -31,6 +36,7 @@ public class ReagentSupplyServiceImpl implements  ReagentSupplyService {
     private final VendorMapper vendorMapper;
     private final VendorRepo vendorRepo;
     private final ReagentRepo reagentRepo;
+    private final ReagentInventoryRepo reagentInventoryRepo;
 
     @Override
     public PageRes<HistorySupplyRes> getAll(int page, int size) {
@@ -139,5 +145,25 @@ public class ReagentSupplyServiceImpl implements  ReagentSupplyService {
 
         historySupplyRepo.saveAll(supplies);
         log.info("Added {} reagent supplies for PO: {}", supplies.size(), reagentSupplyReq.getPurchaseOrderNumber());
+    }
+
+    @Transactional
+    @Override
+    public void updateReagentSupplyStatus(UpdateStatusPOReq req) {
+        List<ReagentHistorySupply> supplies = historySupplyRepo.findAllByPurchaseOrderNumber(req.getPurchaseOrderNumber());
+        supplies.forEach(s -> s.setStatus(req.getSupplyStatus()));
+        if (req.getSupplyStatus() == SupplyStatus.RECEIVED) {
+            List<ReagentInventory> newInventories = supplies.stream().map(s -> {
+                ReagentInventory inventory = new ReagentInventory();
+                inventory.setReagent(s.getReagent());
+                inventory.setLotNumber(s.getLotNumber());
+                inventory.setQuantityAvailable(s.getQuantityReceived());
+                inventory.setExpiryDate(s.getExpiryDate());
+                inventory.setStatus(ReagentInventoryStatus.AVAILABLE);
+                return inventory;
+            }).toList();
+            reagentInventoryRepo.saveAll(newInventories);
+        }
+        historySupplyRepo.saveAll(supplies);
     }
 }

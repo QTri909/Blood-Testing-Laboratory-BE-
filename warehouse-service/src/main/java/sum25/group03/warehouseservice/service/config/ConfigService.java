@@ -16,4 +16,5 @@ public interface ConfigService {
     PageRes<ConfigRes> getAllConfig(int page, int size);
     Configuration getConfigByInstrumentId(Long id);
     Configuration getConfigById(Long id);
+    PageRes<ConfigRes> searchConfigs(String keyword, String id, int page, int size);
 }

@@ -2,6 +2,7 @@ package sum25.group03.warehouseservice.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -36,4 +37,6 @@ public interface HistorySupplyRepo extends JpaRepository<ReagentHistorySupply, L
 """)
     List<ReagentHistorySupply> findAllByPurchaseOrderNumberInFetch(List<String> poNumbers);
 
+    @EntityGraph(attributePaths = {"reagent"})
+    List<ReagentHistorySupply> findAllByPurchaseOrderNumber(String purchaseOrderNumber);
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.request.ConfigReq;
@@ -106,6 +107,21 @@ public class ConfigServiceImpl implements ConfigService {
     @Override
     public Configuration getConfigById(Long id) {
         return configRepo.findByConfigId(id);
+    }
+
+    @Override
+    public PageRes<ConfigRes> searchConfigs(String keyword, String id, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Configuration> configs = configRepo.search(keyword, id, pageable);
+        List<ConfigRes> content = configMapper.toDto(configs.getContent());
+
+        return PageRes.<ConfigRes>builder()
+                .content(content)
+                .pageNumber(configs.getNumber())
+                .pageSize(configs.getSize())
+                .totalElements(configs.getTotalElements())
+                .totalPages(configs.getTotalPages())
+                .build();
     }
 
 }

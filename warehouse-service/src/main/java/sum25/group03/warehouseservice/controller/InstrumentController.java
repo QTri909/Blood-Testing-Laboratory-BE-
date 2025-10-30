@@ -20,7 +20,7 @@ public class InstrumentController {
         return ResponseEntity.ok("success");
     }
     @PutMapping("config-reagents")
-    public ResponseEntity<?> addInstrument(@RequestBody AssignConfigAndReagentReq req) {
+    public ResponseEntity<?> addConfigAndReagentToInstrument(@RequestBody AssignConfigAndReagentReq req) {
         return ResponseEntity.ok(instrumentService.addConfigAndReagentToInstrument(req));
     }
 

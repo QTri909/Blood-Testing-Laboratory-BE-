@@ -33,8 +33,15 @@ public class ConfigurationController {
    }
 
     @GetMapping("")
-    public ResponseEntity<?> getAllConfigs(@RequestParam int page, @RequestParam int size) {
+    public ResponseEntity<?> getAllConfigs(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(configService.getAllConfig(page, size));
     }
-
+    @GetMapping("search")
+    public ResponseEntity<?> searchConfigs(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String id,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(configService.searchConfigs(keyword, id, page, size));
+    }
 }

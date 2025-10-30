@@ -6,6 +6,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import sum25.group03.warehouseservice.entity.enums.ReagentInventoryStatus;
 import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @NoArgsConstructor
@@ -25,7 +26,7 @@ public class ReagentInventory {
     private String lotNumber;
 
     @Column(name = "quantity_available", nullable = false)
-    private int quantityAvailable;
+    private BigDecimal quantityAvailable;
 
     @Column(name = "expiry_date", nullable = false)
     private LocalDate expiryDate;

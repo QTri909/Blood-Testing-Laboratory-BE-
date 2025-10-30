@@ -14,6 +14,8 @@ import sum25.group03.warehouseservice.event.UpdateExpiryReagent;
 import sum25.group03.warehouseservice.repository.ReagentInventoryRepo;
 import sum25.group03.warehouseservice.repository.ReagentRepo;
 
+import java.math.BigDecimal;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -36,13 +38,21 @@ public class ReagentEventListener {
 
             log.info("Reagent in lot found: {} - Current quantity: {}", reagentInventory.getLotNumber(), reagentInventory.getQuantityAvailable());
 
-            int newQuantity = reagentInventory.getQuantityAvailable() - event.getRequiredVolume().intValue();
+            //int newQuantity = reagentInventory.getQuantityAvailable() - event.getRequiredVolume().intValue();
+            BigDecimal available = reagentInventory.getQuantityAvailable();
+            BigDecimal required = BigDecimal.valueOf(event.getRequiredVolume());
+            BigDecimal newQuantity = available.subtract(required);
 
-            if (newQuantity < 0) {
+            if (newQuantity.compareTo(BigDecimal.ZERO) < 0) {
                 log.warn("Quantity would be negative after installation. Current: {}, Required: {}",
                         reagentInventory.getQuantityAvailable(), event.getRequiredVolume());
-                newQuantity = 0;
+                newQuantity = BigDecimal.ZERO;
             }
+//            if (newQuantity < 0) {
+//                log.warn("Quantity would be negative after installation. Current: {}, Required: {}",
+//                        reagentInventory.getQuantityAvailable(), event.getRequiredVolume());
+//                newQuantity = 0;
+//            }
 
             reagentInventory.setQuantityAvailable(newQuantity);
             ReagentInventory updatedReagentInventory = reagentInventoryRepo.save(reagentInventory);

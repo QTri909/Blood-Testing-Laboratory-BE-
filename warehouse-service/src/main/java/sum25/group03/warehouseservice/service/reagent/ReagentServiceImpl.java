@@ -14,6 +14,7 @@ import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.repository.ReagentInventoryRepo;
 import sum25.group03.warehouseservice.repository.ReagentRepo;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -73,9 +74,8 @@ public class ReagentServiceImpl implements ReagentService {
                     .message("Reagent has expired on " + reagent.getExpiryDate())
                     .build();
         }
-
-        if (reagent.getQuantityAvailable() == 0) {
-            log.warn("[Reagent is empty in lot: {}", lotNumber);
+        if (reagent.getQuantityAvailable().compareTo(BigDecimal.ZERO) == 0) {
+            log.warn("Reagent is empty in lot: {}", lotNumber);
             return responseBuilder
                     .isValid(false)
                     .isNotExpired(true)
@@ -83,7 +83,7 @@ public class ReagentServiceImpl implements ReagentService {
                     .build();
         }
 
-        if (reagent.getQuantityAvailable() < requiredVolume) {
+        if (reagent.getQuantityAvailable().compareTo(BigDecimal.valueOf(requiredVolume)) < 0) {
             log.warn("Reagent does not have sufficient quantity: {} (Available: {}, Required: {})",
                     lotNumber, reagent.getQuantityAvailable(), requiredVolume);
             return responseBuilder
@@ -93,6 +93,26 @@ public class ReagentServiceImpl implements ReagentService {
                             + reagent.getQuantityAvailable() + ", Required: " + requiredVolume)
                     .build();
         }
+
+//        if (reagent.getQuantityAvailable() == 0) {
+//            log.warn("[Reagent is empty in lot: {}", lotNumber);
+//            return responseBuilder
+//                    .isValid(false)
+//                    .isNotExpired(true)
+//                    .message("Reagent is empty and cannot be used")
+//                    .build();
+//        }
+//
+//        if (reagent.getQuantityAvailable() < requiredVolume) {
+//            log.warn("Reagent does not have sufficient quantity: {} (Available: {}, Required: {})",
+//                    lotNumber, reagent.getQuantityAvailable(), requiredVolume);
+//            return responseBuilder
+//                    .isValid(false)
+//                    .isNotExpired(true)
+//                    .message("Reagent does not have sufficient quantity. Available: "
+//                            + reagent.getQuantityAvailable() + ", Required: " + requiredVolume)
+//                    .build();
+//        }
 
 
         log.info("Reagent validation successful - reagent is valid and ready for use");

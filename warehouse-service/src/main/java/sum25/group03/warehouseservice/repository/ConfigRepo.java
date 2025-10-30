@@ -28,8 +28,23 @@ public interface ConfigRepo extends JpaRepository<Configuration, Long> {
 
     @Query("""
         SELECT c
-            FROM Configuration c
+        FROM Configuration c
         WHERE c.configurationId = :id AND c.active = true
     """)
     Configuration findByConfigId(@Param("id") Long id);
+
+    @Query(value = """
+    SELECT * FROM configurations c
+    WHERE
+      c.active = true AND
+      (:keyword IS NULL OR LOWER(c.configuration_name) LIKE LOWER(CONCAT('%', CAST(:keyword AS TEXT), '%')))
+      AND (:id IS NULL OR CAST(c.configuration_id AS VARCHAR) LIKE CONCAT('%', CAST(:id AS TEXT), '%'))
+""",
+            nativeQuery = true)
+    Page<Configuration> search(@Param("keyword") String keyword,
+                                     @Param("id") String id,
+                                     Pageable pageable);
+
+
+
 }

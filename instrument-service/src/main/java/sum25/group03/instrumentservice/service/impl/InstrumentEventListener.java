@@ -7,6 +7,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.common.InstrumentStatus;
+import sum25.group03.instrumentservice.event.DeleteConfigEvent;
 import sum25.group03.instrumentservice.event.NewInstrumentEvent;
 import sum25.group03.instrumentservice.event.UpdateConfigEvent;
 import sum25.group03.instrumentservice.exception.ResourceNotFoundException;
@@ -80,5 +81,15 @@ public class InstrumentEventListener {
         instrument.setConfiguration(updatedConfig);
         instrumentRepository.save(instrument);
         log.info("Configuration for Instrument {} has been updated", instrument.getId());
+    }
+
+    @KafkaListener(topics = "config-deletes", groupId = "instrument-service-group", containerFactory = "configDeleteListenerContainerFactory")
+    public void handleConfigDeleteEvent(DeleteConfigEvent deleteConfigEvent) {
+        Instrument instrument = instrumentRepository.findById(deleteConfigEvent.getInstrumentId())
+                .orElseThrow(() -> new ResourceNotFoundException("Instrument not found with ID: " + deleteConfigEvent.getInstrumentId()));
+
+        instrument.setConfiguration(null);
+        instrumentRepository.save(instrument);
+        log.info("Configuration for Instrument {} has been deleted", instrument.getId());
     }
 }
