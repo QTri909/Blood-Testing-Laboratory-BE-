@@ -14,7 +14,6 @@ public class InstrumentResponse {
     private String instrumentName;
     private String model;
     private String serialNumber;
-    private String firmwareVersion;
     private String location;
     private String notes;
     private InstrumentStatus status;

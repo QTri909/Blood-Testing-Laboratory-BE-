@@ -14,6 +14,7 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+
 #    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
 #    username: ${SUPABASE_DB_USER}
 #    password: ${DB_PASSWORD}
@@ -56,7 +57,7 @@ spring:
 aws:
   region: ap-southeast-1
   access-key-id: ${AWS_ACCESS_KEY_ID}
-  secret-key-secret: ${AWS_SECRET_ACCESS_KEY}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY}
 audit:
   cloudwatch:
     log-group: warehouse-service

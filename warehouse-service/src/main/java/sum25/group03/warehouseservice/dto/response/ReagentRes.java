@@ -2,6 +2,8 @@ package sum25.group03.warehouseservice.dto.response;
 
 import lombok.*;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -15,4 +17,6 @@ public class ReagentRes {
     private String unit;
     private String expirationDate;
     private int quantity;
+
+    private List<ReagentUsageMiniRes> usages;
 }

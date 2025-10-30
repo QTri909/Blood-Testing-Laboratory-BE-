@@ -8,10 +8,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import sum25.group03.warehouseservice.dto.response.ReagentRes;
 import sum25.group03.warehouseservice.dto.response.ReagentUsageDetailResponse;
+import sum25.group03.warehouseservice.dto.response.ReagentUsageMiniRes;
 import sum25.group03.warehouseservice.dto.response.ReagentUsagePageResponse;
 import sum25.group03.warehouseservice.entity.ReagentHistoryUsage;
-import sum25.group03.warehouseservice.repository.ReagentHistoryUsageRepo;
+import sum25.group03.warehouseservice.entity.Reagents;
+import sum25.group03.warehouseservice.repository.ReagentInventoryRepo;
+import sum25.group03.warehouseservice.repository.ReagentRepo;
+import sum25.group03.warehouseservice.repository.ReagentUsageRepo;
 
 import java.util.List;
 import java.util.Set;
@@ -23,72 +28,49 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class ReagentHistoryUsageServiceImpl implements ReagentHistoryUsageService {
-    private final ReagentHistoryUsageRepo usageRepository;
+    private final ReagentUsageRepo reagentUsageRepo;
+    private final ReagentRepo reagentRepo;
+    private final ReagentInventoryRepo reagentInventoryRepo;
 
     @Override
-    public ReagentUsagePageResponse findAllUsageRecords(String reagentName, String sort, String usageType,
-                                                        Long instrumentId, int page, int size) {
-        log.info("Finding all reagent usage with name: {}, sort: {}, usageType: {}, instrumentId: {}, page: {}, size: {}",
-                reagentName, sort, usageType, instrumentId, page, size);
+    public Page<ReagentRes> filterReagentsWithUsage(String name, Pageable pageable) {
+        Page<Reagents> reagents = reagentRepo.filterReagents(name, pageable);
 
-        // Default sort
-        Sort.Order order = new Sort.Order(Sort.Direction.DESC, "usedAt");
+        return reagents.map(reagent -> {
 
-        Set<String> ALLOWED_SORTS = Set.of("usedAt","quantityUsed","usageType","unit");
+            List<ReagentUsageMiniRes> usages = reagentUsageRepo
+                    .findTop3ByReagentOrderByUsedAtDesc(reagent)
+                    .stream()
+                    .map(u -> ReagentUsageMiniRes.builder()
+                            .usageId(u.getReagentHistoryUsageId())
+                            .usageType(u.getUsageType())
+                            .quantityUsed(u.getQuantityUsed())
+                            .unit(u.getUnit())
+                            .usedAt(u.getUsedAt().toString())
+                            .performedBy("system")
+                            .build())
+                    .toList();
 
-        if (StringUtils.hasLength(sort)) {
-            Matcher m = Pattern.compile("^(\\w+):(asc|desc)$", Pattern.CASE_INSENSITIVE).matcher(sort);
-            if (m.find() && ALLOWED_SORTS.contains(m.group(1))) {
-                order = new Sort.Order("asc".equalsIgnoreCase(m.group(2)) ? Sort.Direction.ASC : Sort.Direction.DESC, m.group(1));
-            }
-        }
-
-        int pageNo = Math.max(0, page - 1);
-        Pageable pageable = PageRequest.of(pageNo, size, Sort.by(order));
-
-        Page<ReagentHistoryUsage> usageEntities =
-                usageRepository.searchUsageRecords(
-                        StringUtils.hasText(reagentName) ? reagentName.trim() : null,
-                        StringUtils.hasText(usageType) ? usageType.trim() : null,
-                        instrumentId,
-                        pageable);
-
-        return mapToUsagePageResponse(page, size, usageEntities);
+            return mapToReagentRes(reagent, usages);
+        });
     }
 
-    @Override
-    public List<ReagentUsageDetailResponse> findByReagentName(String reagentName) {
-        log.info("Fetching usage records for reagent name: {}", reagentName);
-        return usageRepository.findByReagent_ReagentNameContainingIgnoreCase(reagentName)
-                .stream()
-                .map(this::mapToUsageDetailResponse)
-                .collect(Collectors.toList());
-    }
+    private ReagentRes mapToReagentRes(Reagents reagent, List<ReagentUsageMiniRes> usages) {
+        Integer totalQuantity = reagentInventoryRepo.getTotalQuantityByReagentId(reagent.getReagentId());
 
-    private ReagentUsagePageResponse mapToUsagePageResponse(int page, int size, Page<ReagentHistoryUsage> usageEntities) {
-        List<ReagentUsageDetailResponse> list = usageEntities.stream()
-                .map(this::mapToUsageDetailResponse)
-                .collect(Collectors.toList());
-
-        return ReagentUsagePageResponse.builder()
-                .pageNumber(page)
-                .pageSize(size)
-                .totalPages(usageEntities.getTotalPages())
-                .totalElements(usageEntities.getTotalElements())
-                .usages(list)
-                .build();
-    }
-
-    private ReagentUsageDetailResponse mapToUsageDetailResponse(ReagentHistoryUsage usage) {
-        return ReagentUsageDetailResponse.builder()
-                .usageId(usage.getReagentHistoryUsageId())
-                .reagentName(usage.getReagent().getReagentName())
-                .quantityUsed(usage.getQuantityUsed())
-                .unit(usage.getUnit())
-                .usageType(usage.getUsageType())
-                .instrumentName(usage.getInstrument() != null ? usage.getInstrument().getInstrumentName() : null)
-                .usedAt(usage.getUsedAt())
-                .notes(usage.getNotes())
+        return ReagentRes.builder()
+                .reagentId(reagent.getReagentId())
+                .reagentName(reagent.getReagentName())
+                .catalogNumber(reagent.getCatalogNumber())
+                .casNumber(reagent.getCasNumber())
+                .unit(reagent.getUnit())
+                .expirationDate(
+                        reagent.getExpirationDate() != null
+                                ? reagent.getExpirationDate().toString()
+                                : null
+                )
+                .quantity(totalQuantity != null ? totalQuantity : 0)
+                .usages(usages)
                 .build();
     }
 }
