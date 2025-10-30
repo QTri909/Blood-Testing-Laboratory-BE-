@@ -28,12 +28,10 @@ public class UserPermissionServiceImpl implements UserPermissionService {
 
         Set<GrantedAuthority> authorities = new HashSet<>();
 
-        // Load roles
         user.getUserRoles().forEach(ur -> {
             Role role = ur.getRole();
             authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getRoleCode()));
 
-            // Load privileges từ role
             role.getRolePrivileges().forEach(rp ->
                     authorities.add(new SimpleGrantedAuthority(rp.getPrivilege().getPrivilegeCode()))
             );
