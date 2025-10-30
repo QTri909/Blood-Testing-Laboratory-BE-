@@ -8,4 +8,7 @@ import java.util.concurrent.CompletableFuture;
 public interface SimulatorService {
 
     CompletableFuture<RawTestResultResponse> startTest(BloodTestingRequest request);
+    void logTestCompletion(String barcode, String ipAddress, String userAgent);
+
+    void logTestFailure(String barcode, String ipAddress, String userAgent, String errorCode, String errorMessage);
 }

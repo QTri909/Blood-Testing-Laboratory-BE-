@@ -1,4 +1,4 @@
-package sum25.group03.instrumentservice.event;
+package sum25.group03.monitoringservice.event;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,6 +17,7 @@ public class TestResultPublishedEvent implements Serializable {
     private Long instrumentId;
     private String barcode;
     private String hl7Message;
+    private String rawData;
     private LocalDateTime timestamp;
     private String status;
 }

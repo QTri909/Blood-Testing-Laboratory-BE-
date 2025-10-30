@@ -8,11 +8,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.instrumentservice.audit.service.AuditLogService;
 import sum25.group03.instrumentservice.controller.request.BloodTestingRequest;
 import sum25.group03.instrumentservice.controller.response.RawTestResultResponse;
 import sum25.group03.instrumentservice.exception.InsufficientReagentException;
+import sum25.group03.instrumentservice.service.RawTestResultService;
 import sum25.group03.instrumentservice.service.SimulatorService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
@@ -22,6 +25,8 @@ import java.util.concurrent.CompletableFuture;
 public class BloodTestingController {
 
     private final SimulatorService simulatorService;
+    private final RawTestResultService rawTestResultService;
+    private final AuditLogService auditLogService;
 
     @PostMapping("/start-test")
     @Operation(summary = "Bắt đầu chạy một xét nghiệm máu",
@@ -44,36 +49,66 @@ public class BloodTestingController {
             }
     )
     public CompletableFuture<ResponseEntity<RawTestResultResponse>> startBloodTest(
-            @RequestBody BloodTestingRequest request) {
+            @RequestBody BloodTestingRequest request,
+            HttpServletRequest httpRequest) {
 
         log.info("Received blood test request for barcode: {} on instrument: {}",
                 request.getBarcode(), request.getInstrumentId());
 
+        String ipAddress = getClientIpAddress(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
+
         return simulatorService.startTest(request)
                 .thenApply(result -> {
-                    log.info("Blood test completed successfully for barcode: {}", request.getBarcode());
+                    simulatorService.logTestCompletion(request.getBarcode(), ipAddress, userAgent);
                     return ResponseEntity.ok(result);
                 })
                 .exceptionally(ex -> {
                     if (ex.getCause() instanceof InsufficientReagentException) {
-                        log.warn("Insufficient reagent for barcode: {}", request.getBarcode());
+                        simulatorService.logTestFailure(
+                                request.getBarcode(),
+                                ipAddress,
+                                userAgent,
+                                "INSUFFICIENT_REAGENT",
+                                "Không đủ hóa chất để thực hiện xét nghiệm"
+                        );
                         return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED)
                                 .body(null);
                     }
-                    log.error("Error during blood test for barcode: {}", request.getBarcode(), ex);
+                    simulatorService.logTestFailure(
+                            request.getBarcode(),
+                            ipAddress,
+                            userAgent,
+                            ex.getCause() != null ? ex.getCause().getClass().getSimpleName() : "UNKNOWN_ERROR",
+                            ex.getMessage()
+                    );
                     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                             .body(null);
                 });
     }
 
+    @DeleteMapping("/result/delete/{resultId}")
+    public ResponseEntity<Void> deleteRawTestResult(
+            @PathVariable Long resultId,
+            HttpServletRequest httpRequest) {
+        log.info("Received request to delete RawTestResult with ID: {}", resultId);
 
-    @GetMapping("/result/{resultId}")
-    public ResponseEntity<String> getTestResult(@PathVariable Integer resultId) {
-        log.info("Fetching test result with ID: {}", resultId);
-        return ResponseEntity.ok("Test result endpoint");
+        String ipAddress = getClientIpAddress(httpRequest);
+        String userAgent = httpRequest.getHeader("User-Agent");
+
+        rawTestResultService.deleteRawTestResult(resultId, ipAddress, userAgent);
+        return ResponseEntity.noContent().build();
     }
-    @GetMapping("/health")
-    public ResponseEntity<String> healthCheck() {
-        return ResponseEntity.ok("Blood Testing Service is running");
+
+    private String getClientIpAddress(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        if (xForwardedFor != null && !xForwardedFor.isEmpty()) {
+            return xForwardedFor.split(",")[0].trim();
+        }
+        String xRealIp = request.getHeader("X-Real-IP");
+        if (xRealIp != null && !xRealIp.isEmpty()) {
+            return xRealIp;
+        }
+        return request.getRemoteAddr();
     }
 }

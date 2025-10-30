@@ -150,7 +150,7 @@ public class InstrumentServiceImpl implements InstrumentService {
 
         Instrument instrument = instrumentRepository.findById(request.getInstrumentId())
                 .orElseThrow(() -> {
-                    log.error("[v0] Instrument not found with ID: {}", request.getInstrumentId());
+                    log.error("Instrument not found with ID: {}", request.getInstrumentId());
                     return new ResourceNotFoundException(
                             "Instrument not found with id: " + request.getInstrumentId());
                 });
@@ -260,11 +260,10 @@ public class InstrumentServiceImpl implements InstrumentService {
                     changes
             );
         } catch (Exception e) {
-            // Quan trọng: Không để lỗi log ảnh hưởng tới nghiệp vụ chính
             log.warn("Failed to write audit log for installReagent: {}", e.getMessage());
         }
 
-        log.info("Reagent installed successfully - ID: {}, Batch: {}",
+        log.info("Reagent installed successfully - ID: {}, Lot: {}",
                 savedReagent.getId(), request.getLotNumber());
 
         try {

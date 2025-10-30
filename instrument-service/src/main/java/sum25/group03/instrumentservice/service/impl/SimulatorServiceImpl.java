@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import sum25.group03.instrumentservice.audit.service.AuditLogService;
 import sum25.group03.instrumentservice.client.TestOrderServiceClient;
 import sum25.group03.instrumentservice.client.WarehouseServiceClient;
 import sum25.group03.instrumentservice.client.response.CreationTestOrderResponse;
@@ -47,6 +48,7 @@ public class SimulatorServiceImpl implements SimulatorService {
     private final ObjectMapper objectMapper;
     private final WarehouseServiceClient warehouseServiceClient;
     private final TestOrderServiceClient testOrderServiceClient;
+    private final AuditLogService auditLogService;
 
     @Override
     @Async("taskExecutor")
@@ -143,7 +145,7 @@ public class SimulatorServiceImpl implements SimulatorService {
                     .rawData(rawDataJson)
                     .hl7Message(finalHl7Message)
                     .isSentToMonitoring(false)
-                    .isSynced(false)
+                    .isSynced(true)
                     .createdAt(LocalDateTime.now())
                     .build();
 
@@ -155,7 +157,6 @@ public class SimulatorServiceImpl implements SimulatorService {
                     .instrumentId(request.getInstrumentId())
                     .barcode(request.getBarcode())
                     .hl7Message(finalHl7Message)
-                    .rawData(rawDataJson)
                     .timestamp(LocalDateTime.now())
                     .status("SUCCESS")
                     .build();
@@ -264,5 +265,44 @@ public class SimulatorServiceImpl implements SimulatorService {
         }
 
         return finalMessage.toString();
+    }
+
+    @Override
+    public void logTestCompletion(String barcode, String ipAddress, String userAgent) {
+        try {
+            auditLogService.logWriteSuccess(
+                    "START_BLOOD_TEST",
+                    "BloodTest",
+                    barcode,
+                    ipAddress,
+                    userAgent,
+                    auditLogService.createFieldChanges(
+                            "test_status",
+                            "PENDING",
+                            "COMPLETED"
+                    )
+            );
+            log.info("Logged test completion for barcode: {}", barcode);
+        } catch (Exception e) {
+            log.error("Failed to log test completion for barcode: {}", barcode, e);
+        }
+    }
+
+    @Override
+    public void logTestFailure(String barcode, String ipAddress, String userAgent, String errorCode, String errorMessage) {
+        try {
+            auditLogService.logWriteFailure(
+                    "START_BLOOD_TEST",
+                    "BloodTest",
+                    barcode,
+                    ipAddress,
+                    userAgent,
+                    errorCode,
+                    errorMessage
+            );
+            log.info("Logged test failure for barcode: {} with error: {}", barcode, errorCode);
+        } catch (Exception e) {
+            log.error("Failed to log test failure for barcode: {}", barcode, e);
+        }
     }
 }
