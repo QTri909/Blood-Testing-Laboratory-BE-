@@ -2,6 +2,7 @@ package sum25.group03.payment_service.controllers;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import sum25.group03.payment_service.services.interfaces.VNPayService;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/payment/vnpay")
 public class VNPayController {
@@ -28,6 +30,10 @@ public class VNPayController {
 
     @PostMapping(path = "/ipn")
     public Map<String, String> ipn(@RequestParam MultiValueMap<String, String> params) {
+
+        log.info("ipn::VNPay has called this!");
+        log.info("ipn::VNPay give this to me: {}", params.toString());
+
         Map<String, String> flat = new HashMap<>();
         params.forEach((k, v) -> flat.put(k, v.get(0)));
         return service.handleIpn(flat);
@@ -35,6 +41,10 @@ public class VNPayController {
 
     @GetMapping(path = "/return")
     public PaymentResponseDTO returnUrl(@RequestParam Map<String, String> params) {
+
+        log.info("return::VNPay return called this!");
+        log.info("return::VNPay give this to me: {}", params.toString());
+
         return service.handleReturn(params);
     }
 
