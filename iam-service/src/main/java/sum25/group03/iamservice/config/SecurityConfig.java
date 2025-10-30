@@ -20,7 +20,8 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/login",
                                 "/auth/forgot-password",
-                                "/auth/confirm-forgot-password"
+                                "/auth/confirm-forgot-password",
+                                "/auth/privileges"
                         ).permitAll()
 
                         // 🔒 Các API khác yêu cầu JWT

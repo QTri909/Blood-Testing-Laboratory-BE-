@@ -61,10 +61,11 @@ public class AuthServiceImpl implements AuthService {
         }
 
         try {
-            // 🔹 3. Dùng InitiateAuth thay vì AdminInitiateAuth
-            InitiateAuthRequest authRequest = InitiateAuthRequest.builder()
-                    .authFlow(AuthFlowType.USER_PASSWORD_AUTH)
+            // 🔹 3. Dùng AdminInitiateAuth thay vì InitiateAuth
+            AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
+                    .userPoolId(userPoolId)
                     .clientId(clientId)
+                    .authFlow(AuthFlowType.ADMIN_USER_PASSWORD_AUTH)
                     .authParameters(Map.of(
                             "USERNAME", request.getEmail(),
                             "PASSWORD", request.getPassword(),
@@ -72,20 +73,17 @@ public class AuthServiceImpl implements AuthService {
                     ))
                     .build();
 
-            InitiateAuthResponse response = cognitoClient.initiateAuth(authRequest);
+            AdminInitiateAuthResponse response = cognitoClient.adminInitiateAuth(authRequest);
 
             // 🔹 3.a Nếu Cognito trả challenge (ví dụ NEW_PASSWORD_REQUIRED) -> không tính là failed attempt
             if (response.challengeName() != null) {
                 String challenge = response.challengeNameAsString();
-                // Nếu FE cần session để RespondToAuthChallenge, có thể trả session trong exception message
                 String session = response.session();
-                // Trả lỗi / thông báo đặc biệt cho FE xử lý (FE sẽ gọi API đổi mật khẩu hoặc RespondToAuthChallenge)
                 throw new RuntimeException("FIRST_LOGIN: " + challenge + (session != null ? ("; session=" + session) : ""));
             }
 
             // 🔹 4. Nếu login thành công (authenticationResult != null)
             if (response.authenticationResult() == null) {
-                // Unexpected - không có authenticationResult và không có challenge
                 throw new RuntimeException("Authentication failed: no authenticationResult returned");
             }
 
@@ -100,29 +98,20 @@ public class AuthServiceImpl implements AuthService {
 
             return loginResponse;
 
-        } catch (software.amazon.awssdk.services.cognitoidentityprovider.model.NotAuthorizedException |
-                 software.amazon.awssdk.services.cognitoidentityprovider.model.UserNotFoundException e) {
-            // 🔹 Sai credentials (email hoặc password) -> tăng số lần thất bại
+        } catch (NotAuthorizedException | UserNotFoundException e) {
             handleFailedAttempt(user);
             throw new RuntimeException("Invalid credentials. Failed attempts: " + user.getFailedAttempts());
-
-        } catch (software.amazon.awssdk.services.cognitoidentityprovider.model.UserNotConfirmedException e) {
-            // 🔹 Tài khoản chưa xác nhận email/phone
+        } catch (UserNotConfirmedException e) {
             throw new RuntimeException("EMAIL_NOT_CONFIRMED");
-
-        } catch (software.amazon.awssdk.services.cognitoidentityprovider.model.PasswordResetRequiredException e) {
-            // 🔹 Cognito yêu cầu reset mật khẩu
+        } catch (PasswordResetRequiredException e) {
             throw new RuntimeException("RESET_REQUIRED");
-
-        } catch (software.amazon.awssdk.services.cognitoidentityprovider.model.InvalidParameterException e) {
-            // 🔹 Parameter không hợp lệ (vd: email format)
+        } catch (InvalidParameterException e) {
             throw new RuntimeException("INVALID_PARAMETER: " + e.getMessage(), e);
-
         } catch (Exception e) {
-            // 🔹 Các lỗi khác (network, AWS sdk, v.v.)
             throw new RuntimeException("Authentication error: " + e.getMessage(), e);
         }
     }
+
 
     /**
      * Tăng failedAttempts, set last failed time, và khóa account nếu vượt quá ngưỡng.
