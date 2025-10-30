@@ -180,5 +180,42 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+    @Override
+    public void changePassword(String accessToken, String oldPassword, String newPassword) {
+        try {
+            cognitoClient.changePassword(builder -> builder
+                    .accessToken(accessToken)
+                    .previousPassword(oldPassword)
+                    .proposedPassword(newPassword)
+            );
+        } catch (CognitoIdentityProviderException e) {
+            throw new RuntimeException("Change password failed: " + e.awsErrorDetails().errorMessage());
+        }
+    }
+
+    @Override
+    public void forgotPassword(String email) {
+        ForgotPasswordRequest request = ForgotPasswordRequest.builder()
+                .clientId(clientId)
+                .username(email)
+                .secretHash(calculateSecretHash(email))
+                .build();
+
+        cognitoClient.forgotPassword(request);
+    }
+
+    @Override
+    public void confirmForgotPassword(String email, String confirmationCode, String newPassword) {
+        ConfirmForgotPasswordRequest confirmRequest = ConfirmForgotPasswordRequest.builder()
+                .clientId(clientId)
+                .username(email)
+                .confirmationCode(confirmationCode)
+                .password(newPassword)
+                .secretHash(calculateSecretHash(email))
+                .build();
+
+        cognitoClient.confirmForgotPassword(confirmRequest);
+    }
+
 
 }

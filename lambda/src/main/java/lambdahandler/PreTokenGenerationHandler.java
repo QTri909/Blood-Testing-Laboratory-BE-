@@ -16,7 +16,7 @@ import java.util.HashMap;
 public class PreTokenGenerationHandler
         implements RequestHandler<CognitoUserPoolPreTokenGenerationEvent, CognitoUserPoolPreTokenGenerationEvent> {
 
-    private static final String IAM_SERVICE_URL = "http://localhost:8080/api/v1/users/privileges?email=";
+    private static final String IAM_SERVICE_URL = "http://13.239.30.25:8080/auth/privileges?email=";
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 

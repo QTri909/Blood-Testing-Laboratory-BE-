@@ -4,8 +4,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 public class SecurityConfig {
@@ -16,24 +16,25 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
+                        // ✅ Chỉ public 3 API này
+                        .requestMatchers(
+                                "/auth/login",
+                                "/auth/forgot-password",
+                                "/auth/confirm-forgot-password"
+                        ).permitAll()
+
+                        // 🔒 Các API khác yêu cầu JWT
                         .anyRequest().authenticated()
                 )
-                // 🔹 ĐÂY LÀ DÒNG QUAN TRỌNG: Spring sẽ tự xác thực JWT Cognito
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt
-                                .jwkSetUri("https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_7UGXSOgJj/.well-known/jwks.json")
+                        .jwt(jwt -> jwt.jwkSetUri(
+                                "https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_7UGXSOgJj/.well-known/jwks.json"
+                        ))
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
                         )
-                        .authenticationEntryPoint((request, response, authException) -> {
-
-                            String path = request.getRequestURI();
-                            if (path.startsWith("/auth/login")) {
-                                response.setStatus(HttpServletResponse.SC_OK);
-                            } else {
-                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
-                            }
-                        })
                 );
+
         return http.build();
     }
 }

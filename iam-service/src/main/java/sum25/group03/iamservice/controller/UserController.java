@@ -75,10 +75,9 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 
-    @GetMapping("/privileges")
-    public ResponseEntity<?> getUserPrivileges(@RequestParam String email) {
-        Map<String, List<String>> data = userService.getRolesAndPrivilegesByEmail(email);
-        return ResponseEntity.ok(data);
-    }
+
+
+
+
 
 }
