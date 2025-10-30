@@ -1,4 +1,4 @@
-package sum25.group03.instrumentservice.audit.service;
+package sum25.group03.warehouseservice.audit.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.cloudwatchlogs.CloudWatchLogsClient;
 import software.amazon.awssdk.services.cloudwatchlogs.model.*;
-import sum25.group03.instrumentservice.audit.model.AuditLog;
+import sum25.group03.warehouseservice.audit.model.AuditLog;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -20,7 +20,7 @@ public class CloudWatchAuditLogger {
     private final CloudWatchLogsClient cloudWatchLogsClient;
     private final ObjectMapper objectMapper;
 
-    @Value("${audit.cloudwatch.log-group:Instrument-service}")
+    @Value("${audit.cloudwatch.log-group:warehouse-service}")
     private String logGroup;
 
     @Value("${audit.cloudwatch.enabled:true}")

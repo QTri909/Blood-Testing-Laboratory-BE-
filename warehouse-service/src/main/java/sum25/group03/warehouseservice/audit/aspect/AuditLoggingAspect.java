@@ -1,4 +1,4 @@
-package sum25.group03.instrumentservice.audit.aspect;
+package sum25.group03.warehouseservice.audit.aspect;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import sum25.group03.instrumentservice.audit.service.AuditLogService;
+import sum25.group03.warehouseservice.audit.service.AuditLogService;
+
 
 @Slf4j
 @Aspect
@@ -18,9 +19,9 @@ import sum25.group03.instrumentservice.audit.service.AuditLogService;
 public class AuditLoggingAspect {
     private final AuditLogService auditLogService;
 
-    @Around("execution(* sum25.group03.instrumentservice.controller.*.*(..)) && " +
-            "!execution(* sum25.group03.instrumentservice.controller.*.*Error*(..)) && " +
-            "!@annotation(sum25.group03.instrumentservice.audit.annotation.SkipAuditLog)")
+    @Around("execution(* sum25.group03.warehouseservice.controller.*.*(..)) && " +
+            "!execution(* sum25.group03.warehouseservice.controller.*.*Error*(..)) && " +
+            "!@annotation(sum25.group03.warehouseservice.audit.annotation.SkipAuditLog)")
     public Object auditControllerMethods(ProceedingJoinPoint joinPoint) throws Throwable {
         String methodName = joinPoint.getSignature().getName();
         String className = joinPoint.getTarget().getClass().getSimpleName();

@@ -3,6 +3,8 @@ package sum25.group03.warehouseservice.dto.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -16,4 +18,6 @@ public class ReagentRes {
     private String casNumber;
     private String unit;
     private int quantity;
+
+    private List<ReagentUsageMiniRes> usages;
 }
