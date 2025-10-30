@@ -56,10 +56,16 @@ public class MedicalRecordController {
         medicalRecordService.deleteById(requestInfo);
     }
 
-    /*
+
+//    @GetMapping("/patient/{patientId}")
+//    public ResponseEntity<List<MedicalRecordResponse>> getByPatientId(@PathVariable Long patientId) {
+//        return ResponseEntity.ok(medicalRecordService.getByPatientId(patientId));
+//    }
+
     @GetMapping("/patient/{patientId}")
-    public ResponseEntity<List<MedicalRecordResponse>> getByPatientId(@PathVariable Long patientId) {
-        return ResponseEntity.ok(medicalRecordService.getByPatientId(patientId));
+    public ResponseEntity<MedicalRecordResponse> getLatestTestOrderByPatientId(@PathVariable Long patientId) {
+        return ResponseEntity.ok(medicalRecordService.getLatestByPatientId(patientId));
     }
-     */
+
+
 }

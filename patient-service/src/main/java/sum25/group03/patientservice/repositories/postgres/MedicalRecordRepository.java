@@ -14,6 +14,7 @@ import java.util.UUID;
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecordEntity, Long> {
     Optional<MedicalRecordEntity> findByRecordCode(UUID recordCode);
     List<MedicalRecordEntity> findByPatientId(Long patientId);
+    Optional<MedicalRecordEntity> findTopByPatientIdOrderByVisitDateDesc(Long patientId);
 
     // find by id and status is not DELETED
     Optional<MedicalRecordEntity> findByRecordIdAndStatusNot(Long recordId, MedicalRecordStatus status);
