@@ -18,7 +18,7 @@ public class CloudWatchConfig {
     @Value("${aws.access-key-id}")
     private String awsAccessKeyId;
 
-    @Value("${aws.secret-access-key}")
+    @Value("${aws.secret-key-secret}")
     private String awsSecretKeySecret;
 
     @Bean
