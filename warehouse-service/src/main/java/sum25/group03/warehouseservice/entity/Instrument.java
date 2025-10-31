@@ -86,7 +86,7 @@ public class Instrument {
     @JoinColumn(name = "configuration_id", nullable = true)
     private Configuration configuration;
 
-    @Column(name = "manufacturer", nullable = false)
+    @Column(name = "manufacturer")
     private String manufacturer;
 
     @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL, orphanRemoval = true)

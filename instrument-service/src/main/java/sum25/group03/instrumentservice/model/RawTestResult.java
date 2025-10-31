@@ -39,6 +39,6 @@ public class RawTestResult {
     @Column(name = "IsSynced")
     private Boolean isSynced;
 
-    @Column(name = "CreatedAt", insertable = false, updatable = false)
+    @Column(name = "CreatedAt", updatable = false)
     private LocalDateTime createdAt;
 }

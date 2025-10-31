@@ -1,8 +1,10 @@
 package sum25.group03.instrumentservice.repository;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -10,6 +12,7 @@ import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.model.InstalledReagent;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface InstalledReagentRepository extends JpaRepository<InstalledReagent, Long> {
@@ -66,5 +69,16 @@ public interface InstalledReagentRepository extends JpaRepository<InstalledReage
 
     @Query("SELECT ir FROM InstalledReagent ir WHERE ir.status NOT IN :statuses")
     List<InstalledReagent> findByStatusNotIn(@Param("statuses") List<InstalledReagentStatus> statuses);
+
+    Optional<InstalledReagent> findByReagentId(Long reagentId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE InstalledReagent ir SET ir.currentVolume = :newVolume WHERE ir.id = :id")
+    void updateCurrentVolumeById(
+            @Param("newVolume") Double newVolume,
+            @Param("id") Long id
+    );
+
 }
 

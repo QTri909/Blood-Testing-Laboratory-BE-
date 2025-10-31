@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import sum25.group03.instrumentservice.event.InstrumentModeChangedEvent;
 import sum25.group03.instrumentservice.event.ReagentInstalledEvent;
 import sum25.group03.instrumentservice.event.UpdateExpiryReagent;
+import sum25.group03.instrumentservice.event.TestResultPublishedEvent;
 import sum25.group03.instrumentservice.service.KafkaEventPublisher;
 
 @Service
@@ -20,9 +21,12 @@ public class KafkaEventPublisherImpl implements KafkaEventPublisher {
     private final KafkaTemplate<String, ReagentInstalledEvent> kafkaTemplate;
     private final KafkaTemplate<String, InstrumentModeChangedEvent> instrumentModeKafkaTemplate;
     private final KafkaTemplate<String, UpdateExpiryReagent> updateExpiryReagentKafkaTemplate;
+    private final KafkaTemplate<String, TestResultPublishedEvent> testResultKafkaTemplate;
+
     private static final String REAGENT_TOPIC = "reagent-installed-events";
     private static final String INSTRUMENT_MODE_TOPIC = "instrument-mode-changed-events";
     private static final String UPDATE_EXPIRY_REAGENT_TOPIC = "update-expiry-reagent";
+    private static final String TEST_RESULT_TOPIC = "test-results-hl7";
 
     @Override
     public void publishReagentInstalledEvent(ReagentInstalledEvent event) {
@@ -86,6 +90,30 @@ public class KafkaEventPublisherImpl implements KafkaEventPublisher {
         } catch (Exception e) {
             log.error("Failed to publish instrument mode changed event: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to publish instrument mode changed event", e);
+        }
+    }
+
+    @Override
+    public void publishTestResultEvent(TestResultPublishedEvent event) {
+        try {
+            log.info("Publishing test result event for test order ID: {} on instrument ID: {}",
+                    event.getTestOrderId(), event.getInstrumentId());
+
+            Message<TestResultPublishedEvent> message = MessageBuilder
+                    .withPayload(event)
+                    .setHeader(KafkaHeaders.TOPIC, TEST_RESULT_TOPIC)
+                    .setHeader("testOrderId", event.getTestOrderId().toString())
+                    .setHeader("instrumentId", event.getInstrumentId().toString())
+                    .setHeader("barcode", event.getBarcode())
+                    .setHeader("status", event.getStatus())
+                    .build();
+
+            testResultKafkaTemplate.send(message);
+
+            log.info("Test result event published successfully for test order ID: {}", event.getTestOrderId());
+        } catch (Exception e) {
+            log.error("Failed to publish test result event: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to publish test result event", e);
         }
     }
 }
