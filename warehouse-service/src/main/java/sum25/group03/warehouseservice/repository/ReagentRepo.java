@@ -16,6 +16,21 @@ public interface ReagentRepo extends JpaRepository<Reagents, Long> {
     @Query("SELECT r.reagentId FROM Reagents r WHERE r.reagentId IN :reagentIds AND r.status = 'AVAILABLE'")
     List<Long> findExistingIds(List<Long> reagentIds);
 
+    @Query("""
+    SELECT DISTINCT r
+    FROM Reagents r
+    JOIN r.reagentHistoryUsages rhu
+    JOIN rhu.instrument i
+    WHERE i.instrumentId = :instrumentId
+      AND r.status = 'ACTIVE'
+""")
+    List<Reagents> findAllByInstrumentId(@Param("instrumentId") Long instrumentId);
 
+    @Query("""
+        SELECT r
+        FROM Reagents r
+        WHERE r.reagentId IN :reagentId AND r.status = 'ACTIVE'
+     """)
+    List<Reagents> findAllByReagentId(@Param("reagentId") List<Long> reagentId);
 
 }

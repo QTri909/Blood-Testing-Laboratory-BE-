@@ -36,5 +36,13 @@ public class ConfigurationController {
     public ResponseEntity<?> getAllConfigs(@RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(configService.getAllConfig(page, size));
     }
+    @GetMapping("search")
+    public ResponseEntity<?> searchConfigs(
+            @RequestParam(required = false) String key,
+            @RequestParam(required = false) String value,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(configService.searchConfigs(key, value, page, size));
+    }
 
 }
