@@ -64,11 +64,6 @@ public class ReagentHistoryUsageServiceImpl implements ReagentHistoryUsageServic
                 .catalogNumber(reagent.getCatalogNumber())
                 .casNumber(reagent.getCasNumber())
                 .unit(reagent.getUnit())
-                .expirationDate(
-                        reagent.getExpirationDate() != null
-                                ? reagent.getExpirationDate().toString()
-                                : null
-                )
                 .quantity(totalQuantity != null ? totalQuantity : 0)
                 .usages(usages)
                 .build();

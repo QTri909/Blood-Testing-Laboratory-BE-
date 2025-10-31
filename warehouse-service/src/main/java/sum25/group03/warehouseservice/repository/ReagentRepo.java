@@ -1,5 +1,7 @@
 package sum25.group03.warehouseservice.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -33,4 +35,9 @@ public interface ReagentRepo extends JpaRepository<Reagents, Long> {
      """)
     List<Reagents> findAllByReagentId(@Param("reagentId") List<Long> reagentId);
 
+    @Query("""
+    SELECT r FROM Reagents r
+    WHERE (:reagentName IS NULL OR :reagentName = '' OR LOWER(r.reagentName) LIKE LOWER(CONCAT('%', :reagentName, '%')))
+""")
+    Page<Reagents> filterReagents(@Param("reagentName") String reagentName, Pageable pageable);
 }

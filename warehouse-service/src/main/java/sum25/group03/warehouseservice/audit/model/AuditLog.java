@@ -22,6 +22,8 @@ public class AuditLog {
     private Resource resource;
     private Status status;
     private List<FieldChange> changes;
+    private String previousHash;
+    private String currentHash;
 
     @Data
     @Builder

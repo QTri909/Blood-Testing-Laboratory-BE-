@@ -7,6 +7,8 @@ import sum25.group03.warehouseservice.audit.model.AuditLog;
 import sum25.group03.warehouseservice.audit.provider.ActorProvider;
 import sum25.group03.warehouseservice.audit.model.ActorContext;
 import sum25.group03.warehouseservice.entity.Instrument;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -20,6 +22,7 @@ import java.util.UUID;
 public class AuditLogService {
     private final CloudWatchAuditLogger cloudWatchAuditLogger;
     private final ActorProvider actorProvider;
+    private static String lastHash = null;
 
     public void logRead(String operationName, String resourceType, String resourceId,
                         String ipAddress, String userAgent) {
@@ -64,10 +67,20 @@ public class AuditLogService {
         logActionWithStatus(actionType, operationName, resourceType, resourceId, ipAddress, userAgent, changes, status);
     }
 
-    private void logActionWithStatus(String actionType, String operationName, String resourceType, String resourceId,
-                                     String ipAddress, String userAgent, List<AuditLog.FieldChange> changes,
-                                     AuditLog.Status status) {
+    private void logActionWithStatus(String actionType, String operationName, String resourceType, String resourceId, String ipAddress, String userAgent, List<AuditLog.FieldChange> changes, AuditLog.Status status) {
         ActorContext actor = actorProvider.getCurrentActor();
+
+        String previousHash = (lastHash != null) ? lastHash : "GENESIS";
+
+        String dataToHash = previousHash
+                + actionType
+                + operationName
+                + resourceType
+                + resourceId
+                + (actor.getUsername() != null ? actor.getUsername() : "system")
+                + Instant.now().toString();
+
+        String currentHash = calculateHash(dataToHash);
 
         AuditLog auditLog = AuditLog.builder()
                 .timestamp(Instant.now())
@@ -94,13 +107,30 @@ public class AuditLogService {
                         .build())
                 .status(status)
                 .changes(changes)
+                .previousHash(previousHash)
+                .currentHash(currentHash)
                 .build();
 
         cloudWatchAuditLogger.log(auditLog);
+        lastHash = currentHash;
     }
 
     public void logWrite(String activateInstrument, String instrument, String string, String system, String s, String s1, Instrument instrument1) {
+    }
 
+    private String calculateHash(String input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] encoded = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : encoded) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            log.error("Error generating hash", e);
+            return null;
+        }
     }
 }
 
