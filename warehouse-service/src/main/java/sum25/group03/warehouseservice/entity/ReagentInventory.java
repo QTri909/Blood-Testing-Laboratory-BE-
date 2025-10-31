@@ -26,7 +26,7 @@ public class ReagentInventory {
     private String lotNumber;
 
     @Column(name = "quantity_available", nullable = false)
-    private BigDecimal quantityAvailable;
+    private double quantityAvailable;
 
     @Column(name = "expiry_date", nullable = false)
     private LocalDate expiryDate;

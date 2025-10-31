@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SupplyRes {
-    private BigDecimal quantityReceived;
+    private double quantityReceived;
     private String lotNumber;
     private String unitOfMeasurement;
     private LocalDate receivedDate;

@@ -15,7 +15,7 @@ import java.util.List;
 public class SupplyReq {
     @NotNull
     @Positive(message = "quantityReceived must be positive")
-    private BigDecimal quantityReceived;
+    private double quantityReceived;
     @NotBlank
     private String lotNumber;
     @NotBlank

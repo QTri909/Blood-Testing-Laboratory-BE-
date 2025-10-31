@@ -43,10 +43,9 @@ test-order:
 
 aws:
   region: ap-southeast-1
-#  access-key-id: ${AWS_ACCESS_KEY_ID}
-#  secret-key-secret: ${AWS_SECRET_ACCESS_KEY}
-  access-key-id: AKIAS52AYCT3RIRTE6UI
-  secret-key-secret: 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
+  access-key-id: ${AWS_ACCESS_KEY_ID}
+  secret-key-secret: ${AWS_SECRET_ACCESS_KEY}
+
 
 
 audit:

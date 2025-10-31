@@ -34,7 +34,7 @@ public class ReagentHistorySupply {
     private LocalDate expiryDate;
 
     @Column(name = "quantity_received", nullable = false)
-    private BigDecimal quantityReceived;
+    private double quantityReceived;
 
     @Column(name = "unit_of_measurement", nullable = false)
     private String unitOfMeasurement;
