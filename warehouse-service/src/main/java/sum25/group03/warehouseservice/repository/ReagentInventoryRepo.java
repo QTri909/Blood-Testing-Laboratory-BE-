@@ -14,8 +14,6 @@ import java.util.Optional;
 @Repository
 public interface ReagentInventoryRepo extends JpaRepository<ReagentInventory, Long> {
     abstract Optional<ReagentInventory> findByLotNumber(String lotNumber);
-<<<<<<< HEAD
-=======
 
     @Query("""
         SELECT COALESCE(SUM(ri.quantityAvailable), 0)
@@ -23,5 +21,4 @@ public interface ReagentInventoryRepo extends JpaRepository<ReagentInventory, Lo
         WHERE ri.reagent.reagentId = :reagentId
     """)
     Integer getTotalQuantityByReagentId(@Param("reagentId") Long reagentId);
->>>>>>> 08a22d6d497311ec6a52ba1c589a75ebda170733
 }
