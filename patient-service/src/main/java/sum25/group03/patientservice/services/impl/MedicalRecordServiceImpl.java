@@ -42,10 +42,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     private final MedicalRecordMongoServiceImpl medicalRecordMongoService;
     private final AuditEntryMongoServiceImpl auditEntryMongoService;
-    private final MedicalRecordMapper recordMapper;
 
     private final ActionLogService actionLogService;
-    private final TestOrderGrpcClient testOrderGrpcClient;
 
     // check if a viewerId belongs to our system or not, if not, throw exception and warn to admin
     private void validateViewerExistence(Long actorId) {
@@ -217,40 +215,5 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .build();
         auditEntryMongoService.saveAuditEntry(auditEntryStatusChange);
     }
-    @Override
-    public MedicalRecordResponse getLatestByPatientId(Long patientId) {
-        // Kiểm tra bệnh nhân có tồn tại hay không
-        validateViewerExistence(patientId);
-
-        // Gọi gRPC sang test-order-service để lấy test order gần nhất
-        TestOrderResponse latestTestOrder = null;
-        try {
-            latestTestOrder = testOrderGrpcClient.getLatestTestOrderByPatientId(patientId);
-        } catch (Exception e) {
-            log.warn("Không thể lấy test order mới nhất cho patientId {}: {}", patientId, e.getMessage());
-        }
-
-        // Lấy hồ sơ bệnh án (medical record) trong DB theo patientId
-        var recordOpt = medicalRecordRepository.findTopByPatientIdOrderByVisitDateDesc(patientId);
-
-        if (recordOpt.isEmpty()) {
-            throw new MedicalRecordNotFound("Không tìm thấy hồ sơ bệnh án cho bệnh nhân " + patientId);
-        }
-
-        var response = medicalRecordMapper.toMedicalRecordResponse(recordOpt.get());
-
-        // Nếu muốn bổ sung test order vào response (phần này optional, có thể mở rộng DTO)
-        if (latestTestOrder != null) {
-            log.info("Test order gần nhất của patient {}: barcode={}, type={}",
-                    patientId, latestTestOrder.getBarcode(), latestTestOrder.getType());
-            // TODO: map vào DTO nếu bạn có field tương ứng
-        }
-
-        return response;
-    }
-
-
-
-
 
 }

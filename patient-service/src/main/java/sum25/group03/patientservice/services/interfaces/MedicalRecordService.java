@@ -16,5 +16,4 @@ public interface MedicalRecordService {
     List<MedicalRecordResponse> getAll(Long viewerId);
     List<MedicalRecordResponse> getByPatientId(Long patientId);
     void deleteById(NewRecordStatusRequest newStatusRequest);
-    MedicalRecordResponse getLatestByPatientId(Long patientId);
 }
