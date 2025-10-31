@@ -58,6 +58,12 @@ public class Reagents {
     @Column(name = "updated_at", nullable = false)
     private LocalDate updatedAt;
 
+    @Column(name = "usage_min")
+    private Double usageMin;
+
+    @Column(name = "usage_max")
+    private Double usageMax;
+
     @OneToMany(mappedBy = "reagent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReagentHistoryUsage> reagentHistoryUsages;
 

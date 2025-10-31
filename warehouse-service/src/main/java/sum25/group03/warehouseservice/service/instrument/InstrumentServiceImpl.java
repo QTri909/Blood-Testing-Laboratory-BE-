@@ -1,26 +1,16 @@
 package sum25.group03.warehouseservice.service.instrument;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import sum25.group03.warehouseservice.dto.request.AssignConfigAndReagentReq;
-import sum25.group03.warehouseservice.dto.request.InstrumentReq;
-import sum25.group03.warehouseservice.dto.response.InstrumentConfigReagentRes;
 import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
-import sum25.group03.warehouseservice.dto.response.ReagentForInstrumentRes;
 import sum25.group03.warehouseservice.entity.*;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
-import sum25.group03.warehouseservice.event.ConfigEvent;
-import sum25.group03.warehouseservice.event.NewInstrumentEvent;
-import sum25.group03.warehouseservice.event.NewReagentEvent;
-import sum25.group03.warehouseservice.exception.MissingRequiredFieldsException;
 import sum25.group03.warehouseservice.exception.NotFoundException;
-import sum25.group03.warehouseservice.mapper.ConfigMapper;
 import sum25.group03.warehouseservice.mapper.InstrumentMapper;
-import sum25.group03.warehouseservice.mapper.ReagentMapper;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
-import sum25.group03.warehouseservice.service.config.ConfigService;
 import sum25.group03.warehouseservice.service.reagent.ReagentService;
 import sum25.group03.warehouseservice.service.reagentusage.ReagentUsageService;
 
@@ -33,153 +23,114 @@ import java.util.List;
 public class InstrumentServiceImpl implements InstrumentService {
     private final InstrumentRepo instrumentRepo;
     private final InstrumentMapper instrumentMapper;
-    private final ConfigMapper configMapper;
-    private final ReagentMapper reagentMapper;
-    private final ConfigService configService;
+
+
     private final ReagentService reagentService;
     private final ReagentUsageService reagentUsageService;
-    private final KafkaTemplate<String, NewInstrumentEvent> kafkaTemplate;
+    @PersistenceContext
+    private EntityManager entityManager;
 
+    public boolean isEmptyConfig(Long configId) {
+        return configId == null;
+    }
+    public boolean isEmptyReagents(List<Long> reagentIds) {
+        return reagentIds == null || reagentIds.isEmpty();
+    }
     public boolean isDuplicateSerialNumber(String serialNumber) {
         return instrumentRepo.existsBySerialNumber(serialNumber);
     }
-    public ConfigEvent buildConfigEventFromConfiguration(Configuration configuration) {
-        return ConfigEvent.builder()
-                .configurationName(configuration.getConfigurationName())
-                .supportedTests(configuration.getSupportedTests())
-                .dataOutputFormat(configuration.getDataOutputFormat())
-                .communicationProtocol(configuration.getCommunicationProtocol())
-                .mixingSpeed(configuration.getMixingSpeed())
-                .firmwareVersion(configuration.getFirmwareVersion())
-                .build();
-    }
-    public List<ReagentHistoryUsage> buildReagentHistoryUsagesFromReagents(Instrument instrument, List<Reagents> reagents) {
-        return reagents.stream()
-                .map(r -> ReagentHistoryUsage.builder()
-                        .instrument(instrument)
-                        .reagent(r)
-                        .build())
-                .toList();
-    }
-    public List<NewReagentEvent> buildNewReagentEventsFromReagents(List<Reagents> reagents) {
-        return reagents.stream()
-                .map(r -> NewReagentEvent.builder()
-                        .reagentId(r.getReagentId())
-                        .reagentName(r.getReagentName())
-                        .build())
-                .toList();
-    }
-    public Configuration cloneConfiguration(Configuration config) {
-        return Configuration.builder()
-                .configurationName(config.getConfigurationName())
-                .supportedTests(config.getSupportedTests())
-                .dataOutputFormat(config.getDataOutputFormat())
-                .communicationProtocol(config.getCommunicationProtocol())
-                .mixingSpeed(config.getMixingSpeed())
-                .firmwareVersion(config.getFirmwareVersion())
-                .active(true)
-                .build();
-    }
-    @Override
-    public void addInstrumentToWarehouse(InstrumentReq instrument) {
-        Instrument newInstrument = instrumentMapper.toEntity(instrument);
-        // Check an instrument serial number duplication
-        if(isDuplicateSerialNumber(newInstrument.getSerialNumber())) {
-            throw new NotFoundException("Instrument with serial number " + newInstrument.getSerialNumber() + " already exists");
-        }
-        ConfigEvent configEvent = null;
-        List<NewReagentEvent> reagentEvents = null;
-        // Clone from an existing instrument
-        if(instrument.getCloneFromInstrumentId() != null) {
-            Configuration configuration = configService.getConfigByInstrumentId(instrument.getCloneFromInstrumentId());
-            if(configuration == null){
-                log.info("No configuration found to clone for instrument id: {}", instrument.getCloneFromInstrumentId());
-            }else{
-                Configuration newConfig = cloneConfiguration(configuration);
-                newInstrument.setConfiguration(newConfig);
-                configEvent = buildConfigEventFromConfiguration(newConfig);
-            }
-            List<Reagents> reagentUsages = reagentService.findAllByInstrumentId(instrument.getCloneFromInstrumentId());
-            if(reagentUsages.isEmpty()) {
-                log.info("No reagents found to clone for instrument id: {}", instrument.getCloneFromInstrumentId());
-            }else{
-                List<ReagentHistoryUsage> newReagentUsages = buildReagentHistoryUsagesFromReagents(newInstrument, reagentUsages);
-                newInstrument.setReagentHistoryUsages(newReagentUsages);
-                reagentEvents = buildNewReagentEventsFromReagents(reagentUsages);
-            }
-        }
-        // Save instrument with reagents and config if exist
-        Instrument saveInstrument = instrumentRepo.save(newInstrument);
-        log.info("New instrument added to warehouse: {}", newInstrument.getInstrumentName());
-        // Publish event
-        NewInstrumentEvent event = NewInstrumentEvent.builder()
-                .instrumentId(saveInstrument.getInstrumentId())
-                .instrumentName(saveInstrument.getInstrumentName())
-                .configEvent(configEvent)
-                .newReagentEvents(reagentEvents)
-                .build();
-        kafkaTemplate.send("new-instrument-events", event);
-        log.info("Published Kafka event (new-instrument-events): {}", event);
-    }
+//    public void getConfigAndReagentByInstrument(Instrument instrument, Long cloneFromInstrumentId) {
+//        ConfigurationDTO configurationDTO = configService.findByInstrumentId(cloneFromInstrumentId);
+//        if (configurationDTO != null) {
+//            Configuration configRef = mapConfigurations(configurationDTO);
+//            GlobalConfiguration globalConfigRef = entityManager.getReference(GlobalConfiguration.class, configurationDTO.getGlobalConfigurationId());
+//            configRef.setGlobalConfiguration(globalConfigRef);
+//            instrument.setConfiguration(configRef);
+//        }
+//        List<Long> reagentIds = reagentUsageService.getReagentUsageIdsByInstrumentId(cloneFromInstrumentId);
+//        if (!reagentIds.isEmpty()) {
+//            List<ReagentHistoryUsage> reagentUsages = getReagentUsageReferences(
+//                    reagentIds,
+//                    instrument
+//            );
+//            instrument.setReagentHistoryUsages(reagentUsages);
+//        }
+//    }
+//    public Configuration mapConfigurations (ConfigurationDTO config) {
+//        return Configuration.builder()
+//                .parameterSettings(config.getParameterSettings())
+//                .supportedTests(config.getSupportedTests())
+//                .dataOutputFormat(config.getDataOutputFormat())
+//                .communicationProtocol(config.getCommunicationProtocol())
+//                .mixingSpeed(config.getMixingSpeed())
+//                .build();
+//    }
+//    public List<ReagentHistoryUsage> getReagentUsageReferences(List<Long> reagentIds, Instrument instrument) {
+//        return reagentIds.stream()
+//                .map(id -> {
+//                    Reagents reagentRef = Reagents.builder().reagentId(id).build();
+//                    return ReagentHistoryUsage.builder()
+//                            .instrument(instrument)
+//                            .reagent(reagentRef)
+//                            .build();
+//                })
+//                .toList();
+//    }
+//    @Override
+//    public void addInstrumentToWarehouse(InstrumentReq instrument) {
+//        Instrument newInstrument = instrumentMapper.toEntity(instrument);
+//        // Check an instrument serial number duplication
+//        if(isDuplicateSerialNumber(newInstrument.getSerialNumber())) {
+//            throw new NotFoundException("Instrument with serial number " + newInstrument.getSerialNumber() + " already exists");
+//        }
+//        // Clone from an existing instrument
+//        if(instrument.getCloneFromInstrumentId() != null) {
+//            getConfigAndReagentByInstrument(newInstrument, instrument.getCloneFromInstrumentId());
+////            instrumentRepo.save(newInstrument);
+////            return;
+//        }
+//        // Validate configuration and reagents existence
+////        List<String> errorMessages = new ArrayList<>();
+////        if(!isEmptyConfig(instrument.getConfigurationId())) {
+////            if(!configService.existsById(instrument.getConfigurationId())){
+////                errorMessages.add("Configuration not found");
+////            } else{
+////                // Configuration exists
+////                // Link configuration (as reference)
+////                SpecificConfiguration configRef = entityManager.getReference(SpecificConfiguration.class, instrument.getConfigurationId());
+////                newInstrument.setSpecificConfiguration(configRef);
+////            }
+////        }
+////        if(!isEmptyReagents(instrument.getReagentId())) {
+////            List<Long> existingReagentIds = reagentService.findExistingIds(instrument.getReagentId());
+////            List<Long> missingReagentIds = instrument.getReagentId().stream()
+////                    .filter(id -> !existingReagentIds.contains(id))
+////                    .toList();
+////
+////            if (!missingReagentIds.isEmpty()){
+////                errorMessages.add("Reagents not available: " + missingReagentIds);
+////            } else {
+////                // All-reagents exist
+////                // Link reagents (as reference)
+////                List<ReagentHistoryUsage> reagentUsages = getReagentUsageReferences(
+////                        existingReagentIds,
+////                        newInstrument
+////                );
+////                newInstrument.setReagentHistoryUsages(reagentUsages);
+////
+////            }
+////        }
+////        if(!errorMessages.isEmpty()) {
+////            throw new NotFoundException(String.join(". ", errorMessages));
+////        }
+//        // Save instrument with reagents and config if exist
+//        instrumentRepo.save(newInstrument);
+//        log.info("New instrument added to warehouse: {}", newInstrument.getInstrumentName());
+//    }
 
-    @Override
-    public InstrumentConfigReagentRes addConfigAndReagentToInstrument(AssignConfigAndReagentReq assignConfigAndReagentReq) {
-        // Validate configuration and reagents existence
-        if(assignConfigAndReagentReq.getConfigurationId() == null && assignConfigAndReagentReq.getReagentIds().isEmpty() ){
-            throw new MissingRequiredFieldsException("No configuration and reagents provided to assign");
-        }
-        Instrument instrument = instrumentRepo.findById(assignConfigAndReagentReq.getInstrumentId())
-                .orElseThrow(() -> new NotFoundException("Instrument not found with id: " + assignConfigAndReagentReq.getInstrumentId()));
-        Configuration config = configService.getConfigById(assignConfigAndReagentReq.getConfigurationId()!=null?
-                assignConfigAndReagentReq.getConfigurationId() : null);
 
-        ConfigEvent configEvent = null;
-        List<NewReagentEvent> reagentEvents = null;
-        List<ReagentForInstrumentRes> reagentForInstrumentResList = null;
-        if(config != null){
-            if (config.getInstrument() != null) {
-                Configuration cloneConfig = cloneConfiguration(config);
-                instrument.setConfiguration(cloneConfig);
-            }else{
-                instrument.setConfiguration(config);
-            }
 
-            configEvent = buildConfigEventFromConfiguration(config);
-        }
 
-        List<Reagents> reagents = reagentService.findAllByReagentId(assignConfigAndReagentReq.getReagentIds());
-        if(!reagents.isEmpty()){
-            List<ReagentHistoryUsage> reagentHistoryUsages = buildReagentHistoryUsagesFromReagents(instrument, reagents);
-            instrument.setReagentHistoryUsages(reagentHistoryUsages);
-            reagentEvents = buildNewReagentEventsFromReagents(reagents);
-            reagentForInstrumentResList = reagentMapper.toDto(reagents);
-        }
-        Instrument savedInstrument = instrumentRepo.save(instrument);
-        log.info("Assigned configuration and reagents to instrument id: {}", instrument.getInstrumentId());
-
-        NewInstrumentEvent event = NewInstrumentEvent.builder()
-                .instrumentId(savedInstrument.getInstrumentId())
-                .instrumentName(savedInstrument.getInstrumentName())
-                .configEvent(configEvent)
-                .newReagentEvents(reagentEvents)
-                .build();
-        kafkaTemplate.send("new-instrument-events", event);
-        log.info("Published Kafka event (update instrument): {}", event);
-
-        return InstrumentConfigReagentRes.builder()
-                .instrumentId(savedInstrument.getInstrumentId())
-                .instrumentName(savedInstrument.getInstrumentName())
-                .model(savedInstrument.getModel())
-                .serialNumber(savedInstrument.getSerialNumber())
-                .location(savedInstrument.getLocation())
-                .notes(savedInstrument.getNotes()!=null? savedInstrument.getNotes() : "")
-                .status(savedInstrument.getStatus())
-                .createdAt(savedInstrument.getCreatedAt())
-                .updatedAt(savedInstrument.getUpdatedAt())
-                .configRes(configMapper.toDto(savedInstrument.getConfiguration()))
-                .reagentForInstrumentRes(reagentForInstrumentResList)
-                .build();
-    }
 
 
     @Override

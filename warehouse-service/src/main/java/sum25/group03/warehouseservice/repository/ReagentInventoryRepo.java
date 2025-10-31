@@ -1,6 +1,5 @@
 package sum25.group03.warehouseservice.repository;
 
-import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -8,12 +7,13 @@ import org.springframework.stereotype.Repository;
 import sum25.group03.warehouseservice.entity.ReagentInventory;
 import sum25.group03.warehouseservice.entity.Reagents;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface ReagentInventoryRepo extends JpaRepository<ReagentInventory, Long> {
-    abstract Optional<ReagentInventory> findByLotNumber(String lotNumber);
+
+    @Query("SELECT ri FROM ReagentInventory ri JOIN FETCH ri.reagent r WHERE ri.lotNumber = :lotNumber")
+    Optional<ReagentInventory> findByLotNumber(@Param("lotNumber") String lotNumber);
 
     @Query("""
         SELECT COALESCE(SUM(ri.quantityAvailable), 0)

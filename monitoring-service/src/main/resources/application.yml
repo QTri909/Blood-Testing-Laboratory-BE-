@@ -1,0 +1,42 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: monitoring-service
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/monitoring_db
+
+
+  retry:
+    enabled: true
+
+
+logging:
+  level:
+    root: info
+
+
+management:
+  server:
+    port: 4000
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+monitoring:
+  kafka:
+    topic: processed-test-results
+    raw-topic: raw-test-results
