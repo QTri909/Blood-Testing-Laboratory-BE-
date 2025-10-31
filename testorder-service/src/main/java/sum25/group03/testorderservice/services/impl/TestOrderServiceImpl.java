@@ -40,7 +40,7 @@ public class TestOrderServiceImpl implements TestOrderService {
     // If not, throw an exception and log a warning to the admin via cloudwatch logging
 
     @Override
-    public TestOrderResponse getTestOrderById(Long id, Long viewerId) {
+    public TestOrderResponseDTO getTestOrderById(Long id, Long viewerId) {
 
         // TODO 2: Verify viewerId existence in the system using todo_1
 
@@ -49,11 +49,11 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         TestOrder entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TestOrder not found with id " + id));
-        return mapper.toResponse(entity);
+        return mapper.toResponseDto(entity);
     }
 
     @Override
-    public List<TestOrderResponse> getAllTestOrders(Long viewerId) {
+    public List<TestOrderResponseDTO> getAllTestOrders(Long viewerId) {
 
         // TODO 3: Verify viewerId existence in the system using todo_1
 
@@ -61,11 +61,11 @@ public class TestOrderServiceImpl implements TestOrderService {
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
 
         List<TestOrder> orders = repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-        return orders.stream().map(mapper::toResponse).toList();
+        return orders.stream().map(mapper::toResponseDto).toList();
     }
 
     @Override
-    public List<TestOrderResponse> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId) {
+    public List<TestOrderResponseDTO> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId) {
 
         // TODO 4: Verify viewerId existence in the system using todo_1
 
@@ -79,7 +79,7 @@ public class TestOrderServiceImpl implements TestOrderService {
                         .and(TestOrderSpecification.createdBetween(filterInfo.fromDate(), filterInfo.toDate()));
 
         List<TestOrder> results = repository.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return results.stream().map(mapper::toResponse).toList();
+        return results.stream().map(mapper::toResponseDto).toList();
     }
 
     // ------- HUY -----------

@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.service.impl;
+package sum25.group03.testorderservice.services.impl;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +12,9 @@ import sum25.group03.testorderservice.entities.TestResult;
 import sum25.group03.testorderservice.enums.TestResultStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.TestResultMapper;
+import sum25.group03.testorderservice.repositories.TestOrderRepository;
 import sum25.group03.testorderservice.repositories.TestResultRepository;
-import sum25.group03.testorderservice.service.interfaces.TestResultService;
+import sum25.group03.testorderservice.services.interfaces.TestResultService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,6 +28,7 @@ public class TestResultServiceImpl implements TestResultService {
 
     private final TestResultRepository testResultRepository;
     private final TestResultMapper testResultMapper;
+    private final TestOrderRepository testOrderRepository;
 
     // Tai
     @Override
@@ -61,7 +63,12 @@ public class TestResultServiceImpl implements TestResultService {
     public TestResultResponseDTO createTestResult(TestResultRequestDTO requestDTO) {
         log.info("Creating test result for test order id: {}", requestDTO.getTestOrderId());
 
+
+//        var testOrder = testOrderRepository.findById(requestDTO.getTestOrderId())
+//                .orElseThrow(() -> new ResourceNotFoundException("Test order not found with id: " + requestDTO.getTestOrderId()));
+
         TestResult testResult = testResultMapper.toEntity(requestDTO);
+//        testResult.setTestOrder(testOrder);
         testResult.setCreatedAt(LocalDateTime.now());
         testResult.setUpdatedAt(LocalDateTime.now());
 

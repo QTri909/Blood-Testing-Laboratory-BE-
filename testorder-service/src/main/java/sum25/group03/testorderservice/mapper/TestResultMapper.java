@@ -13,6 +13,7 @@ public interface TestResultMapper {
     @Mapping(source = "testOrder.id", target = "testOrderId")
     @Mapping(source = "parameter.id", target = "parameterId")
     @Mapping(source = "parameter.name", target = "parameterName")
+//    @Mapping( source = "status", target = "testResultStatus")
     TestResultResponseDTO toResponseDto(TestResult testResult);
 
     @Mapping(source = "testOrderId", target = "testOrder.id")

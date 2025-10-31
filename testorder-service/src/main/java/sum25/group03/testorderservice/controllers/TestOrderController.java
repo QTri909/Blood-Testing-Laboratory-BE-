@@ -28,14 +28,14 @@ public class TestOrderController {
 
     // -------- THUYEN --------
     @GetMapping
-    public ResponseEntity<List<TestOrderResponse>> getAllTestOrders(
+    public ResponseEntity<List<TestOrderResponseDTO>> getAllTestOrders(
             @RequestHeader("X-User-Id") Long viewerId
     ) {
         return ResponseEntity.ok(testOrderService.getAllTestOrders(viewerId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TestOrderResponse> getById(
+    public ResponseEntity<TestOrderResponseDTO> getById(
             @PathVariable Long id,
             @RequestHeader("X-User-Id") Long viewerId
     ) {
@@ -43,7 +43,7 @@ public class TestOrderController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<TestOrderResponse>> filterTestOrders(
+    public ResponseEntity<List<TestOrderResponseDTO>> filterTestOrders(
             @ModelAttribute TestOrderFiltering filterInfo,
             @RequestParam Long viewerId
     ) {
@@ -53,7 +53,9 @@ public class TestOrderController {
     // -------- HUY -----------
     @PostMapping
     public ResponseEntity<TestOrderResponseDTO> createTestOrder(
-            @Valid @RequestBody TestOrderRequestDTO requestDTO) {
+            @Valid @RequestBody TestOrderRequestDTO requestDTO
+    ) {
+
         log.info("POST /api/v1/test-orders - Creating test order for patientId: {}",
                 requestDTO.getPatientId());
 
