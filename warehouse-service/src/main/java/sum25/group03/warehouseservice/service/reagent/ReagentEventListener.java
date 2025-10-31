@@ -38,21 +38,13 @@ public class ReagentEventListener {
 
             log.info("Reagent in lot found: {} - Current quantity: {}", reagentInventory.getLotNumber(), reagentInventory.getQuantityAvailable());
 
-            //int newQuantity = reagentInventory.getQuantityAvailable() - event.getRequiredVolume().intValue();
-            BigDecimal available = reagentInventory.getQuantityAvailable();
-            BigDecimal required = BigDecimal.valueOf(event.getRequiredVolume());
-            BigDecimal newQuantity = available.subtract(required);
+            double newQuantity = reagentInventory.getQuantityAvailable() - event.getRequiredVolume();
 
-            if (newQuantity.compareTo(BigDecimal.ZERO) < 0) {
+            if (newQuantity < 0) {
                 log.warn("Quantity would be negative after installation. Current: {}, Required: {}",
                         reagentInventory.getQuantityAvailable(), event.getRequiredVolume());
-                newQuantity = BigDecimal.ZERO;
+                newQuantity = 0;
             }
-//            if (newQuantity < 0) {
-//                log.warn("Quantity would be negative after installation. Current: {}, Required: {}",
-//                        reagentInventory.getQuantityAvailable(), event.getRequiredVolume());
-//                newQuantity = 0;
-//            }
 
             reagentInventory.setQuantityAvailable(newQuantity);
             ReagentInventory updatedReagentInventory = reagentInventoryRepo.save(reagentInventory);
