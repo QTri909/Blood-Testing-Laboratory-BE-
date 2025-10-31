@@ -10,28 +10,28 @@ spring:
   application:
     name: warehouse-service
   datasource:
-#      url: jdbc:postgresql://${POSTGRESQL_HOST}:5432/${DB_NAME}
-#      username: ${DB_USER}
-#      password: ${DB_PASSWORD}
-#      driver-class-name: org.postgresql.Driver
+      url: jdbc:postgresql://${POSTGRESQL_HOST}:5432/${DB_NAME}
+      username: ${DB_USER}
+      password: ${DB_PASSWORD}
+      driver-class-name: org.postgresql.Driver
 
-    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
-    username: postgres.fbzcbprlsaavorceymyp
-    password: 123456
-    driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+#    username: postgres.fbzcbprlsaavorceymyp
+#    password: 123456
+#    driver-class-name: org.postgresql.Driver
 
 #    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
 #    username: ${SUPABASE_DB_USER}
 #    password: ${DB_PASSWORD}
 #    driver-class-name: org.postgresql.Driver
-    hikari:
-      maximum-pool-size: 5
-      minimum-idle: 1
-      idle-timeout: 30000
-      max-lifetime: 60000
-      connection-timeout: 20000
-      validation-timeout: 5000
-      connection-test-query: SELECT 1
+#    hikari:
+#      maximum-pool-size: 5
+#      minimum-idle: 1
+#      idle-timeout: 30000
+#      max-lifetime: 60000
+#      connection-timeout: 20000
+#      validation-timeout: 5000
+#      connection-test-query: SELECT 1
   jpa:
     hibernate:
       ddl-auto: update
