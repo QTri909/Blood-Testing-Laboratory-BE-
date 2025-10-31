@@ -10,7 +10,7 @@ import lombok.*;
 public class ReagentUsageMiniRes {
     private Long usageId;
     private String usageType;
-    private Long quantityUsed;
+    private double quantityUsed;
     private String unit;
     private String usedAt;
     private String performedBy;
