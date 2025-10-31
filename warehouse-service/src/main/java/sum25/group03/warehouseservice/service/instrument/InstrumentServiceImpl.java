@@ -1,12 +1,12 @@
 package sum25.group03.warehouseservice.service.instrument;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.annotation.Configurations;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import sum25.group03.warehouseservice.dto.internal.ConfigurationDTO;
+import sum25.group03.warehouseservice.dto.request.AssignConfigAndReagentReq;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
 import sum25.group03.warehouseservice.dto.response.InstrumentConfigReagentRes;
 import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
