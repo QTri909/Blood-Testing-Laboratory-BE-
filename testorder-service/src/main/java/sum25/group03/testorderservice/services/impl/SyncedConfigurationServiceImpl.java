@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.services.impl;
+package sum25.group03.testorderservice.service.impl;
 
 
 import lombok.RequiredArgsConstructor;
@@ -9,20 +9,19 @@ import sum25.group03.testorderservice.dtos.request.SyncedConfigurationDTO;
 import sum25.group03.testorderservice.entities.SyncedConfiguration;
 import sum25.group03.testorderservice.enums.SyncedConfigurationStatus;
 import sum25.group03.testorderservice.repositories.SyncedConfigurationRepository;
+import sum25.group03.testorderservice.service.interfaces.SyncedConfigurationService;
 
 import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class SyncedConfigurationServiceImpl {
+public class SyncedConfigurationServiceImpl implements SyncedConfigurationService {
 
-    @Autowired
     private SyncedConfigurationRepository  syncedConfigurationRepository;
-
-    @Autowired
     private ParameterServiceImpl parameterServiceImpl;
 
+    @Override
     public void handleConfigUpdate(SyncedConfigurationDTO dto){
         parameterServiceImpl.updateParameter(dto);
         SyncedConfiguration config = new SyncedConfiguration();

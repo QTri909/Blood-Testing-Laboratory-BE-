@@ -11,7 +11,6 @@ import sum25.group03.warehouseservice.dto.response.InstrumentPageResponse;
 import sum25.group03.warehouseservice.dto.response.InstrumentResponse;
 import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
 import sum25.group03.warehouseservice.dto.response.InternalInstrumentStatusResponse;
-import sum25.group03.warehouseservice.service.instrument.InstrumentService;
 import sum25.group03.warehouseservice.service.instumentview.InstrumentViewService;
 
 @RestController
@@ -20,7 +19,6 @@ import sum25.group03.warehouseservice.service.instumentview.InstrumentViewServic
 public class InstrumentViewController {
 
     private final InstrumentViewService instrumentViewService;
-    private final InstrumentService instrumentService;
 
     private InstrumentPageResponse buildPageResponse(Page<InstrumentResponse> page) {
         return InstrumentPageResponse.builder()
@@ -31,22 +29,22 @@ public class InstrumentViewController {
                 .build();
     }
 
-    @GetMapping
-    public ResponseEntity<InstrumentPageResponse> getAllInstruments(
-            @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(buildPageResponse(instrumentViewService.getAllInstruments(pageable)));
-    }
+//    @GetMapping
+//    public ResponseEntity<InstrumentPageResponse> getAllInstruments(
+//            @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
+//        return ResponseEntity.ok(buildPageResponse(instrumentViewService.getAllInstruments(pageable)));
+//    }
 
-    @GetMapping("/search")
-    public ResponseEntity<InstrumentPageResponse> searchInstruments(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String model,
-            @RequestParam(required = false) String status,
-            @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable
-    ) {
-        return ResponseEntity.ok(buildPageResponse(
-                instrumentViewService.searchInstruments(name, model, status, pageable)));
-    }
+//    @GetMapping("/search")
+//    public ResponseEntity<InstrumentPageResponse> searchInstruments(
+//            @RequestParam(required = false) String name,
+//            @RequestParam(required = false) String model,
+//            @RequestParam(required = false) String status,
+//            @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable
+//    ) {
+//        return ResponseEntity.ok(buildPageResponse(
+//                instrumentViewService.searchInstruments(name, model, status, pageable)));
+//    }
 
 
 

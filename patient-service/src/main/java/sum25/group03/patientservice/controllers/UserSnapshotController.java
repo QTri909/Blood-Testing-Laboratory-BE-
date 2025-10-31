@@ -47,4 +47,10 @@ public class UserSnapshotController {
     public ResponseEntity<UserSnapshotResponse> getByExternalUserId(@PathVariable Long externalUserId) {
         return ResponseEntity.ok(service.getByExternalUserId(externalUserId));
     }
+
+    // Cuong
+    @PostMapping("/sync")
+    public void syncUserSnapshots() {
+        service.syncUserSnapshots();
+    }
 }

@@ -1,0 +1,16 @@
+
+version: '4'
+services:
+  postgres-payment-service:
+    image: postgres:15.5
+    container_name: postgres_payment_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: paymentdb
+    ports:
+      - "5435:5432"
+    volumes:
+      - patient_volume:/var/lib/postgresql/data
+volumes:
+  patient_volume:

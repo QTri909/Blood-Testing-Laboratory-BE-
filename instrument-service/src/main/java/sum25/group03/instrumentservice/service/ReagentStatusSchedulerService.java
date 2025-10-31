@@ -45,6 +45,20 @@ public class ReagentStatusSchedulerService {
                     reagent.setStatus(InstalledReagentStatus.EXPIRED);
                     installedReagentRepository.save(reagent);
                     expiredCount++;
+                    try {
+                        UpdateExpiryReagent event = UpdateExpiryReagent.builder()
+                                .reagentId(reagent.getReagentId())
+                                .reagentName(reagent.getReagentName())
+                                .lotNumber(reagent.getLotNumber())
+                                .lotReagentId(reagent.getLotReagentId().longValue())
+                                .eventTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
+                                .build();
+
+                        kafkaEventPublisher.publicExpiredReagentEvent(event);
+                    } catch (Exception e) {
+                        log.error("Failed to publish reagent installed event, but reagent installation was successful: {}", e.getMessage());
+
+                    }
                 }
             }
 
@@ -74,20 +88,7 @@ public class ReagentStatusSchedulerService {
                     reagent.setStatus(InstalledReagentStatus.LOW_VOLUME);
                     installedReagentRepository.save(reagent);
                     lowVolumeCount++;
-                    try {
-                        UpdateExpiryReagent event = UpdateExpiryReagent.builder()
-                                .reagentId(reagent.getReagentId())
-                                .reagentName(reagent.getReagentName())
-                                .lotNumber(reagent.getLotNumber())
-                                .lotReagentId(reagent.getLotReagentId().longValue())
-                                .eventTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
-                                .build();
 
-                        kafkaEventPublisher.publicExpiredReagentEvent(event);
-                    } catch (Exception e) {
-                        log.error("Failed to publish reagent installed event, but reagent installation was successful: {}", e.getMessage());
-
-                    }
 
                 }
             }

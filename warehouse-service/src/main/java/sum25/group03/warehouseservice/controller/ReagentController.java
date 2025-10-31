@@ -5,8 +5,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.warehouseservice.dto.response.ReagentResponseForInstrument;
 import sum25.group03.warehouseservice.dto.response.ReagentValidationResponse;
 import sum25.group03.warehouseservice.service.reagent.ReagentService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/reagents")
@@ -25,6 +28,14 @@ public class ReagentController {
                 lotNumber, requiredVolume);
 
         ReagentValidationResponse response = reagentService.validateReagent(lotNumber, requiredVolume);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/list")
+    public ResponseEntity<List<ReagentResponseForInstrument> > listReagentsForInstrument() {
+
+        List<ReagentResponseForInstrument> response = reagentService.listReagentsForInstrument();
 
         return ResponseEntity.ok(response);
     }

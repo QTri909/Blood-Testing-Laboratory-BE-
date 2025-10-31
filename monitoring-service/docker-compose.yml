@@ -11,8 +11,8 @@ services:
       - MONGO_INITDB_DATABASE=monitoring_db
     ports:
       - "27017:27017"
-    volumes:
-      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+#    volumes:
+#      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
     networks:
       - internal
 
@@ -41,36 +41,36 @@ services:
       - internal
     restart: always
 
-  kafka:
-    image: bitnamilegacy/kafka:latest
-    container_name: kafka-broker
-    restart: always
-    environment:
-      - KAFKA_CFG_PROCESS_ROLES=controller,broker
-      - KAFKA_CFG_NODE_ID=0
-      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
-      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
-    ports:
-      - "9092:9092"
-      - "9094:9094"
-    networks:
-      - internal
-  kafka-exporter:
-    image: danielqsj/kafka-exporter:latest
-    container_name: kafka-exporter
-    command:
-      - '--kafka.server=kafka:9092'
-      - '--web.listen-address=:9308'
-    ports:
-      - "9308:9308"
-    networks:
-      - internal
-    depends_on:
-      - kafka
-    restart: always
+#  kafka:
+#    image: bitnamilegacy/kafka:latest
+#    container_name: kafka
+#    restart: always
+#    environment:
+#      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+#      - KAFKA_CFG_NODE_ID=0
+#      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+#      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+#      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+#      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+#      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+#    ports:
+#      - "9092:9092"
+#      - "9094:9094"
+#    networks:
+#      - internal
+#  kafka-exporter:
+#    image: danielqsj/kafka-exporter:latest
+#    container_name: kafka-exporter
+#    command:
+#      - '--kafka.server=kafka:9092'
+#      - '--web.listen-address=:9308'
+#    ports:
+#      - "9308:9308"
+#    networks:
+#      - internal
+#    depends_on:
+#      - kafka
+#    restart: always
 
 
   monitoring-service:
@@ -84,12 +84,12 @@ services:
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - SPRING_DATA_MONGODB_URI=mongodb://root:root123@monitoring-service-db:27017/monitoring_db?authSource=admin
     ports:
-      - "4000:4000"
+      - "8083:8083"
     networks:
       - internal
     depends_on:
       - monitoring-service-db
-      - kafka
+#      - kafka
 
 volumes:
   grafana-storage:

@@ -1,11 +1,9 @@
 package sum25.group03.warehouseservice.dto.response;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
-import sum25.group03.warehouseservice.entity.enums.ConfigType;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @AllArgsConstructor
@@ -13,6 +11,19 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ConfigRes {
-    private SpecificConfigRes specificConfigRes;
+    private Long configurationId;
+    private String configurationName;
+    private String supportedTests;
+    private String dataOutputFormat;
+    private String communicationProtocol;
+    private int mixingSpeed;
+    private String firmwareVersion;
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private LocalDate createdAt;
+    @JsonFormat(pattern = "dd/MM/yyyy")
+    private LocalDate updatedAt;
+    private int createdBy;
+    private int updatedBy;
 }

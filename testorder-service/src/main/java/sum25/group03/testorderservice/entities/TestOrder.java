@@ -1,17 +1,17 @@
 package sum25.group03.testorderservice.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.validation.constraints.Pattern;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import sum25.group03.testorderservice.enums.TestOrderStatus;
+import org.hibernate.annotations.UuidGenerator;
+import sum25.group03.testorderservice.enums.TestOrderStatus; // Giả sử bạn có enum này
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -19,24 +19,34 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "test_order")
-
+@Builder
 public class TestOrder {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "external_medical_record_id", nullable = false)
+    @UuidGenerator
+    @Column(name = "code", nullable = false, unique = true, updatable = false)
+    private String code;
+
+    @Column(name = "external_medical_record_id", nullable = true)
     private Long externalMedicalRecordId;
 
-    @Column(name = "patient_id", nullable = false)
-    private Long patientId; // User Id ( IAMService)
+    @Column(name = "patient_id", nullable = true)
+    private Long patientId;
 
-    @Column(name = "created_by", nullable = false)
-    private Long createdBy; // user ID ( IAMService)
+    @Column(name = "created_by")
+    private Long createdBy;
+
+    @Pattern(regexp = "^BC-\\d{6}$",
+            message = "Barcode phải có định dạng BC-123456 (ví dụ: BC-987654)")
+    @Column(name= "barcode")
+    private String barcode;
+
 
     @Column(name = "run_by")
-    private Long runBy; // user ID ( IAMService)
+    private Long runBy;
 
     @Column(name = "run_date")
     private LocalDate runDate;
@@ -61,7 +71,12 @@ public class TestOrder {
 
     @PrePersist
     private void prePersist() {
-        if (this.status == null)
-            this.status = TestOrderStatus.PENDING;
+        if (this.status == null) {
+            if (this.patientId == null) {
+                this.status = TestOrderStatus.UNMATCHED;
+            } else {
+                this.status = TestOrderStatus.PENDING;
+            }
+        }
     }
 }
