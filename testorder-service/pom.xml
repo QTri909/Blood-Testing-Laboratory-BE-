@@ -217,33 +217,37 @@
 		</extensions>
 
 		<plugins>
-			<plugin>
-				<groupId>org.xolstice.maven.plugins</groupId>
-				<artifactId>protobuf-maven-plugin</artifactId>
-				<version>0.6.1</version>
-				<configuration>
-					<!--suppress UnresolvedMavenProperty -->
-					<protocArtifact>
-						com.google.protobuf:protoc:3.25.5:exe:${os.detected.classifier}
-					</protocArtifact>
-					<pluginId>grpc-java</pluginId>
-					<!--suppress UnresolvedMavenProperty -->
-					<pluginArtifact>
-						io.grpc:protoc-gen-grpc-java:1.62.2:exe:${os.detected.classifier}
-					</pluginArtifact>
-				</configuration>
-				<executions>
-					<execution>
-						<goals>
-							<goal>compile</goal>
-							<goal>compile-custom</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.6.1</version>
+                <configuration>
+                    <!-- Use Linux protoc -->
+                    <protocArtifact>
+                        <!-- for linux com.google.protobuf:protoc:3.25.1:exe:linux-x86_64 -->
+                        <!-- for window: com.google.protobuf:protoc:3.25.5:exe:windows-x86_64 -->
+                        com.google.protobuf:protoc:3.25.5:exe:windows-x86_64
+                    </protocArtifact>
 
+                    <pluginId>grpc-java</pluginId>
 
-			<plugin>
+                    <!-- Use Linux grpc plugin -->
+                    <pluginArtifact>
+                        io.grpc:protoc-gen-grpc-java:1.62.2:exe:linux-x86_64
+                    </pluginArtifact>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>compile-custom</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
