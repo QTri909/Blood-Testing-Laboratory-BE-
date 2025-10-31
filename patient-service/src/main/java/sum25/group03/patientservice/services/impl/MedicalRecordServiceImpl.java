@@ -21,6 +21,9 @@ import sum25.group03.patientservice.mapper.MedicalRecordMapper;
 import sum25.group03.patientservice.repositories.postgres.MedicalRecordRepository;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
+import sum25.group03.patientservice.grpc.TestOrderGrpcClient;
+import sum25.group03.patientservice.grpc.TestOrderResponse;
+
 
 
 import java.util.List;
@@ -29,7 +32,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
+//@Slf4j
 public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     private static final Logger log = LoggerFactory.getLogger(MedicalRecordServiceImpl.class);
@@ -39,7 +42,6 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     private final MedicalRecordMongoServiceImpl medicalRecordMongoService;
     private final AuditEntryMongoServiceImpl auditEntryMongoService;
-    private final MedicalRecordMapper recordMapper;
 
     private final ActionLogService actionLogService;
 
@@ -195,7 +197,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 recordId, MedicalRecordStatus.DELETED
         ).orElseThrow(() -> new RuntimeException("Medical Record not found!"));
 
-        // soft' delete from database, and log the delete action
+        // soft delete from database, and log the delete action
         MedicalRecordStatus oldStatus = entity.getStatus();
         entity.setStatus(newStatus);
         entity.setUpdatedBy(deleterId);
@@ -213,4 +215,5 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .build();
         auditEntryMongoService.saveAuditEntry(auditEntryStatusChange);
     }
+
 }
