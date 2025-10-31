@@ -28,6 +28,7 @@ public class VNPayController {
         return service.create(req, ip);
     }
 
+    @RequestMapping(path = "/ipn", method = {RequestMethod.GET, RequestMethod.POST})
     @PostMapping(path = "/ipn")
     public Map<String, String> ipn(@RequestParam MultiValueMap<String, String> params) {
 
