@@ -1,12 +1,12 @@
 package sum25.group03.payment_service.dtos.request;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import sum25.group03.payment_service.enums.TransactionStatus;
+import sum25.group03.payment_service.enums.PaymentTransactionStatus;
+
+import java.util.Map;
 
 @Data
 @Builder
@@ -17,10 +17,10 @@ public class PaymentTransactionRequest {
 //    @NotBlank(message = "Gateway transaction ID is required")
     private String gatewayTransactionId;
 
-    private String rawResponse;
+    private Map<String, Object> rawResponse;
 
 //    @NotNull(message = "Status is required")
-    private TransactionStatus status;
+    private PaymentTransactionStatus status;
 
 //    @NotBlank(message = "Payment request ID is required")
     private String paymentRequestId;

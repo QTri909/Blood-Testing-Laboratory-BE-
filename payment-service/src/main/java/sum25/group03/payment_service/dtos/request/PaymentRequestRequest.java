@@ -1,13 +1,10 @@
 package sum25.group03.payment_service.dtos.request;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import sum25.group03.payment_service.enums.Currency;
+import sum25.group03.payment_service.enums.StandardCurrency;
 
 @Data
 @Builder
@@ -19,8 +16,8 @@ public class PaymentRequestRequest {
 //    @Positive(message = "Amount must be positive")
     private Double amount;
 
-//    @NotNull(message = "Currency is required")
-    private Currency currency;
+//    @NotNull(message = "StandardCurrency is required")
+    private StandardCurrency standardCurrency;
 
 //    @NotBlank(message = "Order code is required")
     private String orderCode;

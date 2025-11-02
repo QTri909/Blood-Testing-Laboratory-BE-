@@ -88,7 +88,7 @@ public class PayPalServiceImpl implements PayPalService {
                   }
                 }
             """.formatted(
-                    request.getCurrency().name(),
+                    request.getStandardCurrency().name(),
                     request.getAmount(),
                     "https://4341644fec05.ngrok-free.app/api/paypal/return",
                     "https://4341644fec05.ngrok-free.app/api/paypal/cancel"

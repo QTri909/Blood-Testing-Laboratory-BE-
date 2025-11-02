@@ -1,66 +1,70 @@
 package sum25.group03.payment_service.entities;
 
-import io.hypersistence.utils.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.Type;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import sum25.group03.payment_service.enums.TransactionStatus;
+import jakarta.persistence.Table;
+import lombok.*;
+import org.hibernate.annotations.*;
+import org.hibernate.type.SqlTypes;
+import sum25.group03.payment_service.enums.PaymentTransactionStatus;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 @Entity
-@EntityListeners(AuditingEntityListener.class)
-@Table(name = "payment_transactions",
-        indexes = {
-                @Index(name = "idx_gateway_transaction_id", columnList = "gateway_transaction_id"),
-                @Index(name = "idx_payment_request_id", columnList = "payment_request_id"),
-                @Index(name = "idx_status", columnList = "status")
-        }
-)
-@Data
-@Builder
-@NoArgsConstructor
+@Table(name = "payment_transactions")
 @AllArgsConstructor
-public class PaymentTransaction {
-
+@NoArgsConstructor
+@Getter
+@Setter
+@Builder
+public class PaymentTransaction implements Serializable {
     @Id
-    @Column(name = "id", updatable = false, nullable = false)
+    @UuidGenerator
     private UUID id;
 
-    @Column(name = "gateway_transaction_id", nullable = false, unique = true, length = 255)
-    private String gatewayTransactionId;
-
-    @Type(JsonBinaryType.class)
-    @Column(name = "raw_response", columnDefinition = "jsonb")
-    private String rawResponse;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 20)
-    private TransactionStatus status;
-
+    // 1 Payment request has many payment transaction
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_request_id", nullable = false)
+    @JoinColumn(
+            name = "payment_request_id",
+            nullable = false
+    )
     private PaymentRequest paymentRequest;
 
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "gateway_transaction_id", nullable = false)
+    private String gatewayTransactionId;    // external transaction id (from vnpay, paypal,..)
+
+    @Enumerated(EnumType.STRING)
+    private PaymentTransactionStatus status;
+
+    @Column(name = "gateway_status_code", length = 50)
+    private String gatewayStatusCode;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb", name = "raw_response")
+    private Map<String, Object> rawResponse;
+
+    @CreationTimestamp
+    @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
 
-    @LastModifiedDate
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
-    protected void onCreate() {
-        if (id == null) {
-            id = UUID.randomUUID();
-        }
+    private void prePersist() {
+        if (this.status == null)
+            this.status = PaymentTransactionStatus.PENDING;
+    }
+
+    public PaymentTransaction(PaymentRequest paymentRequest, String gatewayTransactionId, PaymentTransactionStatus status, Map<String, Object> rawResponse, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.paymentRequest = paymentRequest;
+        this.gatewayTransactionId = gatewayTransactionId;
+        this.status = status;
+        this.rawResponse = rawResponse;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 }

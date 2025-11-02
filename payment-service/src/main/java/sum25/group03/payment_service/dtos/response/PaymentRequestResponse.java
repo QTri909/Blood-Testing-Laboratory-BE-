@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import sum25.group03.payment_service.enums.Currency;
+import sum25.group03.payment_service.enums.StandardCurrency;
 import sum25.group03.payment_service.enums.PaymentRequestStatus;
 
 import java.time.LocalDateTime;
@@ -18,7 +18,7 @@ public class PaymentRequestResponse {
 
     private String id;
     private Double amount;
-    private Currency currency;
+    private StandardCurrency standardCurrency;
     private String orderCode;
     private PaymentRequestStatus status;
     private Long userId;
