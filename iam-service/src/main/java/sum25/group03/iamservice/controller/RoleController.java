@@ -35,4 +35,10 @@ public class RoleController {
         roleService.deleteRoleIfUnused(id);
         return ResponseEntity.ok("Role deleted successfully if unused");
     }
+
+    @GetMapping
+    public ResponseEntity<List<RoleResponse>> getAllRoles() {
+        List<RoleResponse> roles = roleService.getAllRoles();
+        return ResponseEntity.ok(roles);
+    }
 }

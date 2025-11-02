@@ -1,17 +1,4 @@
+
 spring:
-
-# TODO: Already has this in main 'TEAM05' branch
-redis:
-  host: ${REDIS_HOST:localhost}
-  port: ${REDIS_PORT:6379}
-  timeout: 60000
-
-payment:
-  paypal:
-    client-id: ${PAYPAL_CLIENT_ID}
-    client-secret: ${PAYPAL_CLIENT_SECRET}
-    mode: sandbox
-    api:
-      base-url: https://api-m.sandbox.paypal.com
-  redis:
-    ttl: 1800
+  profiles:
+    active: paymentdb,redis,cors,gateways

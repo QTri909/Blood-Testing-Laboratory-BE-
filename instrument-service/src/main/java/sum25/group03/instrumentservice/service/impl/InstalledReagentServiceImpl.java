@@ -190,7 +190,7 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
                 "UpdateReagentStatus",
                 "InstalledReagent",
                 String.valueOf(updatedReagent.getId()),
-                "0.0.0.0", // Will be captured from request context in real scenario
+                "0.0.0.0",
                 "Mozilla/5.0",
                 changes
         );

@@ -1,9 +1,9 @@
 
 spring:
   datasource:
-    url: ${PATIENT_DB_URL:jdbc:postgresql://localhost:5434/testorder_db}
+    url: ${PATIENT_DB_URL:jdbc:postgresql://localhost:5432/testorder_db}
     username: ${PATIENT_DB_USERNAME:postgres}
-    password: ${PATIENT_DB_PASSWORD:12345}
+    password: ${PATIENT_DB_PASSWORD:123456}
     driver-class-name: "org.postgresql.Driver"
     hikari:
       pool-name: PatientHikariCP
@@ -16,7 +16,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: none # change to 'update' or 'none' if you prefer different behavior
+      ddl-auto: update # change to 'update' or 'none' if you prefer different behavior
       naming:
         physical-strategy: "org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl"
     properties:

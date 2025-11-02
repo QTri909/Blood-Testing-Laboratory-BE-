@@ -9,4 +9,6 @@ import java.util.Optional;
 public interface RawTestResultRepository extends MongoRepository<RawTestResult,String> {
     Optional<RawTestResult> findFirstByTestOrderId(String testOrderId);
     List<RawTestResult> findAllByOrderByReceivedAtDesc();
+    Optional<RawTestResult> findByBarcode(String barcode);
+    List<RawTestResult> findByStatus(String status);
 }

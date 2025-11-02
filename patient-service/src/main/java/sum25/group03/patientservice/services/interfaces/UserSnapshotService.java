@@ -12,4 +12,7 @@ public interface UserSnapshotService {
     UserSnapshotResponse getById(Long id);
     UserSnapshotResponse getByExternalUserId(Long externalUserId);
     List<UserSnapshotResponse> getAll();
+
+    // test:
+    void syncUserSnapshots();
 }

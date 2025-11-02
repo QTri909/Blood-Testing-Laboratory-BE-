@@ -18,11 +18,8 @@ import sum25.group03.iamservice.repository.RoleRepository;
 import sum25.group03.iamservice.repository.UserRepository;
 import sum25.group03.iamservice.repository.UserRoleRepository;
 
-import java.util.HashSet;
+import java.util.*;
 
-import java.util.List;
-
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -55,9 +52,12 @@ public class UserServiceImpl implements UserService {
                 .email(request.getEmail())
                 .fullName(request.getFullName())
                 .phoneNumber(request.getPhoneNumber())
+                .gender(request.getGender())
+                .dateOfBirth(request.getDateOfBirth())
                 .identityNumber(request.getIdentityNumber())
                 .address(request.getAddress())
-                .cognitoUserId(cognitoUserId) // lưu Cognito ID
+                .cognitoUserId(cognitoUserId)
+                .accountNonLocked(false)
                 .build();
 
         user = userRepository.save(user);
@@ -95,6 +95,8 @@ public class UserServiceImpl implements UserService {
         response.setEmail(user.getEmail());
         response.setPhoneNumber(user.getPhoneNumber());
         response.setAddress(user.getAddress());
+        response.setGender(user.getGender());
+        response.setDateOfBirth(user.getDateOfBirth());
         response.setIdentityNumber(user.getIdentityNumber());
         response.setRoles(
                 user.getUserRoles().stream()
@@ -114,8 +116,13 @@ public class UserServiceImpl implements UserService {
 
         if (request.getFullName() != null) user.setFullName(request.getFullName());
         if (request.getEmail() != null) user.setEmail(request.getEmail());
-        if (request.getPhone() != null) user.setPhoneNumber(request.getPhone());
-        if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
+        if (request.getPhoneNumber() != null) user.setPhoneNumber(request.getPhoneNumber());
+        if (request.getEmail() != null) user.setEmail(request.getEmail());
+        if (request.getAddress() != null) user.setAddress(request.getAddress());
+        if (request.getDateOfBirth() != null) user.setDateOfBirth(request.getDateOfBirth());
+        if (request.getIdentityNumber() != null) user.setIdentityNumber(request.getIdentityNumber());
+
+        if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()){
 
             userRoleRepository.deleteByUserId(user.getId());
 
@@ -129,6 +136,8 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.save(user);
+
+        cognitoService.updateUserAttributes(user);
 
         auditLogService.record(
                 "UPDATE",
@@ -145,10 +154,16 @@ public class UserServiceImpl implements UserService {
                 .fullName(user.getFullName())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
+                .gender(user.getGender())
+                .dateOfBirth(user.getDateOfBirth())
+                .identityNumber(user.getIdentityNumber())
+                .address(user.getAddress())
                 .roles(user.getUserRoles().stream()
                         .map(ur -> ur.getRole().getRoleName())
                         .collect(Collectors.toSet()))
                 .build();
+
+
     }
 
     @Transactional
@@ -159,6 +174,8 @@ public class UserServiceImpl implements UserService {
 
         user.setIsActive(false);
         userRepository.save(user);
+
+        cognitoService.disableUser(user.getEmail());
 
         auditLogService.record(
                 "DEACTIVATE",
@@ -174,8 +191,13 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+
+
         userRoleRepository.deleteByUserId(user.getId());
         userRepository.delete(user);
+
+        cognitoService.deleteUser(user.getEmail());
 
         auditLogService.record(
                 "DELETE",
@@ -197,6 +219,8 @@ public class UserServiceImpl implements UserService {
                         .email(user.getEmail())
                         .phoneNumber(user.getPhoneNumber())
                         .address(user.getAddress())
+                        .gender(user.getGender())
+                        .dateOfBirth(user.getDateOfBirth())
                         .identityNumber(user.getIdentityNumber())
                         .build())
                 .collect(Collectors.toList());
@@ -204,10 +228,36 @@ public class UserServiceImpl implements UserService {
         return new PageImpl<>(responses, pageable, usersPage.getTotalElements());
     }
 
+
+
+        @Override
+        public Map<String, List<String>> getRolesAndPrivilegesByEmail(String email) {
+            User user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + email));
+
+            // Lấy role
+            List<String> roles = user.getUserRoles().stream()
+                    .map(ur -> ur.getRole().getRoleCode())
+                    .toList();
+
+            // Lấy privilege
+            List<String> privileges = user.getUserRoles().stream()
+                    .flatMap(ur -> ur.getRole().getRolePrivileges().stream())
+                    .map(rp -> rp.getPrivilege().getPrivilegeCode())
+                    .distinct()
+                    .toList();
+
+            Map<String, List<String>> result = new HashMap<>();
+            result.put("roles", roles);
+            result.put("privileges", privileges);
+
+            return result;
+        }
+
+
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {
-        Page<User> usersPage = userRepository.findAll(pageable); // <-- đây là page, không phải list
-
+        Page<User> usersPage = userRepository.findAll(pageable);
         List<UserResponse> responses = usersPage.getContent().stream()
                 .map(user -> UserResponse.builder()
                         .id(user.getId())
@@ -215,16 +265,35 @@ public class UserServiceImpl implements UserService {
                         .email(user.getEmail())
                         .phoneNumber(user.getPhoneNumber())
                         .address(user.getAddress())
+                        .gender(user.getGender())
+                        .dateOfBirth(user.getDateOfBirth())
                         .identityNumber(user.getIdentityNumber())
-                        .roles(
-                                user.getUserRoles().stream()
-                                        .map(ur -> ur.getRole().getRoleCode())
-                                        .collect(Collectors.toSet())
-                        )
+
                         .build())
                 .collect(Collectors.toList());
 
         return new PageImpl<>(responses, pageable, usersPage.getTotalElements());
+    }
+
+    @Override
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        UserResponse response = UserResponse.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getAddress())
+                .gender(user.getGender())
+                .dateOfBirth(user.getDateOfBirth())
+                .identityNumber(user.getIdentityNumber())
+                .roles(user.getUserRoles().stream()
+                        .map(ur -> ur.getRole().getRoleName())
+                        .collect(Collectors.toSet()))
+                .build();
+        return response;
     }
 
 }

@@ -5,14 +5,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
+import software.amazon.awssdk.services.cloudwatchlogs.CloudWatchLogsClient;
 import software.amazon.awssdk.services.cloudwatchlogs.model.*;
 import sum25.group03.instrumentservice.audit.model.AuditLog;
-import software.amazon.awssdk.services.cloudwatchlogs.CloudWatchLogsClient;
+
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -49,13 +48,36 @@ public class CloudWatchAuditLogger {
         }
     }
 
+    public void logSystemEvent(AuditLog auditLog) {
+        if (!enabled) {
+            log.debug("CloudWatch audit logging is disabled");
+            return;
+        }
+
+        try {
+            String logStream = buildSystemLogStreamName(auditLog);
+            ensureLogStreamExists(logStream);
+
+            String logMessage = objectMapper.writeValueAsString(auditLog);
+            putLogEvent(logStream, logMessage, auditLog.getTimestamp());
+
+            log.debug("System audit log sent to CloudWatch: {}", logStream);
+        } catch (Exception e) {
+            log.error("Failed to send system audit log to CloudWatch", e);
+        }
+    }
+
     private String buildLogStreamName(AuditLog auditLog) {
         String actionType = auditLog.getAction().getType().toLowerCase();
         String actorType = auditLog.getActor().getType().toLowerCase();
         String timestamp = STREAM_DATE_FORMATTER.format(auditLog.getTimestamp());
 
-
         return String.format("%s/%s/%s", actorType, actionType, timestamp);
+    }
+
+    private String buildSystemLogStreamName(AuditLog auditLog) {
+        String timestamp = STREAM_DATE_FORMATTER.format(auditLog.getTimestamp());
+        return String.format("system/write/%s", timestamp);
     }
 
     private void ensureLogStreamExists(String logStreamName) {

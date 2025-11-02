@@ -1,15 +1,18 @@
 package sum25.group03.testorderservice.controllers;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
+import sum25.group03.testorderservice.dtos.response.CreationTestOrderResponse;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
+import sum25.group03.testorderservice.dtos.response.TestOrderResponseForInstrument;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 
@@ -25,17 +28,22 @@ public class TestOrderController {
 
     // -------- THUYEN --------
     @GetMapping
-    public ResponseEntity<List<TestOrderResponse>> getAllTestOrders(@RequestParam Long viewerId) {
+    public ResponseEntity<List<TestOrderResponseDTO>> getAllTestOrders(
+            @RequestHeader("X-User-Id") Long viewerId
+    ) {
         return ResponseEntity.ok(testOrderService.getAllTestOrders(viewerId));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TestOrderResponse> getById(@PathVariable Long id, @RequestParam Long viewerId) {
+    public ResponseEntity<TestOrderResponseDTO> getById(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") Long viewerId
+    ) {
         return ResponseEntity.ok(testOrderService.getTestOrderById(id, viewerId));
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<TestOrderResponse>> filterTestOrders(
+    public ResponseEntity<List<TestOrderResponseDTO>> filterTestOrders(
             @ModelAttribute TestOrderFiltering filterInfo,
             @RequestParam Long viewerId
     ) {
@@ -45,7 +53,9 @@ public class TestOrderController {
     // -------- HUY -----------
     @PostMapping
     public ResponseEntity<TestOrderResponseDTO> createTestOrder(
-            @Valid @RequestBody TestOrderRequestDTO requestDTO) {
+            @Valid @RequestBody TestOrderRequestDTO requestDTO
+    ) {
+
         log.info("POST /api/v1/test-orders - Creating test order for patientId: {}",
                 requestDTO.getPatientId());
 
@@ -121,6 +131,24 @@ public class TestOrderController {
 
         List<TestOrderResponseDTO> response = testOrderService.getTestOrdersByCreatedBy(createdBy);
 
+        return ResponseEntity.ok(response);
+    }
+
+
+    @GetMapping("/by-barcode/{barcode}")
+    public ResponseEntity<TestOrderResponseForInstrument> getByBarcode(
+            @PathVariable
+            @Pattern(regexp = "^BC-\\d{6}$", message = "Barcode phải có định dạng BC-123456")
+            String barcode) {
+
+        TestOrderResponseForInstrument response = testOrderService.findLatestByBarcode(barcode);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/create-unmatched-order")
+    public ResponseEntity<CreationTestOrderResponse> createUnmatchedOrder(
+            @Valid @RequestParam String barcode) {
+        CreationTestOrderResponse response = testOrderService.createTestOrderForExternalSystem(barcode);
         return ResponseEntity.ok(response);
     }
 }

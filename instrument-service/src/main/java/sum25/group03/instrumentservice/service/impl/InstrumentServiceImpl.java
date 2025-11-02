@@ -150,7 +150,7 @@ public class InstrumentServiceImpl implements InstrumentService {
 
         Instrument instrument = instrumentRepository.findById(request.getInstrumentId())
                 .orElseThrow(() -> {
-                    log.error("[v0] Instrument not found with ID: {}", request.getInstrumentId());
+                    log.error("Instrument not found with ID: {}", request.getInstrumentId());
                     return new ResourceNotFoundException(
                             "Instrument not found with id: " + request.getInstrumentId());
                 });
@@ -191,9 +191,9 @@ public class InstrumentServiceImpl implements InstrumentService {
         List<InstalledReagent> reagents = installedReagentRepository
                 .findByInstrumentIdAndStatusIsNot(request.getInstrumentId(), InstalledReagentStatus.REMOVED);
         for (InstalledReagent reagent : reagents) {
-            if (reagent.getReagentId().equals(request.getInstrumentId())) {
+            if (reagent.getReagentId().equals(reagentValidation.getReagentId()) && reagent.getLotReagentId()!=null ) {
                 log.warn("Reagent with ID {} is already installed on instrument ID {}",
-                        reagent.getReagentId(), request.getInstrumentId());
+                        reagent.getReagentId(), reagentValidation.getReagentId());
                 throw new InstrumentModeChangeException(
                         "Reagent with ID " + reagent.getReagentId() +
                                 " is already installed on this instrument. Please remove it before installing a new one.");
@@ -260,11 +260,10 @@ public class InstrumentServiceImpl implements InstrumentService {
                     changes
             );
         } catch (Exception e) {
-            // Quan trọng: Không để lỗi log ảnh hưởng tới nghiệp vụ chính
             log.warn("Failed to write audit log for installReagent: {}", e.getMessage());
         }
 
-        log.info("Reagent installed successfully - ID: {}, Batch: {}",
+        log.info("Reagent installed successfully - ID: {}, Lot: {}",
                 savedReagent.getId(), request.getLotNumber());
 
         try {
@@ -400,7 +399,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .instrumentName(instrument.getInstrumentName())
                 .status(instrument.getStatus())
                 .configurationId(config != null ? config.getId() : null)
-                .configurationName(config != null ? config.getConfigKey() : null)
+                //.configurationName(config != null ? config.getConfigKey() : null)
                 .installedReagents(reagentResponses)
                 .build();
     }

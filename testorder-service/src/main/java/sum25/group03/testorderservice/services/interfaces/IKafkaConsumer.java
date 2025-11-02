@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.service.interfaces;
+package sum25.group03.testorderservice.services.interfaces;
 
 import org.springframework.kafka.support.Acknowledgment;
 

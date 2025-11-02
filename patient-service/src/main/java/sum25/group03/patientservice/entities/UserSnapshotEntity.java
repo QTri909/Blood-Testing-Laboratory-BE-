@@ -1,7 +1,9 @@
 package sum25.group03.patientservice.entities;
 
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
@@ -24,17 +26,27 @@ public class UserSnapshotEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "full_name")
+    private String fullName;
+
+    @Column(name = "email", unique = true)
+    private String email;
+
+    @Column(name = "phone_number", unique = true)
+    private String phoneNumber;
+
     @Column(name = "external_user_id", nullable = false)
     private Long externalUserId;
+
+    @Type(JsonBinaryType.class)
+    @Column(name = "roles", nullable = false)
+    private List<String> roles;
 
     @UpdateTimestamp
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 
-    @Column(name = "is_patient", nullable = false)
-    private Boolean isPatient;
-
-    // Bidirectional relationships with MedicalRecord
+    // Bidirectional relationships with ESMedicalRecord
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<MedicalRecordEntity> patientRecords;
 

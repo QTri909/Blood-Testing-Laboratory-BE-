@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "sum25.group03.testorderservice.grpc";
+option java_outer_classname = "TestOrderProto";
+
+service TestOrderService {
+  rpc GetLatestTestOrderByPatientId (GetLatestTestOrderRequest) returns (TestOrderResponse);
+}
+
+message GetLatestTestOrderRequest {
+  int64 patientId = 1;
+}
+
+message TestOrderResponse {
+  int64 id = 1;
+  string barcode = 2;
+  string type = 3;
+  int64 patientId = 4;
+  string status = 5;
+  string createdAt = 6;
+}

@@ -1,15 +1,17 @@
 package sum25.group03.monitoringservice.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import sum25.group03.monitoringservice.model.RawTestResult;
 import sum25.group03.monitoringservice.repository.RawTestResultRepository;
 import sum25.group03.monitoringservice.util.RawTestVerifier;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
+@Slf4j
 @Service
 public class RawTestResultService {
 
@@ -39,6 +41,29 @@ public class RawTestResultService {
         }
     }
 
+    public RawTestResult saveTestResultFromEvent(String testOrderId, String instrumentId, String barcode,
+                                                 String hl7Message, String rawData, String status) {
+        RawTestResult result = RawTestResult.builder()
+                .testOrderId(testOrderId)
+                .instrumentId(instrumentId)
+                .barcode(barcode)
+                .hl7Payload(hl7Message)
+                .rawData(rawData)
+                .status(status)
+                .receivedAt(Instant.now())
+                .build();
+
+        try {
+            RawTestResult saved = rawTestRepo.save(result);
+            backupLogs.add("SUCCESS (Kafka): " + testOrderId + " - " + barcode + " at " + result.getReceivedAt());
+            return saved;
+        } catch (Exception e) {
+            failedInsertions.add(result);
+            log.error("LỖI KHI LƯU VÀO MONGODB: ", e);
+            return null;
+        }
+    }
+
     /** 2️⃣ Lấy raw test result theo ID, trả về Optional để an toàn */
     public Optional<RawTestResult> findRawByTestOrderId(String testOrderId) {
         return rawTestRepo.findFirstByTestOrderId(testOrderId);
@@ -47,6 +72,14 @@ public class RawTestResultService {
     /** 3️⃣ Lấy raw test result theo ID, trả về trực tiếp (dùng khi chắc chắn có dữ liệu) */
     public RawTestResult getRawTestResultById(String testOrderId) {
         return rawTestRepo.findFirstByTestOrderId(testOrderId).orElse(null);
+    }
+
+    public Optional<RawTestResult> findByBarcode(String barcode) {
+        return rawTestRepo.findByBarcode(barcode);
+    }
+
+    public List<RawTestResult> findByStatus(String status) {
+        return rawTestRepo.findByStatus(status);
     }
 
     /** 4️⃣ Verify dữ liệu lưu với dữ liệu gốc */

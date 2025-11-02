@@ -15,10 +15,10 @@ public interface InstrumentMapper {
 
     InstrumentResponse toResponse(Instrument instrument);
 
-    @AfterMapping
-    default void fillManufacturerName(@MappingTarget InstrumentResponse dto, Instrument entity) {
-        if(entity.getManufacturer() != null) {
-            dto.setManufacturerName(entity.getManufacturer().getManufacturerName());
-        }
-    }
+//    @AfterMapping
+//    default void fillManufacturerName(@MappingTarget InstrumentResponse dto, Instrument entity) {
+//        if(entity.getManufacturer() != null) {
+//            dto.setManufacturerName(entity.getManufacturer());
+//        }
+//    }
 }

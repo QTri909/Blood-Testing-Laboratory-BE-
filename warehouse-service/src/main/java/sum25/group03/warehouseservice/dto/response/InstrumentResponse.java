@@ -4,7 +4,6 @@ import lombok.*;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -15,12 +14,9 @@ public class InstrumentResponse {
     private String instrumentName;
     private String model;
     private String serialNumber;
-    private String firmwareVersion;
     private String location;
     private String notes;
     private InstrumentStatus status;
     private LocalDate createdAt;
     private LocalDate updatedAt;
-
-    private String manufacturerName;
 }

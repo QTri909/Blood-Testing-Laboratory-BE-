@@ -8,10 +8,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import sum25.group03.instrumentservice.client.response.ReagentResponse;
 import sum25.group03.instrumentservice.client.response.ReagentValidationResponse;
 import sum25.group03.instrumentservice.exception.WarehouseServiceException;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -83,6 +85,31 @@ public class WarehouseServiceClient {
             log.error("Error validating reagent from Warehouse Service for batch: {}", lotNumber, e);
             throw new WarehouseServiceException(
                     "Failed to validate reagent from Warehouse Service: " + e.getMessage(), e);
+        }
+    }
+
+    public List<ReagentResponse> reagentResponseReagentList() {
+        String url = warehouseServiceUrl + "/api/v1/reagents/list";
+
+        try {
+            log.info("Listing reagents for instrument from Warehouse Service: {}", url);
+
+            ReagentResponse[] responseArray = restTemplate.getForObject(url, ReagentResponse[].class);
+
+            if (responseArray == null) {
+                log.warn("Warehouse Service returned null response for reagent list");
+                throw new WarehouseServiceException("Warehouse Service returned null response");
+            }
+
+            List<ReagentResponse> responseList = List.of(responseArray);
+
+            log.info("Retrieved {} reagents for instrument from Warehouse Service", responseList.size());
+            return responseList;
+
+        } catch (RestClientException e) {
+            log.error("Error listing reagents from Warehouse Service", e);
+            throw new WarehouseServiceException(
+                    "Failed to list reagents from Warehouse Service: " + e.getMessage(), e);
         }
     }
 }

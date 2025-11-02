@@ -4,17 +4,21 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import sum25.group03.payment_service.dtos.request.PaymentRequestRequest;
 import sum25.group03.payment_service.services.interfaces.PaymentCacheService;
 
+import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 public class PaymentCacheServiceImpl implements PaymentCacheService {
 
+    private final StringRedisTemplate redis;
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Value("${payment.redis.ttl:1800}")
@@ -95,5 +99,24 @@ public class PaymentCacheServiceImpl implements PaymentCacheService {
         } catch (Exception e) {
             log.error("[Redis] Failed to remove token='{}': {}", token, e.getMessage(), e);
         }
+    }
+
+    private String key(String txnRef) {
+        return "payment:status:" + txnRef;
+    }
+
+    @Override
+    public void putStatus(String txnRef, String status, Duration ttl) {
+        redis.opsForValue().set(key(txnRef), status, ttl);
+    }
+
+    @Override
+    public Optional<String> getStatus(String txnRef) {
+        return Optional.ofNullable(redis.opsForValue().get(key(txnRef)));
+    }
+
+    @Override
+    public void delete(String txnRef) {
+        redis.delete(key(txnRef));
     }
 }

@@ -8,7 +8,9 @@ import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -35,9 +37,6 @@ public class Reagents {
     @Column(name = "unit", nullable = false)
     private String unit;
 
-    @Column(name = "expiration_date", nullable = false)
-    private LocalDate expirationDate;
-
     @Column(name = "storage_conditions", nullable = false)
     private String storageConditions;
 
@@ -58,6 +57,12 @@ public class Reagents {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDate updatedAt;
+
+    @Column(name = "usage_min")
+    private Double usageMin;
+
+    @Column(name = "usage_max")
+    private Double usageMax;
 
     @OneToMany(mappedBy = "reagent", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReagentHistoryUsage> reagentHistoryUsages;
