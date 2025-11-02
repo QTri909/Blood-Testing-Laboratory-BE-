@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import sum25.group03.payment_service.enums.PaymentProviderCode;
-import sum25.group03.payment_service.enums.ProviderStatus;
+import sum25.group03.payment_service.enums.PaymentProviderStatus;
 
 import java.time.LocalDateTime;
 
@@ -18,7 +18,7 @@ public class PaymentProviderResponse {
     private String id;
     private PaymentProviderCode code;
     private String name;
-    private ProviderStatus status;
+    private PaymentProviderStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

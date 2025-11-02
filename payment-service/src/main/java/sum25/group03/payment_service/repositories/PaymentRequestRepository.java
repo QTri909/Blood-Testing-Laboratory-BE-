@@ -9,8 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface PaymentRequestRepository extends JpaRepository<PaymentRequest,String> {
-
     List<PaymentRequest> findAllByUserId(Long userId);
-
     Optional<PaymentRequest> findByOrderCode(String orderCode);
 }
