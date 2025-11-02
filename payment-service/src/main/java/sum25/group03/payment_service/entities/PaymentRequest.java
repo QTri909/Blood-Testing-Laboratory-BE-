@@ -39,6 +39,10 @@ public class PaymentRequest implements Serializable {
     @Enumerated(EnumType.STRING)
     private PaymentRequestStatus status;
 
+    // External-facing transaction reference (VNPay txnRef)
+    @Column(name = "txn_ref", unique = true)
+    private String txnRef;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

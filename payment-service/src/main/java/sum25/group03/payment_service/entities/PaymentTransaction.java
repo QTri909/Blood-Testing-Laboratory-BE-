@@ -38,6 +38,9 @@ public class PaymentTransaction implements Serializable {
     @Enumerated(EnumType.STRING)
     private PaymentTransactionStatus status;
 
+    @Column(name = "gateway_status_code", length = 50)
+    private String gatewayStatusCode;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb", name = "raw_response")
     private Map<String, Object> rawResponse;
