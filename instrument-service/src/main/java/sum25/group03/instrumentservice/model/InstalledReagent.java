@@ -20,14 +20,14 @@ public class InstalledReagent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "instrument_id", nullable = false)
     private Instrument instrument;
 
-    @Column(name = "current_volume", nullable = false)
+    @Column(name = "current_volume", nullable = true)
     private Double currentVolume;
 
-    @Column(name = "reagent_unit", nullable = false)
+    @Column(name = "reagent_unit", nullable = true)
     private String unit;
 
 
@@ -35,13 +35,13 @@ public class InstalledReagent {
     @Column(name = "status", nullable = false)
     private InstalledReagentStatus status;
 
-    @Column(name = "installation_date", nullable = false)
+    @Column(name = "installation_date", nullable = true)
     private LocalDate installationDate;
 
-    @Column(name = "expiration_date", nullable = false)
+    @Column(name = "expiration_date", nullable = true)
     private LocalDate expirationDate;
 
-    @Column(name = "lot_reagent_id", nullable = false)
+    @Column(name = "lot_reagent_id", nullable = true)
     private Integer lotReagentId;
 
     @Column(name = "reagent_id", nullable = false)
@@ -50,7 +50,7 @@ public class InstalledReagent {
     @Column(name = "reagent_name", nullable = false)
     private String reagentName;
 
-    @Column(name = "lot_number", nullable = false)
+    @Column(name = "lot_number", nullable = true)
     private String lotNumber;
 
 

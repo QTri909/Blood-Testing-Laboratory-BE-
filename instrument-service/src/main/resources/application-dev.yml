@@ -5,6 +5,10 @@ spring:
   devtools:
     add-properties: true
   datasource:
+#      url: jdbc:postgresql://localhost:5432/instrument
+#      username: postgres
+#      password: 123456
+#      driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
 
     username: postgres.optgwypzavmomcarviwh

@@ -27,34 +27,34 @@ public class InstrumentViewServiceImpl implements InstrumentViewService {
     private final InstrumentRepo instrumentRepo;
     private final InstrumentMapper instrumentMapper;
 
-    @Override
-    public Page<InstrumentResponse> getAllInstruments(Pageable pageable) {
-        return instrumentRepo.findAll(pageable)
-                .map(instrumentMapper::toResponse);
-    }
+//    @Override
+//    public Page<InstrumentResponse> getAllInstruments(Pageable pageable) {
+//        return instrumentRepo.findAll(pageable)
+//                .map(instrumentMapper::toResponse);
+//    }
 
-    @Override
-    public Page<InstrumentResponse> searchInstruments(String name, String model, String status, Pageable pageable) {
-        log.info("Searching instruments: name='{}', model='{}', status='{}'", name, model, status);
-
-        InstrumentStatus enumStatus = null;
-        if(status != null && !status.isBlank()) {
-            try {
-                enumStatus = convertToStatus(status);
-            } catch (InvalidArgumentException e) {
-                log.warn("Invalid status '{}' provided", status);
-                throw e;
-            }
-        }
-
-        try {
-            return instrumentRepo.searchInstruments(name, model, enumStatus, pageable)
-                    .map(instrumentMapper::toResponse);
-        } catch (Exception e) {
-            log.error("Unexpected error during instrument search: {}", e.getMessage(), e);
-            throw new InvalidArgumentException("An unexpected error occurred while searching instruments");
-        }
-    }
+//    @Override
+//    public Page<InstrumentResponse> searchInstruments(String name, String model, String status, Pageable pageable) {
+//        log.info("Searching instruments: name='{}', model='{}', status='{}'", name, model, status);
+//
+//        InstrumentStatus enumStatus = null;
+//        if(status != null && !status.isBlank()) {
+//            try {
+//                enumStatus = convertToStatus(status);
+//            } catch (InvalidArgumentException e) {
+//                log.warn("Invalid status '{}' provided", status);
+//                throw e;
+//            }
+//        }
+//
+//        try {
+//            return instrumentRepo.searchInstruments(name, model, enumStatus, pageable)
+//                    .map(instrumentMapper::toResponse);
+//        } catch (Exception e) {
+//            log.error("Unexpected error during instrument search: {}", e.getMessage(), e);
+//            throw new InvalidArgumentException("An unexpected error occurred while searching instruments");
+//        }
+//    }
 
     @Override
     public InternalInstrumentStatusResponse checkInstrumentStatus(Long id) {

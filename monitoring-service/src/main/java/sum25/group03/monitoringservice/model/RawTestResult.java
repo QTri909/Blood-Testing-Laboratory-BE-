@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -21,5 +22,7 @@ public class RawTestResult {
     private String instrumentId;
     private String hl7Payload;
     private Instant receivedAt;
-
+    private String barcode;
+    private String rawData;
+    private String status;
 }

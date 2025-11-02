@@ -18,7 +18,7 @@ import sum25.group03.instrumentservice.controller.response.*;
 import sum25.group03.instrumentservice.service.InstrumentService;
 
 @RestController
-@RequestMapping("/api/instruments")
+@RequestMapping("/api/v1/instruments")
 @RequiredArgsConstructor
 @Tag(name = "Instrument Management", description = "APIs for managing laboratory instruments")
 public class InstrumentController {

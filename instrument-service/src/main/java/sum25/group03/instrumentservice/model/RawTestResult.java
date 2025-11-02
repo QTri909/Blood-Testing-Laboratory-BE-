@@ -18,10 +18,10 @@ public class RawTestResult {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ResultID")
-    private Integer resultId;
+    private Long resultId;
 
     @Column(name = "TestOrderID")
-    private Integer testOrderId;
+    private Long testOrderId;
 
     @ManyToOne
     @JoinColumn(name = "InstrumentID")
@@ -39,6 +39,6 @@ public class RawTestResult {
     @Column(name = "IsSynced")
     private Boolean isSynced;
 
-    @Column(name = "CreatedAt", insertable = false, updatable = false)
+    @Column(name = "CreatedAt", updatable = false)
     private LocalDateTime createdAt;
 }

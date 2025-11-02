@@ -18,11 +18,18 @@ public class TestOrderResponse{
 
     private Long externalMedicalRecordId;
 
+    private String code;
+
     private Long patientId;
 
     private Long createdBy;
 
     private Long runBy;
+
+    private String barcode;
+
+    private String testType;
+
 
     private LocalDate runDate;
 

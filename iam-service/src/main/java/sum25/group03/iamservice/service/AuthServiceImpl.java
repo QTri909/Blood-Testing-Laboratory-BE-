@@ -52,6 +52,7 @@ public class AuthServiceImpl implements AuthService {
             if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
                 throw new RuntimeException("Account is locked until " + user.getLockedUntil());
             } else {
+                // nếu quá hạn khóa thì mở khóa
                 user.setAccountNonLocked(true);
                 user.setFailedAttempts(0);
                 user.setLockedUntil(null);
@@ -60,26 +61,34 @@ public class AuthServiceImpl implements AuthService {
         }
 
         try {
-            // 🔹 3. Dùng InitiateAuth thay vì AdminInitiateAuth
-            software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthRequest authRequest =
-                    software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthRequest.builder()
-                            .authFlow(AuthFlowType.USER_PASSWORD_AUTH)
-                            .clientId(clientId)
-                            .authParameters(Map.of(
-                                    "USERNAME", request.getEmail(),
-                                    "PASSWORD", request.getPassword(),
-                                    "SECRET_HASH", calculateSecretHash(request.getEmail())
-                            ))
-                            .build();
+            // 🔹 3. Dùng AdminInitiateAuth thay vì InitiateAuth
+            AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
+                    .userPoolId(userPoolId)
+                    .clientId(clientId)
+                    .authFlow(AuthFlowType.ADMIN_USER_PASSWORD_AUTH)
+                    .authParameters(Map.of(
+                            "USERNAME", request.getEmail(),
+                            "PASSWORD", request.getPassword(),
+                            "SECRET_HASH", calculateSecretHash(request.getEmail())
+                    ))
+                    .build();
 
-            software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthResponse response =
-                    cognitoClient.initiateAuth(authRequest);
+            AdminInitiateAuthResponse response = cognitoClient.adminInitiateAuth(authRequest);
 
-            // 🔹 4. Nếu login thành công
-            user.setFailedAttempts(0);
-            user.setAccountNonLocked(true);
-            user.setLockedUntil(null);
-            userRepository.save(user);
+            // 🔹 3.a Nếu Cognito trả challenge (ví dụ NEW_PASSWORD_REQUIRED) -> không tính là failed attempt
+            if (response.challengeName() != null) {
+                String challenge = response.challengeNameAsString();
+                String session = response.session();
+                throw new RuntimeException("FIRST_LOGIN: " + challenge + (session != null ? ("; session=" + session) : ""));
+            }
+
+            // 🔹 4. Nếu login thành công (authenticationResult != null)
+            if (response.authenticationResult() == null) {
+                throw new RuntimeException("Authentication failed: no authenticationResult returned");
+            }
+
+            // Reset failed attempts khi login thành công
+            resetFailedAttempts(user);
 
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setAccessToken(response.authenticationResult().accessToken());
@@ -89,20 +98,47 @@ public class AuthServiceImpl implements AuthService {
 
             return loginResponse;
 
+        } catch (NotAuthorizedException | UserNotFoundException e) {
+            handleFailedAttempt(user);
+            throw new RuntimeException("Invalid credentials. Failed attempts: " + user.getFailedAttempts());
+        } catch (UserNotConfirmedException e) {
+            throw new RuntimeException("EMAIL_NOT_CONFIRMED");
+        } catch (PasswordResetRequiredException e) {
+            throw new RuntimeException("RESET_REQUIRED");
+        } catch (InvalidParameterException e) {
+            throw new RuntimeException("INVALID_PARAMETER: " + e.getMessage(), e);
         } catch (Exception e) {
-            // 🔹 5. Nếu login thất bại → tăng số lần thất bại
-            int newAttempts = user.getFailedAttempts() + 1;
-            user.setFailedAttempts(newAttempts);
-            user.setLastFailedAt(LocalDateTime.now());
-
-            if (newAttempts >= 5) {
-                user.setAccountNonLocked(false);
-                user.setLockedUntil(LocalDateTime.now().plusMinutes(15));
-            }
-
-            userRepository.save(user);
-            throw new RuntimeException("Invalid credentials. Failed attempts: " + newAttempts);
+            throw new RuntimeException("Authentication error: " + e.getMessage(), e);
         }
+    }
+
+
+    /**
+     * Tăng failedAttempts, set last failed time, và khóa account nếu vượt quá ngưỡng.
+     * Lưu user về DB.
+     */
+    private void handleFailedAttempt(User user) {
+        int newAttempts = (user.getFailedAttempts() == null ? 0 : user.getFailedAttempts()) + 1;
+        user.setFailedAttempts(newAttempts);
+        user.setLastFailedAt(LocalDateTime.now());
+
+        if (newAttempts >= 5) {
+            user.setAccountNonLocked(false);
+            user.setLockedUntil(LocalDateTime.now().plusMinutes(15)); // khóa 15 phút, tuỳ chỉnh
+        }
+
+        userRepository.save(user);
+    }
+
+    /**
+     * Reset failedAttempts và lưu.
+     */
+    private void resetFailedAttempts(User user) {
+        user.setFailedAttempts(0);
+        user.setLastFailedAt(null);
+        user.setAccountNonLocked(true);
+        user.setLockedUntil(null);
+        userRepository.save(user);
     }
 
     @Override
@@ -131,6 +167,43 @@ public class AuthServiceImpl implements AuthService {
         } catch (Exception e) {
             throw new RuntimeException("Invalid or expired refresh token: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public void changePassword(String accessToken, String oldPassword, String newPassword) {
+        try {
+            cognitoClient.changePassword(builder -> builder
+                    .accessToken(accessToken)
+                    .previousPassword(oldPassword)
+                    .proposedPassword(newPassword)
+            );
+        } catch (CognitoIdentityProviderException e) {
+            throw new RuntimeException("Change password failed: " + e.awsErrorDetails().errorMessage());
+        }
+    }
+
+    @Override
+    public void forgotPassword(String email) {
+        ForgotPasswordRequest request = ForgotPasswordRequest.builder()
+                .clientId(clientId)
+                .username(email)
+                .secretHash(calculateSecretHash(email))
+                .build();
+
+        cognitoClient.forgotPassword(request);
+    }
+
+    @Override
+    public void confirmForgotPassword(String email, String confirmationCode, String newPassword) {
+        ConfirmForgotPasswordRequest confirmRequest = ConfirmForgotPasswordRequest.builder()
+                .clientId(clientId)
+                .username(email)
+                .confirmationCode(confirmationCode)
+                .password(newPassword)
+                .secretHash(calculateSecretHash(email))
+                .build();
+
+        cognitoClient.confirmForgotPassword(confirmRequest);
     }
 
 

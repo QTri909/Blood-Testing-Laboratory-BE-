@@ -7,7 +7,7 @@ import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
 import sum25.group03.warehouseservice.dto.response.InternalInstrumentStatusResponse;
 
 public interface InstrumentViewService {
-    Page<InstrumentResponse> getAllInstruments(Pageable pageable);
-    Page<InstrumentResponse> searchInstruments(String name, String model, String status, Pageable pageable);
+//    Page<InstrumentResponse> getAllInstruments(Pageable pageable);
+//    Page<InstrumentResponse> searchInstruments(String name, String model, String status, Pageable pageable);
     InternalInstrumentStatusResponse checkInstrumentStatus(Long id);
 }

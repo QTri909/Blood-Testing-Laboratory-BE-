@@ -46,6 +46,15 @@ public class AuditLogService {
         logActionWithStatus("WRITE", operationName, resourceType, resourceId, ipAddress, userAgent, null, status);
     }
 
+    public void logSystemEvent(String operationName, String resourceType, String resourceId,
+                               List<AuditLog.FieldChange> changes, String outcome) {
+        AuditLog.Status status = AuditLog.Status.builder()
+                .outcome(outcome != null ? outcome : "SUCCESS")
+                .build();
+
+        logSystemActionWithStatus("WRITE", operationName, resourceType, resourceId, changes, status);
+    }
+
     public List<AuditLog.FieldChange> createFieldChanges(String fieldName, Object oldValue, Object newValue) {
         List<AuditLog.FieldChange> changes = new ArrayList<>();
         String oldValueStr = oldValue != null ? oldValue.toString() : "null";
@@ -97,5 +106,38 @@ public class AuditLogService {
 
         cloudWatchAuditLogger.log(auditLog);
     }
-}
 
+    private void logSystemActionWithStatus(String actionType, String operationName, String resourceType, String resourceId,
+                                           List<AuditLog.FieldChange> changes, AuditLog.Status status) {
+        ActorContext actor = actorProvider.getCurrentActor();
+
+        AuditLog auditLog = AuditLog.builder()
+                .timestamp(Instant.now())
+                .actor(AuditLog.Actor.builder()
+                        .type("SYSTEM")
+                        .id("system")
+                        .username("system")
+                        .principal("auto-delete-job")
+                        .build())
+                .source(AuditLog.Source.builder()
+                        .service("instrument-service")
+                        .ipAddress("system")
+                        .userAgent("auto-delete-job")
+                        .correlationId("cor-" + UUID.randomUUID())
+                        .build())
+                .action(AuditLog.Action.builder()
+                        .type(actionType)
+                        .operation(operationName)
+                        .name(operationName)
+                        .build())
+                .resource(AuditLog.Resource.builder()
+                        .type(resourceType)
+                        .id(resourceId)
+                        .build())
+                .status(status)
+                .changes(changes)
+                .build();
+
+        cloudWatchAuditLogger.logSystemEvent(auditLog);
+    }
+}

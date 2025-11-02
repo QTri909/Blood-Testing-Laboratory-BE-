@@ -1,9 +1,11 @@
 package sum25.group03.testorderservice.services.interfaces;
 
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
+import sum25.group03.testorderservice.dtos.response.CreationTestOrderResponse;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
+import sum25.group03.testorderservice.dtos.response.TestOrderResponseForInstrument;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 
 import java.util.List;
@@ -26,4 +28,6 @@ public interface TestOrderService{
     List<TestOrderResponseDTO> getTestOrdersByStatus(TestOrderStatus status);
     TestOrderResponseDTO updateTestOrderStatus(Long id, TestOrderStatus status, Long updatedBy);
     List<TestOrderResponseDTO> getTestOrdersByCreatedBy(Long createdBy);
+    TestOrderResponseForInstrument findLatestByBarcode(String barcode);
+    CreationTestOrderResponse createTestOrderForExternalSystem(String barcode);
 }

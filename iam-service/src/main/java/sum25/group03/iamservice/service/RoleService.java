@@ -10,4 +10,5 @@ public interface RoleService {
     RoleResponse updateRolePermissions(Long roleId, List<Long> privilegeIds);
     void cascadeRolePermissionChanges(Long roleId);
     void deleteRoleIfUnused(Long roleId);
+    List<RoleResponse> getAllRoles();
 }

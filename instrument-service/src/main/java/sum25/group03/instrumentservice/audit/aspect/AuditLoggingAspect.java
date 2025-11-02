@@ -9,11 +9,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import sum25.group03.instrumentservice.audit.model.AuditLog;
 import sum25.group03.instrumentservice.audit.service.AuditLogService;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Aspect
