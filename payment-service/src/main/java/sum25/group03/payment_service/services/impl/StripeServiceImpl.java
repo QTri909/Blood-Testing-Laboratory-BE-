@@ -62,14 +62,14 @@ public class StripeServiceImpl implements IStripeService {
         params.put("currency", currency);
         params.put("automatic_payment_methods", Map.of("enabled", true));
 
-        String orderCode = "1"; // TODO: This should be 'real' test order from order service, datatype must be UUID
-        Long userId = 1L;       // TODO: This should be 'real' test user from iam service/test order service
+        String orderCode = "1"; // TODO: grpc call from test-order service to get 'real' order code, userId
+        Long userId = 1L;
         StandardCurrency standardCurrency = StandardCurrency.valueOf(currency.toUpperCase());
         PaymentRequest paymentRequest = new PaymentRequest(orderCode, userId, Double.valueOf(amount), standardCurrency , PaymentRequestStatus.PENDING, LocalDateTime.now(), LocalDateTime.now(), paymentProvider);
         paymentRequestRepository.saveAndFlush(paymentRequest);
 
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("payment_request_id", paymentRequest.getId()); // TODO: payment request id should be UUID, convert it to string then cast back later
+        metadata.put("payment_request_id", paymentRequest.getId());
         params.put("metadata", metadata);
 
         log.info("Creating PaymentIntent with amount: {} {}", amount, currency);
@@ -89,6 +89,10 @@ public class StripeServiceImpl implements IStripeService {
     }
 
     public void processEvent(Event event) {
+
+        final String PAYMENT_INTENT_SUCCEED = "payment_intent.succeeded";
+        final String PAYMENT_INTENT_FAILED = "payment_intent.payment_failed";
+
         log.info("Received event type: {}", event.getType());
         Map<String, Object> rawResponse;
         try {
@@ -100,10 +104,10 @@ public class StripeServiceImpl implements IStripeService {
             return;
         }
         switch (event.getType()) {
-            case "payment_intent.succeeded": // TODO: use final static strings instead of hardcoded strings
+            case PAYMENT_INTENT_SUCCEED:
                 handlePaymentSucceeded(rawResponse);
                 break;
-            case "payment_intent.payment_failed":
+            case PAYMENT_INTENT_FAILED:
                 handlePaymentFailed(rawResponse);
                 break;
             default:
@@ -132,7 +136,7 @@ public class StripeServiceImpl implements IStripeService {
         if (metadata == null) {
             throw new EntityNotFoundException("Metadata is missing");
         }
-        String paymentRequestId = (String) metadata.get("payment_request_id"); // TODO: change to UUID if possible
+        String paymentRequestId = (String) metadata.get("payment_request_id");
         if (paymentRequestId == null) {
             throw new EntityNotFoundException("payment_request_id is missing in metadata");
         }

@@ -23,10 +23,10 @@ public class PaymentRequest implements Serializable {
     @Id
     @UuidGenerator
     @Column(name = "id", unique = true, updatable = false, nullable = false)
-    private String id; // TODO: change to UUID if possible
+    private String id;
 
-    @Column(name = "order_code", nullable = false) // TODO: change to UUID if possible
-    private String orderCode; // reference to the order being paid
+    @Column(name = "order_code", nullable = false)
+    private String orderCode; // reference to the order being paid - uuid string
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
