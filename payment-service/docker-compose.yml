@@ -14,7 +14,8 @@ services:
       - patient_volume:/var/lib/postgresql/data
     networks:
       - payment-network
-  redis-payment-service: # TODO: edit here after merging code, already has this service.
+
+  redis-payment-service:
     image: redis:7.2-alpine
     container_name: redis_payment_cache
     ports:
