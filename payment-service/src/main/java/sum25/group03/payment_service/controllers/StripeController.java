@@ -31,10 +31,10 @@ public class StripeController {
             Map<String, Object> response = stripeService.createPaymentIntent(amount, currency);
             return ResponseEntity.ok(response);
         } catch (StripeException e) {
-            log.error(e.getMessage());
+            log.error("Stripe exception create-payment-intent(): {}", e.getMessage());
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            log.error(e.getMessage());
+            log.error("Stripe common create-payment-intent(): {}", e.getMessage());
             return ResponseEntity.status(400).body(Map.of("error", "Invalid request data"));
         }
     }
