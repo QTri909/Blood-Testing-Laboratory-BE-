@@ -38,6 +38,9 @@ public class PaymentTransaction implements Serializable {
     @Enumerated(EnumType.STRING)
     private PaymentTransactionStatus status;
 
+    @Column(name = "gateway_status_code", length = 50)
+    private String gatewayStatusCode;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb", name = "raw_response")
     private Map<String, Object> rawResponse;
@@ -54,5 +57,14 @@ public class PaymentTransaction implements Serializable {
     private void prePersist() {
         if (this.status == null)
             this.status = PaymentTransactionStatus.PENDING;
+    }
+
+    public PaymentTransaction(PaymentRequest paymentRequest, String gatewayTransactionId, PaymentTransactionStatus status, Map<String, Object> rawResponse, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.paymentRequest = paymentRequest;
+        this.gatewayTransactionId = gatewayTransactionId;
+        this.status = status;
+        this.rawResponse = rawResponse;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 }
