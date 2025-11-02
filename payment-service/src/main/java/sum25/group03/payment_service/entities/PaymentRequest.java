@@ -26,7 +26,7 @@ public class PaymentRequest implements Serializable {
     private String id;
 
     @Column(name = "order_code", nullable = false)
-    private String orderCode; // reference to the order being paid
+    private String orderCode; // reference to the order being paid - uuid string
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
@@ -59,5 +59,16 @@ public class PaymentRequest implements Serializable {
     public void prePersist() {
         if (this.status == null)
             this.status = PaymentRequestStatus.PENDING;
+    }
+
+    public PaymentRequest(String orderCode, Long userId, Double amount, StandardCurrency currency, PaymentRequestStatus status, LocalDateTime createdAt, LocalDateTime updatedAt, PaymentProvider paymentProvider) {
+        this.orderCode = orderCode;
+        this.userId = userId;
+        this.amount = amount;
+        this.currency = currency;
+        this.status = status;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.paymentProvider = paymentProvider;
     }
 }

@@ -58,4 +58,13 @@ public class PaymentTransaction implements Serializable {
         if (this.status == null)
             this.status = PaymentTransactionStatus.PENDING;
     }
+
+    public PaymentTransaction(PaymentRequest paymentRequest, String gatewayTransactionId, PaymentTransactionStatus status, Map<String, Object> rawResponse, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.paymentRequest = paymentRequest;
+        this.gatewayTransactionId = gatewayTransactionId;
+        this.status = status;
+        this.rawResponse = rawResponse;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 }
