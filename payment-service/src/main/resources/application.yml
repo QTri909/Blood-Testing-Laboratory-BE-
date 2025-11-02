@@ -1,4 +1,6 @@
 spring:
+
+# TODO: Already has this in main 'TEAM05' branch
 redis:
   host: ${REDIS_HOST:localhost}
   port: ${REDIS_PORT:6379}

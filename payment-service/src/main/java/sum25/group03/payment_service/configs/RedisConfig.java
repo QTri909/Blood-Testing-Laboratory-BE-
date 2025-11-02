@@ -20,6 +20,7 @@ import java.time.Duration;
 @EnableCaching
 public class RedisConfig {
 
+    // TODO: should follow main branch 'TEAM05-Patient-TestOrder' redis profile
     @Value("${spring.data.redis.host:localhost}")
     private String redisHost;
 
