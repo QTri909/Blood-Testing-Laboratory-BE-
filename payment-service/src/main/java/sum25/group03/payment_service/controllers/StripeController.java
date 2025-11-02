@@ -9,16 +9,14 @@ import org.springframework.web.bind.annotation.*;
 import sum25.group03.payment_service.services.impl.StripeServiceImpl;
 
 import java.util.Map;
-import java.util.logging.Logger;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = "http://localhost:5173") // TODO: remove this after merging
 @RestController
 @RequestMapping("/api/payments/stripe")
 @Slf4j
 public class StripeController {
 
     private final StripeServiceImpl stripeService;
-    private static final Logger logger = Logger.getLogger(StripeController.class.getName());
 
     public StripeController(StripeServiceImpl stripeService) {
         this.stripeService = stripeService;
@@ -33,10 +31,10 @@ public class StripeController {
             Map<String, Object> response = stripeService.createPaymentIntent(amount, currency);
             return ResponseEntity.ok(response);
         } catch (StripeException e) {
-            logger.severe("Stripe error: " + e.getMessage());
+            log.error(e.getMessage());
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            logger.severe("Internal error: " + e.getMessage());
+            log.error(e.getMessage());
             return ResponseEntity.status(400).body(Map.of("error", "Invalid request data"));
         }
     }

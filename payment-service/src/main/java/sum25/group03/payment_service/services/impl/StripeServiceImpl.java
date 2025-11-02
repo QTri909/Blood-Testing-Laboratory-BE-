@@ -27,23 +27,24 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.logging.Logger;
 
 @Service
 @Slf4j
 public class StripeServiceImpl implements IStripeService {
 
-    private static final Logger logger = Logger.getLogger(StripeServiceImpl.class.getName());
-
-    @Autowired
     private PaymentProviderRepository paymentProviderRepository;
-
-    @Autowired
     private PaymentTransactionRepository paymentTransactionRepository;
-
-    @Autowired
     private PaymentRequestRepository paymentRequestRepository;
+
+    public StripeServiceImpl(PaymentProviderRepository paymentProviderRepository,
+                             PaymentRequestRepository paymentRequestRepository,
+                             PaymentTransactionRepository paymentTransactionRepository)
+    {
+        this.paymentProviderRepository = paymentProviderRepository;
+        this.paymentRequestRepository = paymentRequestRepository;
+        this.paymentTransactionRepository = paymentTransactionRepository;
+
+    }
 
     @Value("${stripe.secret-key}")
     private String stripeSecretKey;
@@ -61,19 +62,19 @@ public class StripeServiceImpl implements IStripeService {
         params.put("currency", currency);
         params.put("automatic_payment_methods", Map.of("enabled", true));
 
-        String orderCode = "1";
-        Long userId = 1L;
+        String orderCode = "1"; // TODO: This should be 'real' test order from order service, datatype must be UUID
+        Long userId = 1L;       // TODO: This should be 'real' test user from iam service/test order service
         StandardCurrency standardCurrency = StandardCurrency.valueOf(currency.toUpperCase());
         PaymentRequest paymentRequest = new PaymentRequest(orderCode, userId, Double.valueOf(amount), standardCurrency , PaymentRequestStatus.PENDING, LocalDateTime.now(), LocalDateTime.now(), paymentProvider);
         paymentRequestRepository.saveAndFlush(paymentRequest);
 
         Map<String, String> metadata = new HashMap<>();
-        metadata.put("payment_request_id", paymentRequest.getId());
+        metadata.put("payment_request_id", paymentRequest.getId()); // TODO: payment request id should be UUID, convert it to string then cast back later
         params.put("metadata", metadata);
 
-        logger.info("Creating PaymentIntent with amount: " + amount + " " + currency);
+        log.info("Creating PaymentIntent with amount: {} {}", amount, currency);
 
-        PaymentIntent intent = PaymentIntent.create(params);
+        PaymentIntent intent = PaymentIntent.create(params); // create http request to stripe server
 
         return Map.of("clientSecret", intent.getClientSecret());
     }
@@ -99,7 +100,7 @@ public class StripeServiceImpl implements IStripeService {
             return;
         }
         switch (event.getType()) {
-            case "payment_intent.succeeded":
+            case "payment_intent.succeeded": // TODO: use final static strings instead of hardcoded strings
                 handlePaymentSucceeded(rawResponse);
                 break;
             case "payment_intent.payment_failed":
@@ -131,7 +132,7 @@ public class StripeServiceImpl implements IStripeService {
         if (metadata == null) {
             throw new EntityNotFoundException("Metadata is missing");
         }
-        String paymentRequestId = (String) metadata.get("payment_request_id");
+        String paymentRequestId = (String) metadata.get("payment_request_id"); // TODO: change to UUID if possible
         if (paymentRequestId == null) {
             throw new EntityNotFoundException("payment_request_id is missing in metadata");
         }
