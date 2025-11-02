@@ -1,6 +1,9 @@
 package sum25.group03.payment_service.services.interfaces;
 
-import sum25.group03.payment_service.dtos.*;
+import sum25.group03.payment_service.dtos.request.VNPayCreatePaymentRequest;
+import sum25.group03.payment_service.dtos.response.PaymentResponseDTO;
+import sum25.group03.payment_service.dtos.response.VNPayCreatePaymentResponse;
+
 import java.util.Map;
 
 public interface VNPayService {

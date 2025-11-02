@@ -6,7 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
-import sum25.group03.payment_service.dtos.*;
+import sum25.group03.payment_service.dtos.request.VNPayCreatePaymentRequest;
+import sum25.group03.payment_service.dtos.response.PaymentResponseDTO;
+import sum25.group03.payment_service.dtos.response.VNPayCreatePaymentResponse;
 import sum25.group03.payment_service.services.interfaces.VNPayService;
 
 import java.util.HashMap;

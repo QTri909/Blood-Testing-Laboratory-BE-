@@ -1,4 +1,4 @@
-package sum25.group03.payment_service.dtos;
+package sum25.group03.payment_service.dtos.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
