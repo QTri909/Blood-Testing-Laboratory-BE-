@@ -10,7 +10,6 @@ import sum25.group03.payment_service.services.impl.StripeServiceImpl;
 
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:5173") // TODO: remove this after merging
 @RestController
 @RequestMapping("/api/payments/stripe")
 @Slf4j
