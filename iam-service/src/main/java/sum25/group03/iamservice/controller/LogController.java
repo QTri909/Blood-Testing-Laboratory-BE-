@@ -5,6 +5,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,12 +25,14 @@ import java.util.List;
 public class LogController {
     private final AuditLogService auditLogService;
 
+    @PreAuthorize("hasAuthority('AUDIT_VIEW')")
     @GetMapping
     public ResponseEntity<List<AuditLogReponse>> getAuditLogs(String entityName, Long entityId) {
         List<AuditLogReponse> logs =auditLogService.getAuditLogs(entityName, entityId);
         return ResponseEntity.ok(logs);
     }
 
+    @PreAuthorize("hasAuthority('AUDIT_VIEW')")
     @GetMapping("/export")
     public ResponseEntity<InputStreamResource> exportLogs(
             @RequestParam String entityName,

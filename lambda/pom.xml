@@ -25,33 +25,42 @@
             <version>1.2.1</version>
         </dependency>
 
-        <!-- ✅ AWS Lambda Events (để nhận sự kiện Cognito) -->
+
+        <!--  AWS Lambda Events (để nhận sự kiện Cognito) -->
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-events</artifactId>
-            <version>3.12.0</version>
+            <version> 3.16.1</version> <!-- Hoặc version mới nhất -->
         </dependency>
 
-        <!-- ✅ Apache HttpClient5 để gọi API IAM Service -->
+        <!--  Apache HttpClient5 để gọi API IAM Service -->
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5-fluent</artifactId>
             <version>5.2</version>
         </dependency>
 
-        <!-- ✅ Jackson để xử lý JSON -->
+        <!--  Jackson để xử lý JSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.15.2</version>
         </dependency>
 
-        <!-- ✅ Log (tùy chọn, giúp debug tốt hơn trong Lambda) -->
+        <!--  Log (tùy chọn, giúp debug tốt hơn trong Lambda) -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>2.0.12</version>
         </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>cognitoidentityprovider</artifactId>
+            <version>2.23.3</version> <!-- hoặc version mới nhất -->
+        </dependency>
+
+
     </dependencies>
 
     <build>

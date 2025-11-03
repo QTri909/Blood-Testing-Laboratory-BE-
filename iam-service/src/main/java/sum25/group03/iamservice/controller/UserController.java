@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.dto.request.UserUpdateRequest;
@@ -24,6 +25,7 @@ public class UserController {
     private final UserService userService;
 
 
+    @PreAuthorize("hasAuthority('USER_UPDATE')")
     @PutMapping("/{id}")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable Long id,
@@ -33,6 +35,7 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasAuthority('USER_CREATE')")
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@RequestBody UserCreateRequest request) {
         UserResponse response = userService.createUser(request);
@@ -40,6 +43,7 @@ public class UserController {
     }
 
 
+    @PreAuthorize("hasAuthority('USER_LOCK')")
     @PatchMapping("/{id}/deactivate")
     public ResponseEntity<String> deactivateUser(@PathVariable Long id) {
         userService.deactivateUser(id);
@@ -47,12 +51,14 @@ public class UserController {
     }
 
 
+    @PreAuthorize("hasAuthority('USER_DELETE')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         return ResponseEntity.ok("User deleted successfully");
     }
 
+    @PreAuthorize("hasAuthority('USER_VIEW')")
     @GetMapping("/patients")
     public ResponseEntity<Page<UserResponse>> getAllPatients(
             @RequestParam(defaultValue = "0") int page,
@@ -62,6 +68,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllPatients(pageable));
     }
 
+    @PreAuthorize("hasAuthority('USER_VIEW')")
     @GetMapping
     public ResponseEntity<Page<UserResponse>> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
@@ -71,6 +78,7 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers(pageable));
     }
 
+    @PreAuthorize("hasAuthority('USER_VIEW')")
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         UserResponse response = userService.getUserById(id);

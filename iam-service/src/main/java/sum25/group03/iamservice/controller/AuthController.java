@@ -58,5 +58,12 @@ public class AuthController {
         return ResponseEntity.ok("Password has been reset successfully");
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(@RequestHeader("Authorization") String authHeader) {
+        String accessToken = authHeader.replace("Bearer ", "");
+        authService.logout(accessToken);
+        return ResponseEntity.ok("User logged out successfully");
+    }
+
 
 }
