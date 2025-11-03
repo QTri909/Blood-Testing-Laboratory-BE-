@@ -1,0 +1,28 @@
+package sum25.group03.patientservice.grpc;
+
+import lombok.RequiredArgsConstructor;
+import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.springframework.stereotype.Service;
+import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderDTO;
+import sum25.group03.patientservice.mapper.GrpcTestOrderMapper;
+
+@Service
+@RequiredArgsConstructor
+public class TestOrderGrpcClient {
+
+    private final GrpcTestOrderMapper testOrderMapper;
+
+    @GrpcClient("test-order-service")
+    private TestOrderServiceGrpc.TestOrderServiceBlockingStub blockingStub;
+
+    public GrpcTestOrderDTO getLatestTestOrderByPatientId(Long patientId) {
+
+        // send gRPC request and receive response
+        TestOrderResponse fetchedResponse = blockingStub.getLatestTestOrderByPatientId(
+                GetLatestTestOrderRequest.newBuilder().setPatientId(patientId).build()
+        );
+
+        // map response to DTO
+        return testOrderMapper.toDto(fetchedResponse);
+    }
+}

@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.patientservice.dtos.response.PatientResponseDTO;
+import sum25.group03.patientservice.grpc.TestOrderResponse;
+import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderDTO;
 import sum25.group03.patientservice.services.interfaces.PatientService;
 
 import java.util.List;
@@ -25,5 +27,17 @@ public class PatientController {
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) Integer page
     ) {
         return patientService.getAllPatientsWith(size, page);
+    }
+
+    @GetMapping("/test-orders/latest/{patientId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Object getPatientById(
+            @PathVariable(name = "patientId") Long patientId
+    ) {
+        GrpcTestOrderDTO searchedTestOrder = patientService.getLatestByPatientId(patientId);
+        if (searchedTestOrder == null) {
+            return "No test order found for patient with ID: " + patientId;
+        }
+        return searchedTestOrder;
     }
 }

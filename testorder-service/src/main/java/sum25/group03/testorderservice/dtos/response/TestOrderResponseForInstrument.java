@@ -5,6 +5,7 @@ import sum25.group03.testorderservice.enums.TestOrderStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
@@ -16,7 +17,7 @@ public class TestOrderResponseForInstrument {
 
     private Long externalMedicalRecordId;
 
-    private String code;
+    private UUID code;
 
     private Long patientId;
 
