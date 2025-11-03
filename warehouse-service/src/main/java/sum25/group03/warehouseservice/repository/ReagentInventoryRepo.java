@@ -21,4 +21,6 @@ public interface ReagentInventoryRepo extends JpaRepository<ReagentInventory, Lo
         WHERE ri.reagent.reagentId = :reagentId
     """)
     Integer getTotalQuantityByReagentId(@Param("reagentId") Long reagentId);
+
+    Optional<ReagentInventory> findByReagentIdAndLotNumber(Long reagentId, String lotNumber);
 }

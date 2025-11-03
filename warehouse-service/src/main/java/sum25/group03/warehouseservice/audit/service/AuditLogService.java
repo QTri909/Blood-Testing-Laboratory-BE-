@@ -118,6 +118,12 @@ public class AuditLogService {
     public void logWrite(String activateInstrument, String instrument, String string, String system, String s, String s1, Instrument instrument1) {
     }
 
+    public void logWrite(String operationName, String resourceType, String resourceId, String description) {
+        logAction("WRITE", operationName, resourceType, resourceId, "system", "N/A", null, "SUCCESS");
+        log.info("[AUDIT] {} on {}#{}: {}", operationName, resourceType, resourceId, description);
+    }
+
+
     private String calculateHash(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

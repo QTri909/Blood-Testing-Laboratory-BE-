@@ -11,4 +11,5 @@ import java.util.List;
 
 public interface ReagentHistoryUsageService {
     Page<ReagentRes> filterReagentsWithUsage(String name, Pageable pageable);
+    void useReagent(Long reagentId, double quantityUsed, Long userId, String lotNumber);
 }
