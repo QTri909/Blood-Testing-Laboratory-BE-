@@ -13,4 +13,6 @@ public interface AuthService {
 
     void forgotPassword(String email);
     void confirmForgotPassword(String email, String confirmationCode, String newPassword);
+
+    void logout(String accessToken);
 }

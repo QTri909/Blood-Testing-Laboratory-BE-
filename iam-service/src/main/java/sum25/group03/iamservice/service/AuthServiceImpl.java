@@ -206,5 +206,21 @@ public class AuthServiceImpl implements AuthService {
         cognitoClient.confirmForgotPassword(confirmRequest);
     }
 
+    @Override
+    public void logout(String accessToken) {
+        try {
+            // Đăng xuất user theo access token (client gọi /logout sẽ gửi token này)
+            GlobalSignOutRequest signOutRequest = GlobalSignOutRequest.builder()
+                    .accessToken(accessToken)
+                    .build();
+
+            cognitoClient.globalSignOut(signOutRequest);
+        } catch (NotAuthorizedException e) {
+            throw new RuntimeException("Invalid or expired access token");
+        } catch (Exception e) {
+            throw new RuntimeException("Logout failed: " + e.getMessage(), e);
+        }
+    }
+
 
 }
