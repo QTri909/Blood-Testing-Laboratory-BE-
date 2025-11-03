@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Detail</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+<div class="max-w-3xl mx-auto mt-10 bg-white shadow-lg rounded-lg p-6">
+  <a href="user-list.html" class="text-blue-600 hover:underline mb-4 inline-block">← Back to List</a>
+
+  <h1 class="text-2xl font-bold mb-6 text-blue-700">User Details</h1>
+
+  <div id="userDetails" class="space-y-3 text-gray-700 text-lg"></div>
+</div>
+
+<script>
+  const API_URL = "http://localhost:8080/api/v1/users";
+  const userId = new URLSearchParams(window.location.search).get("id");
+
+  async function loadUserDetail() {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const res = await fetch(`${API_URL}/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const user = await res.json();
+      renderUser(user);
+    } catch (err) {
+      console.error(err);
+      document.getElementById("userDetails").innerHTML =
+              "<p class='text-red-500'>❌ Unable to load user details.</p>";
+    }
+  }
+</script>
+</body>
+</html>

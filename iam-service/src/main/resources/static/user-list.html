@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+</head>
+
+<body class="bg-gray-100 text-gray-800">
+<div class="max-w-6xl mx-auto mt-10 bg-white shadow-lg rounded-lg p-6">
+    <h1 class="text-3xl font-bold mb-6 text-blue-700">User Management</h1>
+
+    <!-- Controls -->
+    <div class="flex flex-wrap items-center gap-4 mb-5">
+        <input
+                id="searchInput"
+                type="text"
+                placeholder="Search by name or email..."
+                class="border border-gray-300 rounded p-2 flex-1"
+        />
+        <select id="sortSelect" class="border border-gray-300 rounded p-2">
+            <option value="fullName">Sort by Name</option>
+            <option value="email">Sort by Email</option>
+        </select>
+        <select id="genderFilter" class="border border-gray-300 rounded p-2">
+            <option value="">All Genders</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+        <table class="w-full border-collapse border border-gray-200">
+            <thead class="bg-blue-100 text-left">
+            <tr>
+                <th class="border p-2">#</th>
+                <th class="border p-2">Full Name</th>
+                <th class="border p-2">Email</th>
+                <th class="border p-2">Phone</th>
+                <th class="border p-2">Gender</th>
+                <th class="border p-2">Roles</th>
+                <th class="border p-2 text-center">Action</th>
+            </tr>
+            </thead>
+            <tbody id="userTableBody" class="divide-y"></tbody>
+        </table>
+    </div>
+
+    <div id="statusText" class="text-center text-sm text-gray-500 mt-4"></div>
+</div>
+
+<script>
+    const API_URL = "http://localhost:8080/api/v1/users";
+    const LOGIN_URL = "http://localhost:8080/auth/login";
+
+    // 🧠 Tài khoản admin (tạm hardcode cho demo)
+    const adminAccount = {
+        email: "admin@system.com",
+        password: "Admin123!"
+    };
+
+    let users = [];
+
+    async function loginAndSaveToken() {
+        try {
+            const res = await fetch(LOGIN_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(adminAccount)
+            });
+            const data = await res.json();
+            if (data.accessToken) {
+                localStorage.setItem("accessToken", data.accessToken);
+                return data.accessToken;
+            } else {
+                throw new Error("Login failed");
+            }
+        } catch (err) {
+            console.error("Login error:", err);
+            document.getElementById("statusText").textContent =
+                "❌ Cannot authenticate as admin.";
+        }
+    }
+
+    async function loadUsers() {
+        try {
+            let token = localStorage.getItem("accessToken");
+            if (!token) token = await loginAndSaveToken();
+
+            const res = await fetch(`${API_URL}?page=0&size=1000`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!res.ok) throw new Error("Unauthorized or server error");
+            const data = await res.json();
+            users = data.content || data;
+            renderUsers();
+        } catch (error) {
+            console.error("Load users error:", error);
+            document.getElementById("statusText").textContent =
+                "❌ Cannot connect to backend or load data.";
+        }
+    }
+
+    function renderUsers() {
+        const tbody = document.getElementById("userTableBody");
+        const searchVal = document.getElementById("searchInput").value.toLowerCase();
+        const sortField = document.getElementById("sortSelect").value;
+        const gender = document.getElementById("genderFilter").value;
+
+        let filtered = users.filter(
+            (u) =>
+                (!gender || u.gender === gender) &&
+                ((u.fullName && u.fullName.toLowerCase().includes(searchVal)) ||
+                    (u.email && u.email.toLowerCase().includes(searchVal)))
+        );
+
+        filtered.sort((a, b) => (a[sortField] || "").localeCompare(b[sortField] || ""));
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = `
+          <tr><td colspan="7" class="text-center text-gray-500 p-4">No matching users found.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = filtered
+            .map(
+                (u, i) => `
+          <tr class="hover:bg-gray-50">
+            <td class="border p-2 text-center">${i + 1}</td>
+            <td class="border p-2 font-semibold">${u.fullName || "-"}</td>
+            <td class="border p-2">${u.email || "-"}</td>
+            <td class="border p-2">${u.phoneNumber || "-"}</td>
+            <td class="border p-2">${u.gender || "-"}</td>
+            <td class="border p-2">${u.roles ? Array.from(u.roles).join(", ") : "-"}</td>
+            <td class="border p-2 text-center">
+              <a href="user-detail.html?id=${u.id}"
+                 class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">View</a>
+            </td>
+          </tr>`
+            )
+            .join("");
+    }
+
+    window.onload = () => {
+        loadUsers();
+        document.getElementById("searchInput").addEventListener("input", renderUsers);
+        document.getElementById("sortSelect").addEventListener("change", renderUsers);
+        document.getElementById("genderFilter").addEventListener("change", renderUsers);
+    };
+</script>
+</body>
+</html>
