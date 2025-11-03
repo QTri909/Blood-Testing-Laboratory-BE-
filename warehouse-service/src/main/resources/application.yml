@@ -67,5 +67,5 @@ audit:
 #    bootstrap-servers: localhost:9092
 
 server:
-  port: 8082
+  port: 8086
 
