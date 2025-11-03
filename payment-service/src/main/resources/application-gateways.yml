@@ -2,8 +2,8 @@
 # for paypal gateway:
 payment:
   paypal:
-    client-id: ${PAYPAL_CLIENT_ID}
-    client-secret: ${PAYPAL_CLIENT_SECRET}
+    client-id: ${PAYPAL_CLIENT_ID:do_not_have_yet}
+    client-secret: ${PAYPAL_CLIENT_SECRET:do_not_have_yet}
     mode: sandbox
     api:
       base-url: https://api-m.sandbox.paypal.com
