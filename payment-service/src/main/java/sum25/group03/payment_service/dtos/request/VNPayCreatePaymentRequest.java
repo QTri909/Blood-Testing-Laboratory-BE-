@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sum25.group03.payment_service.enums.StandardCurrency;
+import sum25.group03.payment_service.enums.StandardPaymentLocale;
 
 @Data
 @AllArgsConstructor
@@ -16,10 +18,13 @@ public class VNPayCreatePaymentRequest {
     @NotBlank
     private String orderCode;
     @Min(1)
-    private long amount; // in VND
+    private Long amount; // in VND
     private String orderInfo;
     private String bankCode;
-    private String locale = "vn";
+    @NotNull
+    private StandardPaymentLocale locale;
+    @NotNull
+    private StandardCurrency currency;
     private boolean generateQRCode = false;
     private Integer qrWidth;
     private Integer qrHeight;
