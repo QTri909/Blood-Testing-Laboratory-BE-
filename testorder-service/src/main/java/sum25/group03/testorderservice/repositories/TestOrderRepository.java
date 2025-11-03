@@ -20,8 +20,6 @@ public interface TestOrderRepository extends JpaRepository<TestOrder,Long>, JpaS
 //    @EntityGraph(attributePaths = {"testResults.parameter", "comments"})
 //    Optional<TestOrder> findById(Long id);
 
+    Optional<TestOrder> findFirstByBarcodeOrderByCreatedAtDesc(String barcode);
     Optional<TestOrder> findTopByPatientIdOrderByCreatedAtDesc(Long patientId);
-
-
-
 }
