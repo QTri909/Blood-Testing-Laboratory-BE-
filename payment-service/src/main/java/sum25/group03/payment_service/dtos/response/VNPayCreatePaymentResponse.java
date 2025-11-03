@@ -1,4 +1,4 @@
-package sum25.group03.payment_service.dtos;
+package sum25.group03.payment_service.dtos.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
