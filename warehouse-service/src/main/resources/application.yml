@@ -10,9 +10,9 @@ spring:
   application:
     name: warehouse-service
   datasource:
-#      url: jdbc:postgresql://${POSTGRESQL_HOST}:5432/${DB_NAME}
-#      username: ${DB_USER}
-#      password: ${DB_PASSWORD}
+#      url: jdbc:postgresql://localhost:5432/warehouse
+#      username: postgres
+#      password: 123456
 #      driver-class-name: org.postgresql.Driver
 
     url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
