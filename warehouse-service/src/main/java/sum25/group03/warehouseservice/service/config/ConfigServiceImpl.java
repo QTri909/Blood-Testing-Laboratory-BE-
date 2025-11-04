@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.exception.ResourceNotFoundException;
 import sum25.group03.warehouseservice.dto.request.ConfigReq;
 import sum25.group03.warehouseservice.dto.request.UpdateConfigReq;
 import sum25.group03.warehouseservice.dto.response.ConfigRes;

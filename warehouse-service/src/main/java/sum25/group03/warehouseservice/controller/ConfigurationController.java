@@ -12,6 +12,8 @@ import sum25.group03.warehouseservice.dto.response.ConfigRes;
 import sum25.group03.warehouseservice.dto.response.PageRes;
 import sum25.group03.warehouseservice.service.config.ConfigService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/configurations")
 @RequiredArgsConstructor
@@ -41,12 +43,12 @@ public class ConfigurationController {
         return ResponseEntity.ok(configService.getAllConfig(page, size));
     }
     @GetMapping("search")
-    public ApiResponse<PageRes<ConfigRes>> searchConfigs(
+    public ApiResponse<?> searchConfigs(
             @RequestParam(required = false) String key,
             @RequestParam(required = false) String value,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ApiResponse.ok(configService.searchConfigs(key, value, page, size));
+        return ApiResponse.add("Search results", configService.searchConfigs(key, value, page, size));
     }
 
 }
