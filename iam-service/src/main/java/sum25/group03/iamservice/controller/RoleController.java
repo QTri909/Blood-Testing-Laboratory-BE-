@@ -1,9 +1,12 @@
 package sum25.group03.iamservice.controller;
 
+
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
 import sum25.group03.iamservice.dto.request.RoleCreateRequest;
 import sum25.group03.iamservice.dto.response.RoleResponse;
 import sum25.group03.iamservice.service.RoleService;
@@ -20,30 +23,44 @@ public class RoleController {
 
     @PreAuthorize("hasAuthority('ROLE_CREATE')")
     @PostMapping
-    public ResponseEntity<RoleResponse> createRole(@RequestBody RoleCreateRequest request) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<RoleResponse> createRole(@RequestBody RoleCreateRequest request) {
         RoleResponse response = roleService.createRole(request);
-        return ResponseEntity.ok(response);
+        return ApiResponse.data(response)
+                .message("Role created successfully")
+                .build();
     }
 
     @PreAuthorize("hasAuthority('ROLE_ASSIGN_PRIVILEGE')")
     @PutMapping("/{id}/permissions")
-    public ResponseEntity<RoleResponse> updateRolePermissions(
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<RoleResponse> updateRolePermissions(
             @PathVariable Long id,
             @RequestBody List<Long> privilegeIds) {
-        return ResponseEntity.ok(roleService.updateRolePermissions(id, privilegeIds));
+
+        RoleResponse updatedRole = roleService.updateRolePermissions(id, privilegeIds);
+        return ApiResponse.data(updatedRole)
+                .message("Role privileges updated successfully")
+                .build();
     }
 
     @PreAuthorize("hasAuthority('ROLE_DELETE')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteIfUnused(@PathVariable Long id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ApiResponse<String> deleteIfUnused(@PathVariable Long id) {
         roleService.deleteRoleIfUnused(id);
-        return ResponseEntity.ok("Role deleted successfully if unused");
+        return ApiResponse.data("Role deleted successfully if unused")
+                .message("Deletion completed")
+                .build();
     }
 
     @PreAuthorize("hasAuthority('ROLE_VIEW')")
     @GetMapping
-    public ResponseEntity<List<RoleResponse>> getAllRoles() {
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<RoleResponse>> getAllRoles() {
         List<RoleResponse> roles = roleService.getAllRoles();
-        return ResponseEntity.ok(roles);
+        return ApiResponse.data(roles)
+                .message("Roles retrieved successfully")
+                .build();
     }
 }
