@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.patientservice.dtos.response.PatientResponseDTO;
-import sum25.group03.patientservice.grpc.TestOrderResponse;
+//import sum25.group03.patientservice.grpc.TestOrderResponse;
 import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderDTO;
 import sum25.group03.patientservice.services.interfaces.PatientService;
 

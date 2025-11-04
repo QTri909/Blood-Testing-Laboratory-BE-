@@ -173,7 +173,11 @@
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
-
+        <dependency>
+            <groupId>sum25.group03</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
