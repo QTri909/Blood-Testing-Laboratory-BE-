@@ -26,6 +26,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>sum25.group03</groupId>
+            <artifactId>common</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
         <!-- 🌐 SPRING BOOT CORE -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

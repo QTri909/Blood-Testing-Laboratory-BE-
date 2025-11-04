@@ -25,10 +25,10 @@ public class PayPalServiceImpl implements PayPalService {
     @Value("${paypal.api.base-url:https://api-m.sandbox.paypal.com}")
     private String baseUrl;
 
-    @Value("${paypal.client-id}")
+    @Value("${payment.paypal.client-id}")
     private String clientId;
 
-    @Value("${paypal.client-secret}")
+    @Value("${payment.paypal.client-secret}")
     private String clientSecret;
 
     /**
