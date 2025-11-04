@@ -22,5 +22,5 @@ public interface ReagentUsageRepo extends JpaRepository<ReagentHistoryUsage, Lon
     @Query("SELECT rhu FROM ReagentHistoryUsage rhu WHERE rhu.instrument.instrumentId = :id")
     List<ReagentHistoryUsage> findAllByInstrument(@Param("id") Long instrumentId);
 
-    List<ReagentHistoryUsage> findTop3ByReagentOrderByUsedAtDesc(Reagents reagent);
+    List<ReagentHistoryUsage> findAllByReagentOrderByUsedAtDesc(Reagents reagent);
 }

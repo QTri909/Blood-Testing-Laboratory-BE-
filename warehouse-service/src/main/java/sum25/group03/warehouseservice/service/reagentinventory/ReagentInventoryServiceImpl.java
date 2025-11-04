@@ -19,7 +19,7 @@ public class ReagentInventoryServiceImpl implements ReagentInventoryService {
     @Override
     public void decreaseQuantity(Long reagentId, String lotNumber, double quantityUsed) {
         ReagentInventory inventory = reagentInventoryRepo
-                .findByReagentIdAndLotNumber(reagentId, lotNumber)
+                .findByReagent_ReagentIdAndLotNumber(reagentId, lotNumber)
                 .orElseThrow(() -> new ResourceNotFoundException("Reagent lot not found"));
 
         if (inventory.getQuantityAvailable() < quantityUsed) {

@@ -1,11 +1,13 @@
 package sum25.group03.warehouseservice.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.warehouseservice.dto.request.ReagentUsageReq;
 import sum25.group03.warehouseservice.dto.response.ReagentRes;
 import sum25.group03.warehouseservice.dto.response.ReagentUsageDetailResponse;
 import sum25.group03.warehouseservice.dto.response.ReagentUsagePageResponse;
@@ -32,13 +34,8 @@ public class ReagentHistoryUsageController {
     }
 
     @PostMapping("/use")
-    public ResponseEntity<String> useReagent(
-            @RequestParam Long reagentId,
-            @RequestParam double quantity,
-            @RequestParam Long userId,
-            @RequestParam String lotNumber) {
-
-        usageService.useReagent(reagentId, quantity, userId, lotNumber);
+    public ResponseEntity<String> useReagent(@Valid @RequestBody ReagentUsageReq request) {
+        usageService.useReagent(request);
         return ResponseEntity.ok("Usage recorded successfully and logged.");
     }
 }
