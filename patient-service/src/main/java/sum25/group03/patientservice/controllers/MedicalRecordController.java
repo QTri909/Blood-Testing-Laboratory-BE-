@@ -4,8 +4,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
 import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
@@ -26,24 +26,26 @@ public class MedicalRecordController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public MedicalRecordResponse registerMedicalRecord(@Valid @RequestBody MedicalRecordRequest medicalRecordRequest) {
-        return medicalRecordService.registerMedicalRecord(medicalRecordRequest);
+    public ApiResponse<MedicalRecordResponse> registerMedicalRecord(@Valid @RequestBody MedicalRecordRequest medicalRecordRequest) {
+        return ApiResponse.add("Created", medicalRecordService.registerMedicalRecord(medicalRecordRequest));
     }
 
     @PatchMapping("/assigned-doctor")
     @ResponseStatus(HttpStatus.OK)
-    public UpdatedAssignedDoctor updateAssignedDoctor(@Valid @RequestBody UpdatedAssignedDoctor updateInfo) {
-        return medicalRecordService.updateAssignedDoctor(updateInfo);
+    public ApiResponse<UpdatedAssignedDoctor> updateAssignedDoctor(@Valid @RequestBody UpdatedAssignedDoctor updateInfo) {
+        return ApiResponse.ok(medicalRecordService.updateAssignedDoctor(updateInfo));
     }
 
     @GetMapping
-    public ResponseEntity<List<MedicalRecordResponse>> getAll(@RequestParam Long viewerId) {
-        return ResponseEntity.ok(medicalRecordService.getAll(viewerId));
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<MedicalRecordResponse>> getAll(@RequestParam Long viewerId) {
+        return ApiResponse.ok(medicalRecordService.getAll(viewerId));
     }
 
     @GetMapping("/{recordId}")
-    public ResponseEntity<MedicalRecordResponse> getById(@PathVariable Long recordId, @RequestParam Long viewerId) {
-        return ResponseEntity.ok(medicalRecordService.getById(recordId, viewerId));
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<MedicalRecordResponse> getById(@PathVariable Long recordId, @RequestParam Long viewerId) {
+        return ApiResponse.ok(medicalRecordService.getById(recordId, viewerId));
     }
 
     @DeleteMapping("/{recordId}")

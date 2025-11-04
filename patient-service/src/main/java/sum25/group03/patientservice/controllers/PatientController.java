@@ -3,6 +3,7 @@ package sum25.group03.patientservice.controllers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
 import sum25.group03.patientservice.dtos.response.PatientResponseDTO;
 //import sum25.group03.patientservice.grpc.TestOrderResponse;
 import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderDTO;
@@ -22,22 +23,22 @@ public class PatientController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<PatientResponseDTO> getAllPatients(
+    public ApiResponse<List<PatientResponseDTO>> getAllPatients(
             @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) Integer size,
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) Integer page
     ) {
-        return patientService.getAllPatientsWith(size, page);
+        return ApiResponse.ok(patientService.getAllPatientsWith(size, page));
     }
 
     @GetMapping("/test-orders/latest/{patientId}")
     @ResponseStatus(HttpStatus.OK)
-    public Object getPatientById(
+    public ApiResponse<Object> getPatientById(
             @PathVariable(name = "patientId") Long patientId
     ) {
         GrpcTestOrderDTO searchedTestOrder = patientService.getLatestByPatientId(patientId);
         if (searchedTestOrder == null) {
-            return "No test order found for patient with ID: " + patientId;
+            return ApiResponse.ok("No test order found for patient with ID: " + patientId, null);
         }
-        return searchedTestOrder;
+        return ApiResponse.ok(searchedTestOrder);
     }
 }
