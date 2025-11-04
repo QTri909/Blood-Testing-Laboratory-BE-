@@ -1,0 +1,71 @@
+spring:
+  profiles:
+    active: dev
+#  devtools:
+#    add-properties:
+  restart:
+    enabled: false
+  livereload:
+    enabled: false
+  application:
+    name: warehouse-service
+  datasource:
+#      url: jdbc:postgresql://localhost:5432/warehouse
+#      username: postgres
+#      password: 123456
+#      driver-class-name: org.postgresql.Driver
+
+    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+    username: postgres.fbzcbprlsaavorceymyp
+    password: 123456
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      idle-timeout: 30000
+      max-lifetime: 60000
+      connection-timeout: 20000
+      validation-timeout: 5000
+      connection-test-query: SELECT 1
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: warehouse-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "*"
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+      retries: 3
+      properties:
+        spring.json.add.type.headers: false
+aws:
+  region: ap-southeast-1
+  access-key-id: AKIA3RDIYFHPZTTDJPN3
+  secret-key-secret: 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
+audit:
+  cloudwatch:
+    log-group: warehouse-service
+    enabled: true
+
+#  kafka:
+#    bootstrap-servers: localhost:9092
+
+server:
+  port: 8086
+

@@ -1,0 +1,45 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  devtools:
+    add-properties: true
+  datasource:
+#      url: jdbc:postgresql://localhost:5432/instrument
+#      username: postgres
+#      password: 123456
+#      driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+
+    username: postgres.optgwypzavmomcarviwh
+    password: 123456
+    driver-class-name: org.postgresql.Driver
+
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 1
+      idle-timeout: 30000
+      max-lifetime: 60000
+      connection-timeout: 20000
+      validation-timeout: 5000
+      connection-test-query: SELECT 1
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+openapi:
+  service:
+    api-docs: instrument-service
+    server: http://localhost:${server.port}
+    title: Instrument backend service
+    version: 1.0.0
+
