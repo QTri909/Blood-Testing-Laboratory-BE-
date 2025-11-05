@@ -7,6 +7,7 @@ import sum25.group03.iamservice.dto.request.LoginRequest;
 import sum25.group03.iamservice.dto.request.RefreshTokenRequest;
 import sum25.group03.iamservice.dto.response.LoginResponse;
 import sum25.group03.iamservice.entity.User;
+import sum25.group03.iamservice.event.PasswordChangedEvent;
 import sum25.group03.iamservice.repository.UserRepository;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
@@ -24,6 +25,8 @@ public class AuthServiceImpl implements AuthService {
     private final CognitoIdentityProviderClient cognitoClient;
     private final UserRepository userRepository;
     private final SecretService secretService;
+    private final KafkaProducerService kafkaProducerService;
+
 
     private final String secretName = "IAMService/CognitoConfig";
 
@@ -151,6 +154,20 @@ public class AuthServiceImpl implements AuthService {
                     .previousPassword(oldPassword)
                     .proposedPassword(newPassword)
             );
+            try {
+                User user = userRepository.findAll().stream()
+                        .filter(u -> u.getEmail() != null && u.getEmail().equalsIgnoreCase("unknown")) // không resolve từ token được
+                        .findFirst()
+                        .orElse(null);
+
+                PasswordChangedEvent event = new PasswordChangedEvent(
+                        user != null ? user.getId() : null,
+                        user != null ? user.getEmail() : "unknown",
+                        LocalDateTime.now().toString()
+                );
+                kafkaProducerService.sendPasswordChanged(event);
+            } catch (Exception ignored) {
+            }
         } catch (CognitoIdentityProviderException e) {
             throw new RuntimeException("Change password failed: " + e.awsErrorDetails().errorMessage());
         }
