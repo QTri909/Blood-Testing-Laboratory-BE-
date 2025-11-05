@@ -51,10 +51,23 @@
         <band height="60">
             <textField>
                 <reportElement x="0" y="10" width="555" height="20"/>
+                <textElement>
+                    <font fontName="DejaVu Sans"
+                          pdfFontName="fonts/DejaVuSans.ttf"
+                          pdfEncoding="Identity-H"
+                          isPdfEmbedded="true"/>
+                </textElement>
                 <textFieldExpression><![CDATA["Test Order Detail for " + ($P{PATIENT_NAME} != null ? $P{PATIENT_NAME} : "")]]></textFieldExpression>
             </textField>
             <textField>
                 <reportElement x="0" y="35" width="555" height="20"/>
+
+                <textElement>
+                    <font fontName="DejaVu Sans"
+                          pdfFontName="fonts/DejaVuSans.ttf"
+                          pdfEncoding="Identity-H"
+                          isPdfEmbedded="true"/>
+                </textElement>
                 <textFieldExpression><![CDATA["Date: " + ($P{REPORT_DATE} != null ? $P{REPORT_DATE} : "")]]></textFieldExpression>
             </textField>
         </band>
@@ -75,6 +88,12 @@
 
             <textField>
                 <reportElement x="0" y="45" width="300" height="18"/>
+                <textElement>
+                    <font fontName="DejaVu Sans"
+                          pdfFontName="fonts/DejaVuSans.ttf"
+                          pdfEncoding="Identity-H"
+                          isPdfEmbedded="true"/>
+                </textElement>
                 <textFieldExpression><![CDATA["Patient: " + ($F{patientName} != null ? $F{patientName} : "")]]></textFieldExpression>
             </textField>
 
@@ -92,7 +111,10 @@
             <textField>
                 <reportElement x="0" y="105" width="555" height="18"/>
                 <textFieldExpression><![CDATA["Created By: " + ($F{createdBy} != null ? $F{createdBy}.toString() : "")
-                + " | Created On: " + ($F{createdAt} != null ? $F{createdAt}.toString() : "")]]></textFieldExpression>
+                + " | Created On: " + ($F{createdAt} != null
+                     ? new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+                    .format(java.sql.Timestamp.valueOf($F{createdAt}))
+                    : "")]]></textFieldExpression>
             </textField>
 
             <textField>
@@ -103,6 +125,12 @@
 
             <textField>
                 <reportElement x="0" y="145" width="555" height="18"/>
+                <textElement>
+                    <font fontName="DejaVu Sans"
+                          pdfFontName="fonts/DejaVuSans.ttf"
+                          pdfEncoding="Identity-H"
+                          isPdfEmbedded="true"/>
+                </textElement>
                 <textFieldExpression><![CDATA["Order Comments: " + ($F{orderComments} != null ? $F{orderComments} : "")]]></textFieldExpression>
             </textField>
         </band>
@@ -201,6 +229,12 @@
                         <c:detailCell height="20">
                             <textField textAdjust="StretchHeight">
                                 <reportElement x="0" y="0" width="225" height="20"/>
+                                <textElement>
+                                    <font fontName="DejaVu Sans"
+                                          pdfFontName="fonts/DejaVuSans.ttf"
+                                          pdfEncoding="Identity-H"
+                                          isPdfEmbedded="true"/>
+                                </textElement>
                                 <textFieldExpression><![CDATA[$F{commentTexts} != null ? $F{commentTexts} : ""]]></textFieldExpression>
                             </textField>
                         </c:detailCell>
