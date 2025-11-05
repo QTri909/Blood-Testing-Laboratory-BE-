@@ -1,15 +1,16 @@
 version: '3.8'
+
 services:
   iam-service:
     build:
-      context: ..                      # 👈 cho phép Docker thấy parent POM
+      context: ..                      # cho phép Docker thấy parent POM
       dockerfile: iam-service/Dockerfile
     container_name: iam-service
     image: iam-service:latest
     ports:
-      - "8081:8081"
+      - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://iam-db:5432/postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://iam.cjguysc2gq58.ap-southeast-2.rds.amazonaws.com:5432/postgres
       - SPRING_DATASOURCE_USERNAME=yoko
       - SPRING_DATASOURCE_PASSWORD=hoang229
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
@@ -19,7 +20,6 @@ services:
       - AWS_REGION=ap-southeast-2
     depends_on:
       - kafka
-      - iam-db
     networks:
       - app-network
 
@@ -38,27 +38,24 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       CLUSTER_ID: 'MkQkDjFzNTcwNTJENDM2Qk'
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
     networks:
       - app-network
 
-  iam-db:
-    image: postgres:16
-    container_name: iam-db
-    environment:
-      - POSTGRES_USER=yoko
-      - POSTGRES_PASSWORD=hoang229
-      - POSTGRES_DB=postgres
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
     ports:
-      - "5432:5432"
-    volumes:
-      - iam-data:/var/lib/postgresql/data
+      - "7070:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:29092
+    depends_on:
+      - kafka
     networks:
       - app-network
 
-volumes:
-  iam-data:
 
 networks:
   app-network:
     driver: bridge
-

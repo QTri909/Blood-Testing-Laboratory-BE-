@@ -163,6 +163,7 @@ public class UserServiceImpl implements UserService {
                     .collect(Collectors.toList());
 
             userRoleRepository.saveAll(userRoles);
+            user.setUserRoles(new HashSet<>(userRoles));
         }
 
         userRepository.save(user);

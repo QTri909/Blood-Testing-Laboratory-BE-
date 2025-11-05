@@ -1,5 +1,7 @@
 package sum25.group03.iamservice.config;
 
+import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -9,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
@@ -103,26 +106,49 @@ public class KafkaConfig {
         return new KafkaTemplate<>(passwordChangedProducerFactory());
     }
 
-//    @Bean
-//    public ConsumerFactory<String, ExternalEvent> externalEventConsumerFactory() {
-//        Map<String, Object> props = new HashMap<>();
-//        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-//        props.put(ConsumerConfig.GROUP_ID_CONFIG, "iam-service-group");
-//        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-//        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-//        props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-//        return new DefaultKafkaConsumerFactory<>(
-//                props,
-//                new StringDeserializer(),
-//                new JsonDeserializer<>(ExternalEvent.class, false)
-//        );
-//    }
-//
-//    @Bean(name = "externalEventListenerContainerFactory")
-//    public ConcurrentKafkaListenerContainerFactory<String, ExternalEvent> externalEventListenerContainerFactory() {
-//        ConcurrentKafkaListenerContainerFactory<String, ExternalEvent> factory =
-//                new ConcurrentKafkaListenerContainerFactory<>();
-//        factory.setConsumerFactory(externalEventConsumerFactory());
-//        return factory;
-//    }
+    @Bean
+    public KafkaAdmin kafkaAdmin(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
+        Map<String, Object> configs = new HashMap<>();
+        configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        return new KafkaAdmin(configs);
+    }
+
+    @Bean
+    public NewTopic userCreatedTopic() {
+        return TopicBuilder.name("iam.user.created")
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
+
+    @Bean
+    public NewTopic userUpdatedTopic() {
+        return TopicBuilder.name("iam.user.updated").partitions(3).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic userDeletedTopic() {
+        return TopicBuilder.name("iam.user.deleted").partitions(3).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic roleCreatedTopic() {
+        return TopicBuilder.name("iam.role.created").partitions(3).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic roleUpdatedTopic() {
+        return TopicBuilder.name("iam.role.updated").partitions(3).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic roleDeletedTopic() {
+        return TopicBuilder.name("iam.role.deleted").partitions(3).replicas(1).build();
+    }
+
+    @Bean
+    public NewTopic passwordChangedTopic() {
+        return TopicBuilder.name("iam.password.changed").partitions(3).replicas(1).build();
+    }
+
 }
