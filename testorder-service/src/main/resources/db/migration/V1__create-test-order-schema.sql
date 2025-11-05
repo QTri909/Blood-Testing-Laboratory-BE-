@@ -37,15 +37,17 @@ CREATE TABLE parameters (
                             createdBy BIGINT,
                             updatedBy BIGINT,
                             name VARCHAR(255) NOT NULL,
-                            param_code VARCHAR(255) NOT NULL UNIQUE,
+                            param_code VARCHAR(255) NOT NULL,
                             abbreviation VARCHAR(255),
                             description VARCHAR(255),
                             min DOUBLE PRECISION,
                             max DOUBLE PRECISION,
+                            gender VARCHAR(255) CHECK (gender IN ('FEMALE', 'MALE', 'BOTH')),
                             status VARCHAR(255) CHECK (status IN ('ACTIVE','INACTIVE','DEPRECATED','DELETED')),
                             unit VARCHAR(255) CHECK (unit IN (
                                                               'PERCENTAGE','CELSIUS','BPM','CELLS_PER_UL','MILLIONS_PER_UL','FL','PG','G_PER_DL'
-                                ))
+                                )),
+                            CONSTRAINT unique_param_code_per_gender UNIQUE (param_code, gender)
 );
 
 -- =========================================================
