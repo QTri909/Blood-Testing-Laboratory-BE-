@@ -4,6 +4,8 @@ payment:
   paypal:
     client-id: ${PAYPAL_CLIENT_ID}
     client-secret: ${PAYPAL_CLIENT_SECRET}
+    return-url: ${PAYPAL_RETURN_URL},
+    cancel-url: ${PAYPAL_CANCEL_URL}
     mode: sandbox
     api:
       base-url: https://api-m.sandbox.paypal.com
