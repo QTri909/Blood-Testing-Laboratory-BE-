@@ -68,6 +68,7 @@ public class Hl7Parser {
         TestResultStatus status = TestResultStatus.COMPLETED;
 
         String orderCode = obr.getPlacerOrderNumber().getEntityIdentifier().getValue();
+        System.out.println("OrderCode: " + orderCode);
         TestOrder testOrder = testOrderRepository.findById(Long.valueOf(orderCode))
                 .orElseThrow(() -> new HL7Exception("Test Order Not Found"));
         Parameter parameter = parameterRepository.findByAbbreviation(testCode);
@@ -86,18 +87,7 @@ public class Hl7Parser {
              flagStatus = FlagStatus.H;
          }
 
-        return TestResult.builder()
-                .testOrder(testOrder)
-                .instrumentId(instrumentId)
-                .parameterSnapshotId(parameterSnapshotId)
-                .flagStatus(flagStatus)
-                .status(status)
-                .value(value)
-                .createdAt(createdAt)
-                .updatedAt(LocalDateTime.now())
-                .testType(testType)
-                .parameter(parameter)
-                .build();
+        return new TestResult(testOrder, instrumentId, parameterSnapshotId, flagStatus, status, value, LocalDateTime.now(), LocalDateTime.now(), testType, parameter);
     }
 }
 

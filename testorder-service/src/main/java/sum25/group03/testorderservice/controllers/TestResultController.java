@@ -5,10 +5,13 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
+import sum25.group03.testorderservice.services.impl.CohereServiceImpl;
 import sum25.group03.testorderservice.services.interfaces.TestResultService;
 
 @RestController
@@ -19,6 +22,9 @@ public class TestResultController {
 
     @Autowired
     private TestResultService testResultService;
+
+    @Autowired
+    private CohereServiceImpl cohereService;
 
     @PostMapping("/review-test-result")
     public ResponseEntity<?> reviewTestResult(
@@ -70,5 +76,10 @@ public class TestResultController {
         return ResponseEntity.ok(responses);
     }
 
-
+    @PostMapping("/{id}/ai-review")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<?> aiReview(@PathVariable Long id) {
+        String reviewed = cohereService.jugeReview(id);
+        return ApiResponse.ok("AI reviewed successfully",reviewed);
+    }
 }

@@ -54,7 +54,7 @@ public class TestResult {
     private TestType testType;
 
     @ManyToOne(
-            fetch = FetchType.LAZY, // Lazy loading for better performance
+            fetch = FetchType.EAGER, // Lazy loading for better performance
             optional = false // Make the relationship mandatory
     )
     @JoinColumn(name = "parameter_id", nullable = false)
@@ -71,8 +71,23 @@ public class TestResult {
     @OneToMany(mappedBy = "testResult")
     private List<Comment> comments;
 
-    // 1 synced configuration can be associated with many test results
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "configuration_id")
     private SyncedConfiguration syncedConfiguration;
+
+    @Column(name = "review", columnDefinition = "TEXT")
+    private String review;
+
+    public TestResult(TestOrder testOrder, Long instrumentId, Long parameterSnapshotId, FlagStatus flagStatus, TestResultStatus status, Double value, LocalDateTime createdAt, LocalDateTime updatedAt, TestType testType, Parameter parameter) {
+        this.testOrder = testOrder;
+        this.instrumentId = instrumentId;
+        this.parameterSnapshotId = parameterSnapshotId;
+        this.flagStatus = flagStatus;
+        this.status = status;
+        this.value = value;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.testType = testType;
+        this.parameter = parameter;
+    }
 }
