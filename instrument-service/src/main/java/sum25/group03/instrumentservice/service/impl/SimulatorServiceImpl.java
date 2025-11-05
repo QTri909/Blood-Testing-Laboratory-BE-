@@ -80,6 +80,21 @@ public class SimulatorServiceImpl implements SimulatorService {
                 throw new InsufficientReagentException(
                         "Insufficient reagent volume for barcode: " + request.getBarcode());
             }
+            final String BARCODE_REGEX = "^BC-\\d{6}$";
+
+            if (request.getBarcode() == null || request.getBarcode().isEmpty() ) {
+                String errorMessage = "Barcode is null or empty";
+                publishFailureEvent(request, "NULL_OR_EMPTY_BARCODE",testOrderResponse.getId());
+                throw new RuntimeException(errorMessage);
+
+            }
+            if(!Pattern.matches(BARCODE_REGEX, request.getBarcode())){
+                String errorMessage = "Invalid barcode format: " + request.getBarcode();
+                log.warn(errorMessage);
+                publishFailureEvent(request, "INVALID_BARCODE_FORMAT",testOrderResponse.getId());
+                throw new RuntimeException(errorMessage);
+            }
+
             testOrderResponse =
                     testOrderServiceClient.getTestOrderByBarcode(request.getBarcode());
             if(testOrderResponse==null){
@@ -95,27 +110,8 @@ public class SimulatorServiceImpl implements SimulatorService {
 
             }
 
-            final String BARCODE_REGEX = "^BC-\\d{6}$";
-
-            if (request.getBarcode() == null || request.getBarcode().isEmpty() ) {
-                String errorMessage = "Barcode is null or empty";
-                publishFailureEvent(request, "NULL_OR_EMPTY_BARCODE",testOrderResponse.getId());
-                throw new RuntimeException(errorMessage);
-
-            }
-
-            if(!Pattern.matches(BARCODE_REGEX, request.getBarcode())){
-                String errorMessage = "Invalid barcode format: " + request.getBarcode();
-                log.warn(errorMessage);
-                publishFailureEvent(request, "INVALID_BARCODE_FORMAT",testOrderResponse.getId());
-                throw new RuntimeException(errorMessage);
-            }
-
-
-
             long simulationTime = 15_000 + (long) (Math.random() * 5_000);
             Thread.sleep(simulationTime);
-
 
             for(ReagentResponse reagentResponse: listReagentResponses){
                 Double usageVolume = reagentResponse.getUsageMax()+ reagentResponse.getUsageMin()*rand.nextDouble();

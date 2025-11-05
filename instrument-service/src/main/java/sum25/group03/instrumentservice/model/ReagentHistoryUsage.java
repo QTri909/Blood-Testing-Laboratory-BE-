@@ -20,8 +20,11 @@ public class ReagentHistoryUsage {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "reagent_batch_id")
-    private Integer reagentBatchId;
+    @Column(name = "lot_reagent_id")
+    private Integer lotReagentId;
+
+    @Column(name = "lot_number")
+    private Integer lotNumber;
 
     @Column(name = "volume_used")
     private Double volumeUsed;
