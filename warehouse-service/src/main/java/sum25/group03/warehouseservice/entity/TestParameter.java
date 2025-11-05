@@ -3,6 +3,8 @@ package sum25.group03.warehouseservice.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import sum25.group03.warehouseservice.entity.enums.Gender;
+import sum25.group03.warehouseservice.entity.enums.ParameterStatus;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,8 +28,23 @@ public class TestParameter {
     @Column(name = "abbreviation", nullable = false)
     private String abbreviation;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "gender")
+    private Gender gender;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    private ParameterStatus status;
+
+    @Column(name = "unit")
+    private  String unit;
+
     @Column(name = "normal_range", nullable = false, length = 512)
     private String normalRange;
+    @Column(name= "min_value")
+    private Double minValue;
+    @Column (name= "max_value")
+    private Double maxValue;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "global_config_id", nullable = false)
     @JsonIgnore

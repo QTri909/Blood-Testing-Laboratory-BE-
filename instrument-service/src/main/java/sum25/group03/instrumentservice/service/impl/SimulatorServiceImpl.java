@@ -15,6 +15,7 @@ import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.common.InstrumentStatus;
 import sum25.group03.instrumentservice.controller.request.BloodTestingRequest;
 import sum25.group03.instrumentservice.controller.response.RawTestResultResponse;
+import sum25.group03.instrumentservice.event.ReagentUsageHistoryEvent;
 import sum25.group03.instrumentservice.event.TestResultPublishedEvent;
 import sum25.group03.instrumentservice.exception.InstrumentNotReadyException;
 import sum25.group03.instrumentservice.exception.InsufficientReagentException;
@@ -28,6 +29,7 @@ import sum25.group03.instrumentservice.service.KafkaEventPublisher;
 import sum25.group03.instrumentservice.service.SimulatorService;
 import sum25.group03.instrumentservice.service.util.ReagentValidator;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -119,6 +121,24 @@ public class SimulatorServiceImpl implements SimulatorService {
                         .orElseThrow(() -> new RuntimeException("Installed reagent not found for reagent ID: " + reagentResponse.getReagentId()));
                 Double currentVolume = installedReagent.getCurrentVolume();
                 installedReagentRepository.updateCurrentVolumeById(currentVolume-usageVolume,installedReagent.getId());
+                ReagentUsageHistoryEvent usageEvent = ReagentUsageHistoryEvent.builder()
+                        .instrumentId(request.getInstrumentId())
+                        .reagentId(installedReagent.getReagentId())
+                        .testOrderId(testOrderResponse.getId())
+                        .usageType("TEST_USAGE")
+                        .lotReagentId(installedReagent.getLotReagentId())
+                        .reagentName(installedReagent.getReagentName())
+                        .lotNumber(installedReagent.getLotNumber())
+                        .quantityUsed(usageVolume)
+                        .unit(installedReagent.getUnit())
+                        .usedAt(LocalDate.now())
+                        .usedBy(2) // Simulated user ID
+                        .notes("Reagent name: " + installedReagent.getReagentName() +
+                                " used for test order ID: " + testOrderResponse.getId() + " | Barcode: " + request.getBarcode()+"Usage volume: "+usageVolume+installedReagent.getUnit())
+                        .build();
+                kafkaEventPublisher.publishReagentUsageHistoryEvent(usageEvent);
+                log.info("Publish reagent usage event for reagent: {} | Barcode: {}",
+                        installedReagent.getReagentName(), request.getBarcode());
                 log.info("🧪 REAGENT: {} | Initial Volume: {} {} | Used: {} {} | Final Volume: {} {}",
                         installedReagent.getReagentName(),
                         currentVolume, installedReagent.getUnit(),
@@ -138,6 +158,7 @@ public class SimulatorServiceImpl implements SimulatorService {
             RawTestResult newResult = RawTestResult.builder()
                     .testOrderId(testOrderResponse.getId())
                     .instrument(instrument)
+                    .barcode(request.getBarcode())
                     .rawData(rawDataJson)
                     .hl7Message(finalHl7Message)
                     .isSentToMonitoring(false)
@@ -152,6 +173,7 @@ public class SimulatorServiceImpl implements SimulatorService {
                     .testOrderId(testOrderResponse.getId())
                     .instrumentId(request.getInstrumentId())
                     .barcode(request.getBarcode())
+                    .rawData(rawDataJson)
                     .hl7Message(finalHl7Message)
                     .timestamp(LocalDateTime.now())
                     .status("SUCCESS")
@@ -214,7 +236,7 @@ public class SimulatorServiceImpl implements SimulatorService {
         Map<String, Double> rawResults = new HashMap<>();
         rawResults.put("WBC", 4_000 + (10_000 - 4_000) * rand.nextDouble());
         rawResults.put("RBC", 4.2 + (6.1 - 4.2) * rand.nextDouble());
-        rawResults.put("HGB", 12.0 + (18.0 - 12.0) * rand.nextDouble());
+        rawResults.put("Hb/HGB", 12.0 + (18.0 - 12.0) * rand.nextDouble());
         rawResults.put("HCT", 37.0 + (52.0 - 37.0) * rand.nextDouble());
         rawResults.put("MCV", 80.0 + (100.0 - 80.0) * rand.nextDouble());
         rawResults.put("MCH", 27.0 + (33.0 - 27.0) * rand.nextDouble());
@@ -228,7 +250,7 @@ public class SimulatorServiceImpl implements SimulatorService {
         List<String> obxSegments = new ArrayList<>();
         obxSegments.add(String.format("OBX||NM|WBC||%.1f|cells/µL|4000-10000||||F", rawResults.get("WBC")));
         obxSegments.add(String.format("OBX||NM|RBC||%.2f|million/µL|4.2-6.1||||F", rawResults.get("RBC")));
-        obxSegments.add(String.format("OBX||NM|HGB||%.1f|g/dL|12.0-18.0||||F", rawResults.get("HGB")));
+        obxSegments.add(String.format("OBX||NM|Hb/HGB||%.1f|g/dL|12.0-18.0||||F", rawResults.get("Hb/HGB")));
         obxSegments.add(String.format("OBX||NM|HCT||%.1f|%%|37-52||||F", rawResults.get("HCT")));
         obxSegments.add(String.format("OBX||NM|MCV||%.1f|fL|80-100||||F", rawResults.get("MCV")));
         obxSegments.add(String.format("OBX||NM|MCH||%.1f|pg|27-33||||F", rawResults.get("MCH")));

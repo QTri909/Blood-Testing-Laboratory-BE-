@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import sum25.group03.monitoringservice.event.TestResultPublishedEvent;
 import sum25.group03.monitoringservice.model.RawTestResult;
 import sum25.group03.monitoringservice.service.EventLogService;
+import sum25.group03.monitoringservice.service.KafkaEventPublisher;
 import sum25.group03.monitoringservice.service.RawTestResultService;
 import sum25.group03.monitoringservice.util.RawTestVerifier;
 
@@ -25,15 +26,17 @@ public class TestResultListener {
     private final RawTestResultService rawService;
     private final EventLogService eventLogService;
     private final RawTestVerifier verifier;
+    private final KafkaEventPublisher kafkaEventPublisher;
+
     @Autowired
     private ObjectMapper mapper;
-
     public TestResultListener(RawTestResultService rawService,
                               EventLogService eventLogService,
-                              RawTestVerifier verifier) {
+                              RawTestVerifier verifier, KafkaEventPublisher kafkaEventPublisher) {
         this.rawService = rawService;
         this.eventLogService = eventLogService;
         this.verifier = verifier;
+        this.kafkaEventPublisher = kafkaEventPublisher;
     }
 
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
@@ -69,7 +72,7 @@ public class TestResultListener {
 
         } catch (Exception e) {
             log.error("Failed to process raw test result message: {}", e.getMessage(), e);
-            throw new RuntimeException(e); // triggers retry
+            throw new RuntimeException(e);
         }
     }
 
@@ -81,7 +84,6 @@ public class TestResultListener {
 
             TestResultPublishedEvent event = mapper.readValue(message, TestResultPublishedEvent.class);
 
-            // Save to consolidated RawTestResult collection
             RawTestResult saved = rawService.saveTestResultFromEvent(
                     String.valueOf(event.getTestOrderId()),
                     String.valueOf(event.getInstrumentId()),
@@ -92,7 +94,6 @@ public class TestResultListener {
             );
 
             if (saved != null) {
-                // Log success
                 eventLogService.addEventLog(
                         sum25.group03.monitoringservice.model.EventLog.builder()
                                 .topic("test-results-hl7")
@@ -102,14 +103,18 @@ public class TestResultListener {
                                 .createdAt(Instant.now())
                                 .build()
                 );
+
+                kafkaEventPublisher.publishCompleteSyncTestResultEvent(event);
                 log.info("HL7 test result saved successfully for barcode={}", event.getBarcode());
+
+
             } else {
                 log.warn("Failed to save HL7 test result for barcode={}", event.getBarcode());
             }
 
         } catch (Exception e) {
             log.error("Failed to process HL7 test result event: {}", e.getMessage(), e);
-            throw new RuntimeException(e); // triggers retry
+            throw new RuntimeException(e);
         }
     }
 }

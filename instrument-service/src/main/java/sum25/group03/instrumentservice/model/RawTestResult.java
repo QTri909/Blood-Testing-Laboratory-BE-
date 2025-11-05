@@ -23,6 +23,9 @@ public class RawTestResult {
     @Column(name = "TestOrderID")
     private Long testOrderId;
 
+    @Column(name = "Barcode")
+    private String barcode;
+
     @ManyToOne
     @JoinColumn(name = "InstrumentID")
     private Instrument instrument;

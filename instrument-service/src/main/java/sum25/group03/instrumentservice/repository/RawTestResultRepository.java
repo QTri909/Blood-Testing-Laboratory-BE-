@@ -20,4 +20,6 @@ public interface RawTestResultRepository extends JpaRepository<RawTestResult, Lo
             "(r.isSentToMonitoring = true OR r.isSynced = true) AND " +
             "r.createdAt < :cutoffDate")
     List<RawTestResult> findOldBackedUpResults(@Param("cutoffDate") LocalDateTime cutoffDate);
+
+    RawTestResult findByBarcodeAndInstrumentIdAndTestOrderId(String barcode, Long instrumentId, Long testOrderId);
 }

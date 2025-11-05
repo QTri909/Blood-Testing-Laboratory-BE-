@@ -7,10 +7,7 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
-import sum25.group03.instrumentservice.event.InstrumentModeChangedEvent;
-import sum25.group03.instrumentservice.event.ReagentInstalledEvent;
-import sum25.group03.instrumentservice.event.UpdateExpiryReagent;
-import sum25.group03.instrumentservice.event.TestResultPublishedEvent;
+import sum25.group03.instrumentservice.event.*;
 import sum25.group03.instrumentservice.service.KafkaEventPublisher;
 
 @Service
@@ -22,11 +19,13 @@ public class KafkaEventPublisherImpl implements KafkaEventPublisher {
     private final KafkaTemplate<String, InstrumentModeChangedEvent> instrumentModeKafkaTemplate;
     private final KafkaTemplate<String, UpdateExpiryReagent> updateExpiryReagentKafkaTemplate;
     private final KafkaTemplate<String, TestResultPublishedEvent> testResultKafkaTemplate;
+    private final KafkaTemplate<String, ReagentUsageHistoryEvent> reagentUsageHistoryKafkaTemplate;
 
     private static final String REAGENT_TOPIC = "reagent-installed-events";
     private static final String INSTRUMENT_MODE_TOPIC = "instrument-mode-changed-events";
     private static final String UPDATE_EXPIRY_REAGENT_TOPIC = "update-expiry-reagent";
     private static final String TEST_RESULT_TOPIC = "test-results-hl7";
+    private static final String REAGENT_USAGE_HISTORY_TOPIC = "reagent-usage-history-events";
 
     @Override
     public void publishReagentInstalledEvent(ReagentInstalledEvent event) {
@@ -115,5 +114,27 @@ public class KafkaEventPublisherImpl implements KafkaEventPublisher {
             log.error("Failed to publish test result event: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to publish test result event", e);
         }
+    }
+
+    @Override
+    public void publishReagentUsageHistoryEvent(ReagentUsageHistoryEvent event) {
+        try{
+            log.info("Publishing reagent usage history event for reagent ID: {} on instrument ID: {}",
+                    event.getReagentId(), event.getInstrumentId());
+            Message<ReagentUsageHistoryEvent> message = MessageBuilder
+                    .withPayload(event)
+                    .setHeader(KafkaHeaders.TOPIC, REAGENT_USAGE_HISTORY_TOPIC)
+                    .setHeader("reagentId", event.getReagentId().toString())
+                    .setHeader("instrumentId", event.getInstrumentId().toString())
+                    .setHeader("testOrderId", event.getTestOrderId().toString())
+                    .build();
+            reagentUsageHistoryKafkaTemplate.send(message);
+            log.info("Reagent usage history event published successfully for reagent ID: {}", event.getReagentId());
+
+        }catch (Exception e) {
+            log.error("Failed to publish reagent usage history event: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to publish reagent usage history event", e);
+        }
+
     }
 }
