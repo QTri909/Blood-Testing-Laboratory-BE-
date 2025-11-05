@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sum25.group03.testorderservice.enums.ParameterGender;
 import sum25.group03.testorderservice.enums.ParameterUnit;
 
 @Data
@@ -24,6 +25,8 @@ public class ParameterRequestDTO {
     private Double min;
 
     private Double max;
+
+    private ParameterGender gender;
 
     @NotNull(message = "Unit cannot be null")
     private ParameterUnit unit;
