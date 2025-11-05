@@ -20,6 +20,8 @@ import java.time.LocalDateTime;
 public class SyncedConfigurationServiceImpl implements SyncedConfigurationService {
     @Autowired
     private SyncedConfigurationRepository  syncedConfigurationRepository;
+
+    @Autowired
     private ParameterServiceImpl parameterServiceImpl;
 
     @Override

@@ -40,13 +40,13 @@ public class ParameterServiceImpl implements ParameterService {
         if(dto.getMinValue() >= dto.getMaxValue()){
             throw new InvalidParameterException("maxValue must be greater than minValue");
         }
-        log.info("Id: "+ parameter.getId());
-        log.info("ParamCode: "+ parameter.getParamCode());
-        log.info("Description: "+ parameter.getDescription());
-        log.info("Min: "+ parameter.getMin());
-        log.info("Max: "+ parameter.getMax());
-        log.info("Unit: "+ parameter.getUnit());
-        log.info("Timestamp: " + LocalDateTime.now());
+        log.info("Id: " + parameter.getId()
+        +"\nParamCode: "+ parameter.getParamCode()
+        +"\nDescription: "+ parameter.getDescription()
+        +"\nMin: "+ parameter.getMin()
+        +"\nMax: "+ parameter.getMax()
+        +"\nUnit: "+ parameter.getUnit()
+        +"\nTimestamp: "+ LocalDateTime.now());
         parameter.setMin(dto.getMinValue());
         parameter.setMax(dto.getMaxValue());
         parameter.setDescription(dto.getDescription());

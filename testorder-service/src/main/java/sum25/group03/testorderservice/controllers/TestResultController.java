@@ -27,13 +27,14 @@ public class TestResultController {
     private CohereServiceImpl cohereService;
 
     @PostMapping("/review-test-result")
-    public ResponseEntity<?> reviewTestResult(
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<?> reviewTestResult(
             @RequestParam("testResultId") @NotNull Long testResultId,
             @RequestParam("adjustedValue") Double adjustedValue,
-            @RequestParam("reviewId") @NotNull Long reviewId
+            @RequestHeader("X-User-Id") @NotNull Long reviewId
     ) {
         testResultService.reviewTestResult(testResultId, adjustedValue, reviewId);
-        return ResponseEntity.ok("✅ Test result reviewed successfully by user " + reviewId);
+        return ApiResponse.ok("✅ Test result reviewed successfully by user " + reviewId);
     }
 
     @PostMapping

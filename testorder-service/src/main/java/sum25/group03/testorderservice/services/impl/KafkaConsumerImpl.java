@@ -20,8 +20,6 @@ import java.io.IOException;
 public class KafkaConsumerImpl implements IKafkaConsumer {
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    private final TestResultMapper testResultMapper;
-
     @Autowired
     private Hl7Parser  hl7Parser;
 
@@ -30,9 +28,8 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
     @Autowired
     private TestResultRepository testResultRepository;
 
-    public KafkaConsumerImpl(KafkaTemplate<String, String> kafkaTemplate,  TestResultMapper testResultMapper) {
+    public KafkaConsumerImpl(KafkaTemplate<String, String> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
-        this.testResultMapper = testResultMapper;
     }
 
     @Override
@@ -42,10 +39,10 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
         try {
             process(message);
         } catch (Exception e) {
-            System.err.println("❌ Error while processing message: " + e.getMessage());
+            System.err.println("Error while processing message: " + e.getMessage());
         } finally {
             ack.acknowledge();
-            System.out.println("📦 Offset acknowledged for message: " + message);
+            System.out.println("Offset acknowledged for message: " + message);
         }
     }
 
@@ -62,19 +59,19 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
             TestResult testResult = hl7Parser.parseHL7(hl7Content);
             testResultRepository.save(testResult);
 
-            System.out.println("✅ Saved test result ID: " + testResult.getId());
-            System.out.println("🧬 Value: " + testResult.getValue());
+            System.out.println("Saved test result ID: " + testResult.getId());
+            System.out.println("Value: " + testResult.getValue());
 
         } catch (Exception e) {
-            System.err.println("❌ Parsing failed: " + e.getMessage());
+            System.err.println("Parsing failed: " + e.getMessage());
             sendToQuarantine(message, e.getMessage());
         }
     }
 
     @Override
     public void sendToQuarantine(String message, String reason) {
-        String wrapped = "❌ INVALID HL7 [" + reason + "] → " + message;
+        String wrapped = "INVALID HL7 [" + reason + "] → " + message;
         kafkaTemplate.send("test-order-quaratine", wrapped);
-        System.out.println("🚨 Sent to quarantine queue: " + wrapped);
+        System.out.println("Sent to quarantine queue: " + wrapped);
     }
 }

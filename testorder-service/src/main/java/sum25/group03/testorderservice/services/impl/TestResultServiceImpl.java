@@ -55,6 +55,10 @@ public class TestResultServiceImpl implements TestResultService {
         }
         testResult.setStatus(TestResultStatus.REVIEWED);
         testResult.setUpdatedAt(LocalDateTime.now());
+        log.info("TestResult id: " + testResult.getId()
+        +"\nReview id: " + reviewId
+        + "\nAdjusted value: " + adjustedValue
+        + "\nTimestamp: " + testResult.getUpdatedAt());
         testResultRepository.save(testResult);
     }
 
