@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sum25.group03.testorderservice.enums.TestOrderStatus;
 
 import java.time.LocalDate;
 
@@ -23,6 +24,7 @@ public class TestOrderRequestDTO {
 
     private Long runBy;
     private LocalDate runDate;
+    private TestOrderStatus status ;
 
     @Pattern(regexp = "^BC-\\d{6}$", message = "Order number must follow the pattern 'BC-XXXXXX' where X is a digit.")
     private String barcode;

@@ -28,6 +28,7 @@ public class TestOrderController {
 
     // -------- THUYEN --------
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<TestOrderResponseDTO>> getAllTestOrders(
             @RequestHeader("X-User-Id") Long viewerId
     ) {
@@ -35,6 +36,7 @@ public class TestOrderController {
     }
 
     @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<TestOrderResponseDTO> getById(
             @PathVariable Long id,
             @RequestHeader("X-User-Id") Long viewerId
@@ -43,6 +45,7 @@ public class TestOrderController {
     }
 
     @GetMapping("/filter")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<TestOrderResponseDTO>> filterTestOrders(
             @ModelAttribute TestOrderFiltering filterInfo,
             @RequestParam Long viewerId
@@ -52,6 +55,7 @@ public class TestOrderController {
 
     // -------- HUY -----------
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<TestOrderResponseDTO> createTestOrder(
             @Valid @RequestBody TestOrderRequestDTO requestDTO
     ) {
@@ -66,6 +70,7 @@ public class TestOrderController {
     }
 
     @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<TestOrderResponseDTO> updateTestOrder(
             @PathVariable Long id,
             @Valid @RequestBody TestOrderRequestDTO requestDTO,
@@ -79,6 +84,7 @@ public class TestOrderController {
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ResponseEntity<Void> deleteTestOrder(
             @PathVariable Long id,
             @RequestHeader("X-User-Id") Long deletedBy) {
@@ -101,6 +107,7 @@ public class TestOrderController {
     }
 
     @GetMapping("/status/{status}")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<TestOrderResponseDTO>> getTestOrdersByStatus(
             @PathVariable TestOrderStatus status) {
         log.info("GET /api/v1/test-orders/status/{} - Fetching test orders", status);
@@ -111,6 +118,7 @@ public class TestOrderController {
     }
 
     @PatchMapping("/{id}/status")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<TestOrderResponseDTO> updateTestOrderStatus(
             @PathVariable Long id,
             @RequestParam TestOrderStatus status,
@@ -125,6 +133,7 @@ public class TestOrderController {
     }
 
     @GetMapping("/created-by/{createdBy}")
+    @ResponseStatus(HttpStatus.OK)
     public ResponseEntity<List<TestOrderResponseDTO>> getTestOrdersByCreatedBy(
             @PathVariable Long createdBy) {
         log.info("GET /api/v1/test-orders/created-by/{} - Fetching test orders", createdBy);

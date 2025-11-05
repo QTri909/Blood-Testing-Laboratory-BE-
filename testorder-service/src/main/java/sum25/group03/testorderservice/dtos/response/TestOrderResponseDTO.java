@@ -4,13 +4,16 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Builder;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
+
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Builder
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,4 +32,5 @@ public class TestOrderResponseDTO {
     private LocalDateTime updatedAt;
     private List<TestResultResponseDTO> testResults;
     private List<CommentResponseDTO> comments;
+   private String barcode;
 }

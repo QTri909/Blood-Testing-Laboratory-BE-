@@ -113,10 +113,14 @@ public class TestOrderServiceImpl implements TestOrderService {
         TestOrderStatus originalStatus = existingTestOrder.getStatus();
 
         testOrderMapper.updateEntity(requestDTO, existingTestOrder);
+        // Cập nhật status nếu DTO có giá trị
+        if (requestDTO.getStatus() != null) {
+            existingTestOrder.setStatus(requestDTO.getStatus());
+        }
 
         TestOrder updatedTestOrder = testOrderRepository.save(existingTestOrder);
-        log.info("Test order updated successfully. ID: {}, UpdatedBy: {}, PatientId changed: {} -> {}",
-                id, updatedBy, originalPatientId, updatedTestOrder.getPatientId());
+        log.info("Test order updated successfully. ID: {}, UpdatedBy: {}, UpdateStatus: {}, PatientId changed: {} -> {}",
+                id, updatedBy, originalPatientId, originalStatus, updatedTestOrder.getPatientId());
 
         return testOrderMapper.toResponseDto(updatedTestOrder);
     }
