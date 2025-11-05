@@ -3,6 +3,7 @@ package sum25.group03.warehouseservice.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
 import sum25.group03.warehouseservice.dto.request.AssignConfigAndReagentReq;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
 import sum25.group03.warehouseservice.dto.response.MessageResponse;
@@ -14,14 +15,23 @@ import sum25.group03.warehouseservice.service.instrument.InstrumentService;
 public class InstrumentController {
     private final InstrumentService instrumentService;
 
+//    @PostMapping("/add")
+//    public ResponseEntity<?> addInstrument(@RequestBody InstrumentReq instrument) {
+//        instrumentService.addInstrumentToWarehouse(instrument);
+//        return ResponseEntity.ok("success");
+//    }
     @PostMapping("/add")
-    public ResponseEntity<?> addInstrument(@RequestBody InstrumentReq instrument) {
+    public ApiResponse<?> addInstrument(@RequestBody InstrumentReq instrument) {
         instrumentService.addInstrumentToWarehouse(instrument);
-        return ResponseEntity.ok("success");
+        return ApiResponse.message("success").build();
     }
+//    @PutMapping("config-reagents")
+//    public ResponseEntity<?> addConfigAndReagentToInstrument(@RequestBody AssignConfigAndReagentReq req) {
+//        return ResponseEntity.ok(instrumentService.addConfigAndReagentToInstrument(req));
+//    }
     @PutMapping("config-reagents")
-    public ResponseEntity<?> addConfigAndReagentToInstrument(@RequestBody AssignConfigAndReagentReq req) {
-        return ResponseEntity.ok(instrumentService.addConfigAndReagentToInstrument(req));
+    public ApiResponse<?> addConfigAndReagentToInstrument(@RequestBody AssignConfigAndReagentReq req) {
+        return ApiResponse.ok(instrumentService.addConfigAndReagentToInstrument(req));
     }
 
     @GetMapping("/status/{instrumentId}")
