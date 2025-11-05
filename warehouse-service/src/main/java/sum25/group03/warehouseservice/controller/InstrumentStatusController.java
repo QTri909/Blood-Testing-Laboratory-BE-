@@ -1,8 +1,11 @@
 package sum25.group03.warehouseservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.kafka.shaded.com.google.protobuf.Api;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
+import sum25.group03.warehouseservice.audit.annotation.SkipAuditLog;
 import sum25.group03.warehouseservice.dto.response.MessageResponse;
 import sum25.group03.warehouseservice.service.instrumentcleanup.InstrumentCleanupService;
 import sum25.group03.warehouseservice.service.instrumentstatus.InstrumentStatusService;
@@ -15,19 +18,24 @@ public class InstrumentStatusController {
     private final InstrumentCleanupService instrumentCleanupService;
 
     @PutMapping("/{id}/activate")
-    public ResponseEntity<MessageResponse> activateInstrument(
+    public ApiResponse<String> activateInstrument(
             @PathVariable Long id,
             @RequestHeader(value = "X-User", defaultValue = "system") String username) {
         instrumentStatusService.activateInstrument(id, username);
-        return ResponseEntity.ok(new MessageResponse("Instrument activated successfully"));
+        return ApiResponse.<String>message("Instrument activated successfully").build();
     }
 
     @PutMapping("/{id}/deactivate")
-    public ResponseEntity<MessageResponse> deactivateInstrument(
+    public ApiResponse<String> deactivateInstrument(
             @PathVariable Long id,
             @RequestHeader(value = "X-User", defaultValue = "system") String username) {
         instrumentStatusService.deactivateInstrument(id, username);
-        return ResponseEntity.ok(new MessageResponse("Instrument deactivated successfully"));
+        return ApiResponse.<String>message("Instrument deactivated successfully").build();
     }
 
+    @PostMapping("/test-auto-delete")
+    public ApiResponse<String> testAutoDeleteInactiveInstruments() {
+        instrumentCleanupService.autoDeleteInactiveInstruments();
+        return ApiResponse.<String>message("Auto delete task executed manually").build();
+    }
 }

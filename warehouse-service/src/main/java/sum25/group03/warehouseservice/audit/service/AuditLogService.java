@@ -70,17 +70,17 @@ public class AuditLogService {
     private void logActionWithStatus(String actionType, String operationName, String resourceType, String resourceId, String ipAddress, String userAgent, List<AuditLog.FieldChange> changes, AuditLog.Status status) {
         ActorContext actor = actorProvider.getCurrentActor();
 
-        String previousHash = (lastHash != null) ? lastHash : "GENESIS";
-
-        String dataToHash = previousHash
-                + actionType
-                + operationName
-                + resourceType
-                + resourceId
-                + (actor.getUsername() != null ? actor.getUsername() : "system")
-                + Instant.now().toString();
-
-        String currentHash = calculateHash(dataToHash);
+//        String previousHash = (lastHash != null) ? lastHash : "GENESIS";
+//
+//        String dataToHash = previousHash
+//                + actionType
+//                + operationName
+//                + resourceType
+//                + resourceId
+//                + (actor.getUsername() != null ? actor.getUsername() : "system")
+//                + Instant.now().toString();
+//
+//        String currentHash = calculateHash(dataToHash);
 
         AuditLog auditLog = AuditLog.builder()
                 .timestamp(Instant.now())
@@ -107,12 +107,12 @@ public class AuditLogService {
                         .build())
                 .status(status)
                 .changes(changes)
-                .previousHash(previousHash)
-                .currentHash(currentHash)
+//                .previousHash(previousHash)
+//                .currentHash(currentHash)
                 .build();
 
         cloudWatchAuditLogger.log(auditLog);
-        lastHash = currentHash;
+//        lastHash = currentHash;
     }
 
     public void logWrite(String activateInstrument, String instrument, String string, String system, String s, String s1, Instrument instrument1) {

@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.warehouseservice.audit.annotation.SkipAuditLog;
 import sum25.group03.warehouseservice.dto.response.InstrumentResponse;
 import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
 import sum25.group03.warehouseservice.dto.response.InternalInstrumentStatusResponse;
@@ -55,7 +56,6 @@ public class InstrumentViewServiceImpl implements InstrumentViewService {
 //            throw new InvalidArgumentException("An unexpected error occurred while searching instruments");
 //        }
 //    }
-
     @Override
     public InternalInstrumentStatusResponse checkInstrumentStatus(Long id) {
         Instrument instrument = instrumentRepo.findById(id).orElseThrow(() -> new NotFoundException("Instrument not found with id: " + id));

@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import sum25.group03.warehouseservice.audit.annotation.SkipAuditLog;
 import sum25.group03.warehouseservice.audit.service.AuditLogService;
 import sum25.group03.warehouseservice.dto.request.ReagentUsageReq;
 import sum25.group03.warehouseservice.dto.response.ReagentRes;
@@ -111,9 +112,12 @@ public class ReagentHistoryUsageServiceImpl implements ReagentHistoryUsageServic
                 .reagent(reagents)
                 .instrument(instrument)
                 .quantityUsed(req.getQuantity())
+                .unit(reagents.getUnit())
+                .usageType("USE")
                 .usedBy(req.getUserId().intValue())
                 .lotNumber(req.getLotNumber())
                 .usedAt(LocalDate.now())
+                .notes(req.getNotes())
                 .build();
 
         reagentUsageRepo.save(usage);
@@ -122,7 +126,8 @@ public class ReagentHistoryUsageServiceImpl implements ReagentHistoryUsageServic
                 "CREATE_USAGE_HISTORY",
                 "ReagentHistoryUsage",
                 String.valueOf(usage.getReagentHistoryUsageId()),
-                "Auto log new reagent usage for lot " + req.getLotNumber()
+                "Auto log new reagent usage (USE) for lot " + req.getLotNumber() +
+                        (req.getNotes() != null ? " | Notes: " + req.getNotes() : "")
         );
     }
 

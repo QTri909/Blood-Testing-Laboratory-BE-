@@ -7,6 +7,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
+import sum25.group03.warehouseservice.audit.annotation.SkipAuditLog;
 import sum25.group03.warehouseservice.dto.response.InstrumentPageResponse;
 import sum25.group03.warehouseservice.dto.response.InstrumentResponse;
 import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
@@ -20,15 +22,15 @@ public class InstrumentViewController {
 
     private final InstrumentViewService instrumentViewService;
 
-    private InstrumentPageResponse buildPageResponse(Page<InstrumentResponse> page) {
-        return InstrumentPageResponse.builder()
-                .content(page.getContent())
-                .totalElements(page.getTotalElements())
-                .totalPages(page.getTotalPages())
-                .message(page.isEmpty() ? "No Data" : "Success")
-                .build();
-    }
-
+//    private InstrumentPageResponse buildPageResponse(Page<InstrumentResponse> page) {
+//        return InstrumentPageResponse.builder()
+//                .content(page.getContent())
+//                .totalElements(page.getTotalElements())
+//                .totalPages(page.getTotalPages())
+//                .message(page.isEmpty() ? "No Data" : "Success")
+//                .build();
+//    }
+//
 //    @GetMapping
 //    public ResponseEntity<InstrumentPageResponse> getAllInstruments(
 //            @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
@@ -47,10 +49,10 @@ public class InstrumentViewController {
 //    }
 
 
-
+    @SkipAuditLog
     @GetMapping("/{id}/status")
-    public ResponseEntity<InternalInstrumentStatusResponse> getInternalInstrumentStatus(@PathVariable Long id) {
+    public ApiResponse<InternalInstrumentStatusResponse> getInternalInstrumentStatus(@PathVariable Long id) {
         InternalInstrumentStatusResponse response = instrumentViewService.checkInstrumentStatus(id);
-        return ResponseEntity.ok(response);
+        return ApiResponse.ok(response);
     }
 }

@@ -13,4 +13,5 @@ public class ReagentUsageReq {
     private Long userId;
     private String lotNumber;
     private Long instrumentId;
+    private String notes;
 }
