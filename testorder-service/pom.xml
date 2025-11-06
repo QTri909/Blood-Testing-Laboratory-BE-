@@ -262,19 +262,18 @@
                 <artifactId>protobuf-maven-plugin</artifactId>
                 <version>0.6.1</version>
                 <configuration>
-                    <protoSourceRoot>src/main/proto</protoSourceRoot>
-                    <!-- Use Linux protoc -->
+                    <!-- for linux com.google.protobuf:protoc:3.25.1:exe:linux-x86_64 -->
+                    <!-- for window: com.google.protobuf:protoc:3.25.5:exe:windows-x86_64 -->
                     <protocArtifact>
-                        <!-- for linux com.google.protobuf:protoc:3.25.1:exe:linux-x86_64 -->
-                        <!-- for window: com.google.protobuf:protoc:3.25.5:exe:windows-x86_64 -->
-                        com.google.protobuf:protoc:3.25.5:exe:windows-x86_64
+                        com.google.protobuf:protoc:3.25.1:exe:linux-x86_64
                     </protocArtifact>
 
                     <pluginId>grpc-java</pluginId>
 
-                    <!-- Use Linux grpc plugin -->
+                    <!-- Linux: io.grpc:protoc-gen-grpc-java:1.62.2:exe:linux-x86_64 -->
+                    <!-- Windows: io.grpc:protoc-gen-grpc-java:1.62.2:exe:windows-x86_64 -->
                     <pluginArtifact>
-                        io.grpc:protoc-gen-grpc-java:1.62.2:exe:windows-x86_64
+                        io.grpc:protoc-gen-grpc-java:1.62.2:exe:linux-x86_64
                     </pluginArtifact>
                 </configuration>
                 <executions>
@@ -283,7 +282,6 @@
                             <goal>compile</goal>
                             <goal>compile-custom</goal>
                         </goals>
-                        <id>generate-proto</id>
                         <phase>generate-sources</phase>
                     </execution>
                 </executions>
