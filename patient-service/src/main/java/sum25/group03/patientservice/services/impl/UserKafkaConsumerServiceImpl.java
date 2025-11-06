@@ -3,8 +3,10 @@ package sum25.group03.patientservice.services.impl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.patientservice.constants.KafkaConstantVars;
 import sum25.group03.patientservice.dtos.request.KafkaUserDTO;
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
 import sum25.group03.patientservice.mapper.UserSnapshotMapper;
@@ -21,22 +23,26 @@ public class UserKafkaConsumerServiceImpl implements UserKafkaConsumerService {
 
     @Override
     @Transactional
+    @KafkaListener(
+            topics = KafkaConstantVars.USER_TOPIC,
+            groupId = "${spring.kafka.consumer.group-id}"
+    )
     public void fetchUserFromKafka(@Valid KafkaUserDTO kafkaUserDTO) {
         Long externalUserId = kafkaUserDTO.getId();
 
-        // search for entity in the database:
+        // 1. search for entity in the database:
         UserSnapshotEntity searchedEntity = userRepository.findByExternalUserId(externalUserId).
                 orElse(null);
 
         if (searchedEntity != null) {
-            // exists, update it
+            // 2.1. exists, update it
             log.info("Updating entity {} ...", searchedEntity);
             userMapper.updateEntityFromKafkaDTO(kafkaUserDTO, searchedEntity);
             log.info("Entity is now: {}", searchedEntity);
             return;
         }
 
-        // else: not exist, insert one
+        // 2.2. else: not exist, insert one
         UserSnapshotEntity newEntity = userMapper.fromUserKafkaDTO(kafkaUserDTO);
         userRepository.save(newEntity);
         log.info("Inserted new entity: {}", newEntity);
