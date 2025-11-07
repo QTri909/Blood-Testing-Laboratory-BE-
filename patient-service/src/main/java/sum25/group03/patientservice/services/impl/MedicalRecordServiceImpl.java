@@ -22,7 +22,6 @@ import sum25.group03.patientservice.repositories.postgres.MedicalRecordRepositor
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 import sum25.group03.patientservice.grpc.TestOrderGrpcClient;
-import sum25.group03.patientservice.grpc.TestOrderResponse;
 
 
 

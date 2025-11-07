@@ -14,6 +14,9 @@ import sum25.group03.iamservice.dto.response.UserResponse;
 import sum25.group03.iamservice.entity.Role;
 import sum25.group03.iamservice.entity.User;
 import sum25.group03.iamservice.entity.UserRole;
+import sum25.group03.iamservice.event.UserCreatedEvent;
+import sum25.group03.iamservice.event.UserDeletedEvent;
+import sum25.group03.iamservice.event.UserUpdatedEvent;
 import sum25.group03.iamservice.repository.RoleRepository;
 import sum25.group03.iamservice.repository.UserRepository;
 import sum25.group03.iamservice.repository.UserRoleRepository;
@@ -33,6 +36,8 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
     private final CognitoService cognitoService;
+    private final KafkaProducerService kafkaProducerService;
+
 
     @Override
     public UserResponse createUser(UserCreateRequest request) {
@@ -87,6 +92,31 @@ public class UserServiceImpl implements UserService {
                 "system",
                 "Created new user with email: " + user.getEmail()
         );
+        try {
+            UserCreatedEvent event = UserCreatedEvent.builder()
+                    .id(user.getId())
+                    .email(user.getEmail())
+                    .fullName(user.getFullName())
+                    .phoneNumber(user.getPhoneNumber())
+                    .gender(user.getGender())
+                    .dateOfBirth(user.getDateOfBirth())
+                    .identityNumber(user.getIdentityNumber())
+                    .address(user.getAddress())
+                    .roles(
+                            user.getUserRoles().stream()
+                                    .map(ur -> ur.getRole().getRoleCode())
+                                    .collect(Collectors.toSet())
+                    )
+                    .privileges(
+                            user.getUserRoles().stream()
+                                    .flatMap(ur -> ur.getRole().getRolePrivileges().stream())
+                                    .map(rp -> rp.getPrivilege().getPrivilegeCode())
+                                    .collect(Collectors.toSet())
+                    )
+                    .build();
+
+            kafkaProducerService.sendUserCreated(event);
+        } catch (Exception ignored) {}
 
 
         UserResponse response = new UserResponse();
@@ -133,6 +163,7 @@ public class UserServiceImpl implements UserService {
                     .collect(Collectors.toList());
 
             userRoleRepository.saveAll(userRoles);
+            user.setUserRoles(new HashSet<>(userRoles));
         }
 
         userRepository.save(user);
@@ -146,6 +177,33 @@ public class UserServiceImpl implements UserService {
                 "system",
                 "Updated user info for: " + user.getEmail()
         );
+
+        try {
+            UserUpdatedEvent event = UserUpdatedEvent.builder()
+                    .id(user.getId())
+                    .email(user.getEmail())
+                    .fullName(user.getFullName())
+                    .phoneNumber(user.getPhoneNumber())
+                    .gender(user.getGender())
+                    .dateOfBirth(user.getDateOfBirth())
+                    .identityNumber(user.getIdentityNumber())
+                    .address(user.getAddress())
+                    .roles(
+                            user.getUserRoles().stream()
+                                    .map(ur -> ur.getRole().getRoleCode())
+                                    .collect(Collectors.toSet())
+                    )
+                    .privileges(
+                            user.getUserRoles().stream()
+                                    .flatMap(ur -> ur.getRole().getRolePrivileges().stream())
+                                    .map(rp -> rp.getPrivilege().getPrivilegeCode())
+                                    .collect(Collectors.toSet())
+                    )
+                    .build();
+
+            kafkaProducerService.sendUserUpdated(event);
+        } catch (Exception ignored) {}
+
 
 
 
@@ -206,6 +264,16 @@ public class UserServiceImpl implements UserService {
                 "system",
                 "Deleted user with email: " + user.getEmail()
         );
+        try {
+            UserDeletedEvent event = UserDeletedEvent.builder()
+                    .id(user.getId())
+                    .email(user.getEmail())
+                    .fullName(user.getFullName())
+                    .build();
+
+            kafkaProducerService.sendUserDeleted(event);
+        } catch (Exception ignored) {}
+
     }
 
     @Override
