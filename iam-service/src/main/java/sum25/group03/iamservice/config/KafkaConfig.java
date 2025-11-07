@@ -152,6 +152,7 @@ public class KafkaConfig {
     }
 
 
+
     @Bean
     public ConsumerFactory<String, UserCreatedEvent> userCreatedEventConsumerFactory() {
         JsonDeserializer<UserCreatedEvent> deserializer = new JsonDeserializer<>(UserCreatedEvent.class);

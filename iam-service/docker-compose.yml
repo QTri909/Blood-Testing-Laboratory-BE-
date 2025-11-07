@@ -3,7 +3,8 @@ version: '3.8'
 services:
   iam-service:
     build:
-      context: ..
+      context: ..                      # cho phép Docker thấy parent POM
+
       dockerfile: iam-service/Dockerfile
     container_name: iam-service
     image: iam-service:latest
