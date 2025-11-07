@@ -116,7 +116,7 @@ public class SimulatorServiceImpl implements SimulatorService {
             Thread.sleep(simulationTime);
 
             for(ReagentResponse reagentResponse: listReagentResponses){
-                Double usageVolume = reagentResponse.getUsageMax()+ reagentResponse.getUsageMin()*rand.nextDouble();
+                Double usageVolume = reagentResponse.getUsageMin()+ (reagentResponse.getUsageMax()-reagentResponse.getUsageMin())*rand.nextDouble();
                 InstalledReagent installedReagent = installedReagentRepository.findByReagentId(reagentResponse.getReagentId())
                         .orElseThrow(() -> new RuntimeException("Installed reagent not found for reagent ID: " + reagentResponse.getReagentId()));
                 Double currentVolume = installedReagent.getCurrentVolume();
