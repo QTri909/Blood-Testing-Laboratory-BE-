@@ -30,7 +30,7 @@ public class PatientController {
         return ApiResponse.ok(patientService.getAllPatientsWith(size, page));
     }
 
-    @GetMapping("/test-orders/latest/{patientId}")
+    @GetMapping("/test-orders/{patientId}")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<Object> getPatientById(
             @PathVariable(name = "patientId") Long patientId
