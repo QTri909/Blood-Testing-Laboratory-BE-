@@ -2,12 +2,9 @@ package sum25.group03.patientservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.patientservice.documents.AuditEntryDocument;
-import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
 import sum25.group03.patientservice.dtos.response.MedicalRecordResponse;
@@ -21,8 +18,6 @@ import sum25.group03.patientservice.mapper.MedicalRecordMapper;
 import sum25.group03.patientservice.repositories.postgres.MedicalRecordRepository;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
-import sum25.group03.patientservice.grpc.TestOrderGrpcClient;
-
 
 
 import java.util.List;
@@ -31,10 +26,9 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-//@Slf4j
+@Slf4j
 public class MedicalRecordServiceImpl implements MedicalRecordService {
 
-    private static final Logger log = LoggerFactory.getLogger(MedicalRecordServiceImpl.class);
     private final MedicalRecordRepository medicalRecordRepository;
     private final MedicalRecordMapper medicalRecordMapper;
     private final UserSnapshotRepository userSnapshotRepository;
@@ -54,21 +48,25 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Transactional
-    public MedicalRecordResponse registerMedicalRecord(MedicalRecordRequest request) {
+    public MedicalRecordResponse registerMedicalRecord(Long creatorId) {
 
         // map request to entity
         MedicalRecordEntity entity = MedicalRecordEntity.builder()
-                .patientId(request.patientId())
-                .assignedUser(request.assignedUser())
-                .createdBy(request.createdBy())
-                .updatedBy(request.updatedBy())
-                .build();
+                        .createdBy(creatorId)
+                        .build();
 
         // save to database
         medicalRecordRepository.save(entity);
 
         // save to mongoDb
         medicalRecordMongoService.createNewMedicalRecordInMongoDb(entity);
+
+        // logs:
+        actionLogService.logAction(
+                creatorId,
+                ActionTypeFeatures.CREATE_NEW_PATIENT_MEDICAL_RECORD,
+                entity.getRecordId()
+        );
 
         return medicalRecordMapper.toMedicalRecordResponse(entity);
     }

@@ -2,6 +2,7 @@ package sum25.group03.patientservice.enums;
 
 public enum ActionTypeFeatures {
     // patient:
+    CREATE_NEW_PATIENT_MEDICAL_RECORD,
     VIEW_PATIENT_MEDICAL_RECORD_DETAIL,
     VIEW_ALL_PATIENT_MEDICAL_RECORDS,
     DELETE_PATIENT_MEDICAL_RECORD,
