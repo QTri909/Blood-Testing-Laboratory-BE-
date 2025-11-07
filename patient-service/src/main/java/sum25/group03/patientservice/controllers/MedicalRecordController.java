@@ -17,7 +17,7 @@ import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/medical-records")
+@RequestMapping("/api/v1/medical-records")
 @RequiredArgsConstructor
 @Slf4j
 public class MedicalRecordController {

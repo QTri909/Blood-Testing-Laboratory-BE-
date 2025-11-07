@@ -11,7 +11,7 @@ import sum25.group03.patientservice.services.interfaces.UserSnapshotService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/user-snapshots")
+@RequestMapping("/api/v1/user-snapshots")
 @RequiredArgsConstructor
 public class UserSnapshotController {
 
