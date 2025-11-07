@@ -21,6 +21,7 @@ public interface UserSnapshotMapper {
     @Mapping(target = "authoredNotes", ignore = true)
     UserSnapshotEntity toEntity(UserSnapshotRequest request);
     UserSnapshotResponse toResponse(UserSnapshotEntity entity);
+    List<UserSnapshotResponse> toResponseList(List<UserSnapshotEntity> entities);
     UserFilterUpdate toUpdateInfoDTO(FeignUserDTO feignDto);
     List<UserFilterUpdate> toUpdateInfoDTOs(List<FeignUserDTO> feignDtos);
 

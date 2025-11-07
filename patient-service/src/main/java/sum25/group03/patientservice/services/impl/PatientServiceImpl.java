@@ -2,14 +2,20 @@ package sum25.group03.patientservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import sum25.group03.patientservice.dtos.response.PatientResponseDTO;
+import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
+import sum25.group03.patientservice.entities.UserSnapshotEntity;
 import sum25.group03.patientservice.exception.user.snapshot.UserNotFoundException;
 import sum25.group03.patientservice.feign.IAMFeignClient;
 import sum25.group03.patientservice.feign.dtos.FeignPatientResponseWrapper;
 import sum25.group03.patientservice.grpc.TestOrderGrpcClient;
 import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderDTO;
 import sum25.group03.patientservice.mapper.PatientMapper;
+import sum25.group03.patientservice.mapper.UserSnapshotMapper;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
 import sum25.group03.patientservice.services.interfaces.PatientService;
 
@@ -22,6 +28,7 @@ public class PatientServiceImpl implements PatientService {
 
     private final IAMFeignClient iamFeignClient;
     private final PatientMapper patientMapper;
+    private final UserSnapshotMapper userSnapshotMapper;
     private final TestOrderGrpcClient testOrderGrpcClient;
     private final UserSnapshotRepository userSnapshotRepository;
 
@@ -35,7 +42,7 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public List<PatientResponseDTO> getAllPatientsWith(Integer size, Integer page) {
+    public List<PatientResponseDTO> getAllIAMPatientsWith(Integer size, Integer page) {
         // Call IAM service to fetch patients info
         FeignPatientResponseWrapper wrapper = iamFeignClient.fetchPatientsInfo(page, size);
         if (wrapper == null || wrapper.getContent() == null)
@@ -46,6 +53,20 @@ public class PatientServiceImpl implements PatientService {
 
         // Map FeignPatientDTO to PatientResponseDTO
         return patientMapper.toResponseDtoList(wrapper.getContent());
+    }
+
+    @Override
+    public List<UserSnapshotResponse> getAllPatientsWith(Integer size, Integer page) {
+
+        // find all patients by role:
+        Pageable pageable = PageRequest.of(page, size);
+        String role = "\"PATIENT\"";
+        Page<UserSnapshotEntity> patientEntities = userSnapshotRepository
+                .findByRolesContaining(role, pageable);
+
+        // debug:
+        log.info("Found {} patient entities from database", patientEntities.getTotalElements());
+        return userSnapshotMapper.toResponseList(patientEntities.getContent());
     }
 
     @Override
