@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "sum25.group03.testorderservice.grpc";
+option java_outer_classname = "PatientProto";
+
+service PatientService {
+  rpc GetPatientById (GetPatientByIdRequest) returns (GetPatientByIdResponse);
+}
+
+message GetPatientByIdRequest {
+  int64 externalUserId = 1;
+}
+
+message GetPatientByIdResponse {
+  int64 id = 1;
+  string fullName = 2;
+  string gender = 3;
+  string dateOfBirth = 4;
+  string phoneNumber = 5;
+  string email = 6;
+}
