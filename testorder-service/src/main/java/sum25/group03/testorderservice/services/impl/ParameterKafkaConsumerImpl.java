@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sum25.group03.testorderservice.constants.KafkaConsumerVars;
+import sum25.group03.testorderservice.constants.KafkaVariables;
 import sum25.group03.testorderservice.dtos.request.KafkaParameterRequestDTO;
 import sum25.group03.testorderservice.entities.Parameter;
 import sum25.group03.testorderservice.mapper.ParameterMapper;
@@ -20,7 +20,7 @@ public class ParameterKafkaConsumerImpl {
     private final ParameterMapper parameterMapper;
 
 
-    @KafkaListener(topics = KafkaConsumerVars.PARAMETER_TOPIC, groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = KafkaVariables.PARAMETER_TOPIC, groupId = "${spring.kafka.consumer.group-id}")
     @Transactional
     public void listenParameterTopic(KafkaParameterRequestDTO dtoParameter) {
 

@@ -7,11 +7,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.CreationTestOrderResponse;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
-import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseForInstrument;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.services.interfaces.TestOrderService;
@@ -56,17 +56,12 @@ public class TestOrderController {
     // -------- HUY -----------
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<TestOrderResponseDTO> createTestOrder(
-            @Valid @RequestBody TestOrderRequestDTO requestDTO
+    public ApiResponse<TestOrderResponseDTO> createTestOrder(
+            @Valid @RequestBody TestOrderRequestDTO requestDTO,
+            @RequestHeader("X-User-Id") Long createdBy
     ) {
-
-        log.info("POST /api/v1/test-orders - Creating test order for patientId: {}",
-                requestDTO.getPatientId());
-
-        TestOrderResponseDTO response = testOrderService.createTestOrder(requestDTO);
-
-        log.info("Test order created successfully with id: {}", response.getId());
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        TestOrderResponseDTO response = testOrderService.createTestOrder(requestDTO, createdBy);
+        return ApiResponse.add("Test order created successfully", response);
     }
 
     @PutMapping("/{id}")

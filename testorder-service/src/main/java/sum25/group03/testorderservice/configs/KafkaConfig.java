@@ -12,12 +12,27 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import sum25.group03.testorderservice.constants.KafkaVariables;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
 public class KafkaConfig {
+
+    // TOPIC
+    @Bean
+    public NewTopic testOrderTopic() {
+        return TopicBuilder.name(KafkaVariables.TEST_ORDER_TOPIC)
+                .partitions(3)
+                .configs(Map.of(KafkaVariables.RETENTION_MS, String.valueOf(7 * 24 * 60 * 60 * 1000L))) // keep at least 7 days of data
+                .replicas(1)
+                .build();
+    }
+
+    //--------------------------
+
+
     @Bean
     public NewTopic hl7Topic() {
         return TopicBuilder.name("test-order-result")

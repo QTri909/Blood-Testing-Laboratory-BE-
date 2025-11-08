@@ -6,6 +6,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.testorderservice.dtos.request.TestOrderPatientInfo;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.*;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
@@ -15,6 +16,7 @@ import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.TestOrderMapper;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
+import sum25.group03.testorderservice.services.interfaces.TestOrderKafkaProducer;
 import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 import sum25.group03.testorderservice.specification.TestOrderSpecification;
 
@@ -30,6 +32,7 @@ public class TestOrderServiceImpl implements TestOrderService {
 
     private final TestOrderRepository testOrderRepository;
     private final TestOrderMapper testOrderMapper;
+    private final TestOrderKafkaProducer testOrderKafkaProducer;
 
     private final TestOrderRepository repository;
     private final TestOrderMapper mapper;
@@ -84,16 +87,26 @@ public class TestOrderServiceImpl implements TestOrderService {
 
     // ------- HUY -----------
     @Override
-    public TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO) {
-        log.info("Creating new test order for patientId: {}", requestDTO.getPatientId());
+    public TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO, Long createdBy) {
 
+        // get patientInfo from requestDTO
+        TestOrderPatientInfo patientInfo = requestDTO.getPatientInfo();
+
+        // if patientId is null => new patient, send to kafka broker to IAM to create new patient
+        if (patientInfo.getPatientId() == null)
+            testOrderKafkaProducer.sendPatientInfoMessage("patient-info", patientInfo);
+
+        // map requestDTO to entity
         TestOrder testOrder = testOrderMapper.toEntity(requestDTO);
-        testOrder.setStatus(TestOrderStatus.PENDING);
-        testOrder.setCreatedAt(LocalDateTime.now());
-        testOrder.setUpdatedAt(LocalDateTime.now());
+        testOrder.setCreatedBy(createdBy);
 
+        // save to database
         TestOrder savedTestOrder = testOrderRepository.save(testOrder);
-        log.info("Test order created successfully with id: {}", savedTestOrder.getId());
+        actionLogService.logAction(
+            createdBy,
+            ActionTypeFeatures.CREATE_TEST_ORDER,
+            savedTestOrder.getId()
+        );
 
         return testOrderMapper.toResponseDto(savedTestOrder);
     }

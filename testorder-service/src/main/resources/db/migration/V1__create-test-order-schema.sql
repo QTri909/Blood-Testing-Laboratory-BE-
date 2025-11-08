@@ -91,7 +91,7 @@ CREATE TABLE test_order (
                             updated_at TIMESTAMP(6) NOT NULL,
                             created_by BIGINT NOT NULL,
                             external_medical_record_id BIGINT NOT NULL,
-                            patient_id BIGINT NOT NULL,
+                            patient_id BIGINT,
                             run_by BIGINT,
                             status VARCHAR(255) CHECK (status IN (
                                                                   'PENDING','ONGOING','WAITING','CANCELED','COMPLETED','REVIEWED','AI_REVIEWED'

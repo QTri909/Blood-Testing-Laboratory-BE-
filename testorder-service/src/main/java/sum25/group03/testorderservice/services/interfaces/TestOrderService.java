@@ -19,7 +19,7 @@ public interface TestOrderService{
 
     // -------- HUY -----------
     //3.5.1.3 Create Patient's Test Order
-    TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO);
+    TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO, Long createdBy);
     //3.5.1.4 Modify Patient's Test Order
     TestOrderResponseDTO updateTestOrder(Long id, TestOrderRequestDTO requestDTO, Long updatedBy);
     //3.5.1.5 Delete Patient Test Order
