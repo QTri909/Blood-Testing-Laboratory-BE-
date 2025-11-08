@@ -37,20 +37,22 @@ public class TestOrderController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<TestOrderResponseDTO> getById(
+    public ApiResponse<TestOrderResponseDTO> getById(
             @PathVariable Long id,
             @RequestHeader("X-User-Id") Long viewerId
     ) {
-        return ResponseEntity.ok(testOrderService.getTestOrderById(id, viewerId));
+        return ApiResponse.add("Get test order by id successfully",
+                testOrderService.getTestOrderById(id, viewerId));
     }
 
     @GetMapping("/filter")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<TestOrderResponseDTO>> filterTestOrders(
+    public ApiResponse<List<TestOrderResponseDTO>> filterTestOrders(
             @ModelAttribute TestOrderFiltering filterInfo,
             @RequestParam Long viewerId
     ) {
-        return ResponseEntity.ok(testOrderService.filterTestOrders(filterInfo, viewerId));
+        return ApiResponse.add("Filter test orders successfully",
+                testOrderService.filterTestOrders(filterInfo, viewerId));
     }
 
     // -------- HUY -----------
@@ -66,93 +68,77 @@ public class TestOrderController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<TestOrderResponseDTO> updateTestOrder(
+    public ApiResponse<TestOrderResponseDTO> updateTestOrder(
             @PathVariable Long id,
             @Valid @RequestBody TestOrderRequestDTO requestDTO,
-            @RequestHeader("X-User-Id") Long updatedBy) {
-        log.info("PUT /api/v1/test-orders/{} - Updating test order by user: {}", id, updatedBy);
-
+            @RequestHeader("X-User-Id") Long updatedBy)
+    {
         TestOrderResponseDTO response = testOrderService.updateTestOrder(id, requestDTO, updatedBy);
-
-        log.info("Test order updated successfully with id: {} by user: {}", id, updatedBy);
-        return ResponseEntity.ok(response);
+        return ApiResponse.add("Test order updated successfully", response);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<Void> deleteTestOrder(
+    public ApiResponse<Void> deleteTestOrder(
             @PathVariable Long id,
-            @RequestHeader("X-User-Id") Long deletedBy) {
-        log.info("DELETE /api/v1/test-orders/{} - Deleting test order by user: {}", id, deletedBy);
-
+            @RequestHeader("X-User-Id") Long deletedBy)
+    {
         testOrderService.deleteTestOrder(id, deletedBy);
-
-        log.info("Test order deleted successfully with id: {} by user: {}", id, deletedBy);
-        return ResponseEntity.noContent().build();
+        return ApiResponse.add("Test order deleted successfully", null);
     }
 
     @GetMapping("/patient/{patientId}")
-    public ResponseEntity<List<TestOrderResponseDTO>> getTestOrdersByPatientId(
-            @PathVariable Long patientId) {
-        log.info("GET /api/v1/test-orders/patient/{} - Fetching test orders", patientId);
-
+    public ApiResponse<List<TestOrderResponseDTO>> getTestOrdersByPatientId(
+            @PathVariable Long patientId)
+    {
         List<TestOrderResponseDTO> response = testOrderService.getTestOrdersByPatientId(patientId);
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.add("Get test orders by patient ID successfully", response);
     }
 
     @GetMapping("/status/{status}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<TestOrderResponseDTO>> getTestOrdersByStatus(
-            @PathVariable TestOrderStatus status) {
-        log.info("GET /api/v1/test-orders/status/{} - Fetching test orders", status);
-
+    public ApiResponse<List<TestOrderResponseDTO>> getTestOrdersByStatus(
+            @PathVariable TestOrderStatus status)
+    {
         List<TestOrderResponseDTO> response = testOrderService.getTestOrdersByStatus(status);
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.add("Get test orders by status successfully", response);
     }
 
     @PatchMapping("/{id}/status")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<TestOrderResponseDTO> updateTestOrderStatus(
+    public ApiResponse<TestOrderResponseDTO> updateTestOrderStatus(
             @PathVariable Long id,
             @RequestParam TestOrderStatus status,
-            @RequestHeader("X-User-Id") Long updatedBy) {
-        log.info("PATCH /api/v1/test-orders/{}/status - Updating status to {} by user: {}",
-                id, status, updatedBy);
-
+            @RequestHeader("X-User-Id") Long updatedBy)
+    {
         TestOrderResponseDTO response = testOrderService.updateTestOrderStatus(id, status, updatedBy);
-
-        log.info("Test order status updated successfully for id: {} by user: {}", id, updatedBy);
-        return ResponseEntity.ok(response);
+        return ApiResponse.add("Test order status updated successfully", response);
     }
 
     @GetMapping("/created-by/{createdBy}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<TestOrderResponseDTO>> getTestOrdersByCreatedBy(
+    public ApiResponse<List<TestOrderResponseDTO>> getTestOrdersByCreatedBy(
             @PathVariable Long createdBy) {
-        log.info("GET /api/v1/test-orders/created-by/{} - Fetching test orders", createdBy);
-
         List<TestOrderResponseDTO> response = testOrderService.getTestOrdersByCreatedBy(createdBy);
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.add("Get test orders by createdBy successfully", response);
     }
 
 
     @GetMapping("/by-barcode/{barcode}")
-    public ResponseEntity<TestOrderResponseForInstrument> getByBarcode(
+    public ApiResponse<TestOrderResponseForInstrument> getByBarcode(
             @PathVariable
-            @Pattern(regexp = "^BC-\\d{6}$", message = "Barcode phải có định dạng BC-123456")
-            String barcode) {
-
+            @Pattern(regexp = "^BC-\\d{6}$", message = "Barcode must be in format BC-123456")
+            String barcode)
+    {
         TestOrderResponseForInstrument response = testOrderService.findLatestByBarcode(barcode);
-        return ResponseEntity.ok(response);
+        return ApiResponse.add("Get test order by barcode successfully", response);
     }
 
     @PostMapping("/create-unmatched-order")
-    public ResponseEntity<CreationTestOrderResponse> createUnmatchedOrder(
-            @Valid @RequestParam String barcode) {
+    public ApiResponse<CreationTestOrderResponse> createUnmatchedOrder(
+            @Valid @RequestParam String barcode)
+    {
         CreationTestOrderResponse response = testOrderService.createTestOrderForExternalSystem(barcode);
-        return ResponseEntity.ok(response);
+        return ApiResponse.add("Create unmatched test order successfully", response);
     }
 }

@@ -13,6 +13,8 @@ import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.services.interfaces.TestResultService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/test-result")
 @Slf4j
@@ -24,13 +26,13 @@ public class TestResultController {
 
     @PostMapping("/review-test-result")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<?> reviewTestResult(
+    public ApiResponse<?> reviewTestResult(
             @RequestParam("testResultId") @NotNull Long testResultId,
             @RequestParam("adjustedValue") Double adjustedValue,
             @RequestParam("reviewId") @NotNull Long reviewId
     ) {
         testResultService.reviewTestResult(testResultId, adjustedValue, reviewId);
-        return ResponseEntity.ok("✅ Test result reviewed successfully by user " + reviewId);
+        return ApiResponse.add("Review Test Result successfully", null);
     }
 
     @PostMapping
@@ -43,37 +45,34 @@ public class TestResultController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<TestResultResponseDTO> updateTestResult(
+    public ApiResponse<TestResultResponseDTO> updateTestResult(
             @PathVariable Long id,
-            @Valid @RequestBody TestResultRequestDTO requestDTO) {
-        log.info("API - Update Test Result id: {}", id);
+            @Valid @RequestBody TestResultRequestDTO requestDTO)
+    {
         TestResultResponseDTO response = testResultService.updateTestResult(id, requestDTO);
-        return ResponseEntity.ok(response);
+        return ApiResponse.add("Update Test Result successfully", response);
     }
 
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public ResponseEntity<Void> deleteTestResult(@PathVariable Long id) {
-        log.info("API - Delete Test Result id: {}", id);
+    public ApiResponse<Void> deleteTestResult(@PathVariable Long id) {
         testResultService.deleteTestResult(id);
-        return ResponseEntity.noContent().build();
+        return ApiResponse.add("Delete Test Result successfully", null);
     }
 
     @GetMapping ("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<TestResultResponseDTO> getTestResultById(@PathVariable Long id) {
-        log.info("API - Get Test Result by id: {}", id);
+    public ApiResponse<TestResultResponseDTO> getTestResultById(@PathVariable Long id) {
         TestResultResponseDTO response = testResultService.getTestResultById(id);
-        return ResponseEntity.ok(response);
+        return ApiResponse.add("Get Test Result successfully", response);
     }
 
     @GetMapping("/test-order/{testOrderId}")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<java.util.List<TestResultResponseDTO>> getTestResultsByTestOrderId(@PathVariable Long testOrderId) {
-        log.info("API - Get Test Results by Test Order id: {}", testOrderId);
+    public ApiResponse<List<TestResultResponseDTO>> getTestResultsByTestOrderId(@PathVariable Long testOrderId) {
         java.util.List<TestResultResponseDTO> responses = testResultService.getTestResultsByTestOrderId(testOrderId);
-        return ResponseEntity.ok(responses);
+        return ApiResponse.add("Get Test Results successfully", responses);
     }
 
 
