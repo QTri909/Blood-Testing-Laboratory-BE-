@@ -1,8 +1,10 @@
 package sum25.group03.payment_service.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
 import sum25.group03.payment_service.dtos.request.PaymentProviderRequest;
 import sum25.group03.payment_service.dtos.response.PaymentProviderResponse;
 import sum25.group03.payment_service.services.interfaces.PaymentProviderService;
@@ -17,28 +19,33 @@ public class PaymentProviderController {
     private final PaymentProviderService paymentProviderService;
 
     @PostMapping
-    public ResponseEntity<PaymentProviderResponse> create(@RequestBody PaymentProviderRequest request) {
-        return ResponseEntity.ok(paymentProviderService.create(request));
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<PaymentProviderResponse> create(@RequestBody PaymentProviderRequest request) {
+        return ApiResponse.add("Payment provider created successfully", paymentProviderService.create(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<PaymentProviderResponse> update(@PathVariable String id, @RequestBody PaymentProviderRequest request) {
-        return ResponseEntity.ok(paymentProviderService.update(id, request));
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<PaymentProviderResponse> update(@PathVariable String id, @RequestBody PaymentProviderRequest request) {
+        return ApiResponse.add("Payment provider updated successfully", paymentProviderService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable String id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ApiResponse<Void> delete(@PathVariable String id) {
         paymentProviderService.delete(id);
-        return ResponseEntity.noContent().build();
+        return ApiResponse.add("Payment provider deleted successfully", null);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PaymentProviderResponse> getById(@PathVariable String id) {
-        return ResponseEntity.ok(paymentProviderService.getById(id));
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<PaymentProviderResponse> getById(@PathVariable String id) {
+        return ApiResponse.add("Payment provider retrieved successfully", paymentProviderService.getById(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<PaymentProviderResponse>> getAll() {
-        return ResponseEntity.ok(paymentProviderService.getAll());
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<PaymentProviderResponse>> getAll() {
+        return ApiResponse.add("Payment providers retrieved successfully", paymentProviderService.getAll());
     }
 }
