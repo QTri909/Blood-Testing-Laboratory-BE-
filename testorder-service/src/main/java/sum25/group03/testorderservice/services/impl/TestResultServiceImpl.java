@@ -61,24 +61,8 @@ public class TestResultServiceImpl implements TestResultService {
     // Huy
     @Override
     public TestResultResponseDTO createTestResult(TestResultRequestDTO requestDTO) {
-        log.info("Creating test result for test order id: {}", requestDTO.getTestOrderId());
-
-
-//        var testOrder = testOrderRepository.findById(requestDTO.getTestOrderId())
-//                .orElseThrow(() -> new ResourceNotFoundException("Test order not found with id: " + requestDTO.getTestOrderId()));
-
         TestResult testResult = testResultMapper.toEntity(requestDTO);
-//        testResult.setTestOrder(testOrder);
-        testResult.setCreatedAt(LocalDateTime.now());
-        testResult.setUpdatedAt(LocalDateTime.now());
-
-        if (testResult.getStatus() == null) {
-            testResult.setStatus(TestResultStatus.PENDING);
-        }
-
         TestResult savedResult = testResultRepository.save(testResult);
-        log.info("Test result created successfully with id: {}", savedResult.getId());
-
         return testResultMapper.toResponseDto(savedResult);
     }
 

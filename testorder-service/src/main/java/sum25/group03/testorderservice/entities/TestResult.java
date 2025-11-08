@@ -2,6 +2,8 @@ package sum25.group03.testorderservice.entities;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 import sum25.group03.testorderservice.enums.FlagStatus;
 import sum25.group03.testorderservice.enums.TestResultStatus;
 import sum25.group03.testorderservice.enums.TestType;
@@ -43,9 +45,11 @@ public class TestResult {
     @Column(nullable = false)
     private Double value;
 
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
@@ -75,4 +79,10 @@ public class TestResult {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "configuration_id")
     private SyncedConfiguration syncedConfiguration;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.status == null)
+            this.status = TestResultStatus.PENDING;
+    }
 }
