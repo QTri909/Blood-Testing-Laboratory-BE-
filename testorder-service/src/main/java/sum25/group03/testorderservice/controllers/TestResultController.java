@@ -14,7 +14,7 @@ import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.services.interfaces.TestResultService;
 
 @RestController
-@RequestMapping("/api/test-result")
+@RequestMapping("/api/v1/test-result")
 @Slf4j
 @RequiredArgsConstructor
 public class TestResultController {
