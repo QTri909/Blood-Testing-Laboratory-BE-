@@ -16,9 +16,6 @@ public class TestResultRequestDTO {
     @NotNull(message = "Test order ID cannot be null")
     private Long testOrderId;
 
-    @NotNull(message = "Instrument ID cannot be null")
-    private Long instrumentId;
-
     @NotNull(message = "Parameter snapshot ID cannot be null")
     private Long parameterSnapshotId;
 
@@ -33,6 +30,9 @@ public class TestResultRequestDTO {
 
     @NotNull(message = "Test type cannot be null")
     private TestType testType;
+
+    @NotNull(message = "Price cannot be null")
+    private Long price;
 
     private List<Long> reagentUsedIds;
 }

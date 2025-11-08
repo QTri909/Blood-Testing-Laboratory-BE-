@@ -8,6 +8,5 @@ import java.util.List;
 @Repository
 public interface TestResultRepository extends JpaRepository<TestResult,Long> {
     List<TestResult> findByTestOrderId(Long testOrderId);
-    List<TestResult> findByInstrumentId(Long instrumentId);
     List<TestResult> findByParameterId(Long parameterId);
 }

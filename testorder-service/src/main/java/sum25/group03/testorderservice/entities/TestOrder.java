@@ -59,6 +59,9 @@ public class TestOrder {
     @Enumerated(EnumType.STRING)
     private TestOrderStatus status;
 
+    @Column(name = "instrument_id")
+    private Long instrumentId;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

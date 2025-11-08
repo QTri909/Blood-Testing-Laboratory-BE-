@@ -27,8 +27,5 @@ public class TestOrderRequestDTO {
     @NotNull(message = "Type cannot be null")
     private TestOrderType type;
 
-    @NotNull(message = "Price cannot be null")
-    private Long price;
-
     private TestOrderPatientInfo patientInfo;
 }

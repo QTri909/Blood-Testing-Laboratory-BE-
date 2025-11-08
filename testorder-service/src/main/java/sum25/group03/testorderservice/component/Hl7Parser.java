@@ -88,7 +88,6 @@ public class Hl7Parser {
 
         return TestResult.builder()
                 .testOrder(testOrder)
-                .instrumentId(instrumentId)
                 .parameterSnapshotId(parameterSnapshotId)
                 .flagStatus(flagStatus)
                 .status(status)

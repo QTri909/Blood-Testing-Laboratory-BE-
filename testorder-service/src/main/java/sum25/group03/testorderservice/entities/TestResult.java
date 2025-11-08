@@ -28,9 +28,6 @@ public class TestResult {
     @JoinColumn(name = "test_order_id", nullable = false)
     private TestOrder testOrder;
 
-    @Column(name = "instrument_id", nullable = false)
-    private Long instrumentId; // ID InstrumentService
-
     @Column(name = "parameter_latest_snapshot_id", nullable = false)
     private Long parameterSnapshotId; // ID ParameterService
 

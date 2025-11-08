@@ -117,17 +117,6 @@ public class TestResultServiceImpl implements TestResultService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TestResultResponseDTO> getTestResultsByInstrumentId(Long instrumentId) {
-        log.info("Retrieving test results for instrument id: {}", instrumentId);
-
-        List<TestResult> testResults = testResultRepository.findByInstrumentId(instrumentId);
-        return testResults.stream()
-                .map(testResultMapper::toResponseDto)
-                .toList();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public List<TestResultResponseDTO> getTestResultsByParameterId(Long parameterId) {
         log.info("Retrieving test results for parameter id: {}", parameterId);
 
