@@ -11,11 +11,13 @@ import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.*;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
 import sum25.group03.testorderservice.entities.TestOrder;
+import sum25.group03.testorderservice.entities.TestResult;
 import sum25.group03.testorderservice.enums.ActionTypeFeatures;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.TestOrderMapper;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
+import sum25.group03.testorderservice.repositories.TestResultRepository;
 import sum25.group03.testorderservice.services.interfaces.TestOrderKafkaProducer;
 import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 import sum25.group03.testorderservice.specification.TestOrderSpecification;
@@ -33,6 +35,8 @@ public class TestOrderServiceImpl implements TestOrderService {
     private final TestOrderRepository testOrderRepository;
     private final TestOrderMapper testOrderMapper;
     private final TestOrderKafkaProducer testOrderKafkaProducer;
+
+    private final TestResultRepository testResultRepository;
 
     private final TestOrderRepository repository;
     private final TestOrderMapper mapper;
@@ -52,6 +56,10 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         TestOrder entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TestOrder not found with id " + id));
+
+        // find all related test results
+//        List<TestResult> relatedResults = testResultRepository.findByTestOrderId(entity.getId());
+
         return mapper.toResponseDto(entity);
     }
 

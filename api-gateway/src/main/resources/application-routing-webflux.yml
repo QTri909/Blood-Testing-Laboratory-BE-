@@ -9,34 +9,47 @@ spring:
       server:
         webflux:
           routes:
+            # for IAM service
             - id: iam-service
               uri: http://localhost:8080
               predicates:
                 - Path=${app.api-version}/iam/**
+
+            # for instrument service
             - id: instrument-service
               uri: http://localhost:8081
               predicates:
                 - Path=${app.api-version}/instruments/**
+
+            # for monitoring service
             - id: monitoring-service
               uri: http://localhost:8082
               predicates:
                 - Path=${app.api-version}/monitoring/**
+
+            # for patient service
             - id: patient-service
               uri: http://localhost:8083
               predicates:
                 - Path=${app.api-version}/patients/**
               filters:
                 - RewritePath=${app.api-version}/patients/(?<segment>.*), ${app.api-version}/${segment}
+
+            # for payment service
             - id: payment-service
               uri: http://localhost:8084
               predicates:
                 - Path=${app.api-version}/payments/**
+
+            # for test order service
             - id: testorder-service
               uri: http://localhost:8085
               predicates:
-                - Path=${app.api-version}/test-orders/**
+                - Path=/api/v1/test-orders/**       # everything under test-orders
               filters:
-                - RewritePath=${app.api-version}/test-orders/(?<segment>.*), ${app.api-version}/${segment}
+                - RewritePath=/api/v1/test-orders/(?<segment>(\\d+|parameters|test-result.*)), /api/v1/${segment}
+
+            # for warehouse service
             - id: warehouse-service
               uri: http://localhost:8086
               predicates:

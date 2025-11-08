@@ -57,8 +57,6 @@ public class ParameterServiceImpl implements ParameterService {
     @Override
     @Transactional(readOnly = true)
     public ParameterResponseDTO getParameterById(Long id) {
-        log.info("Fetching parameter with id: {}", id);
-
         Parameter parameter = parameterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Parameter not found with id: " + id));
 
@@ -72,8 +70,6 @@ public class ParameterServiceImpl implements ParameterService {
     @Override
     @Transactional(readOnly = true)
     public List<ParameterResponseDTO> getAllParameters() {
-        log.info("Fetching all active parameters");
-
         List<Parameter> parameters = parameterRepository.findByStatus(ParameterStatus.ACTIVE);
         return parameters.stream()
                 .map(parameterMapper::toResponseDto)
@@ -83,8 +79,6 @@ public class ParameterServiceImpl implements ParameterService {
     @Override
     @Transactional(readOnly = true)
     public ParameterResponseDTO getParameterByCode(String paramCode) {
-        log.info("Fetching parameter with code: {}", paramCode);
-
         Parameter parameter = parameterRepository.findByParamCodeAndStatus(paramCode, ParameterStatus.ACTIVE)
                 .orElseThrow(() -> new ResourceNotFoundException("Parameter not found with code: " + paramCode));
 
