@@ -58,6 +58,7 @@ public class Parameter {
 
     private Long createdBy;
     private Long updatedBy;
+    private Long price;
 
     @OneToMany(mappedBy = "parameter", cascade = CascadeType.ALL)
     private Set<TestResult> testResults;

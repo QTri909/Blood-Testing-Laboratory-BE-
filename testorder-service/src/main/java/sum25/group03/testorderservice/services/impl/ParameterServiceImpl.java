@@ -55,63 +55,6 @@ public class ParameterServiceImpl implements ParameterService {
     }
 
     @Override
-    public ParameterResponseDTO createParameter(ParameterRequestDTO requestDTO) {
-        log.info("Creating new parameter with code: {}", requestDTO.getParamCode());
-
-        if (parameterRepository.existsByParamCode(requestDTO.getParamCode())) {
-            throw new IllegalArgumentException("Parameter with code " + requestDTO.getParamCode() + " already exists");
-        }
-
-        Parameter parameter = parameterMapper.toEntity(requestDTO);
-        parameter.setStatus(ParameterStatus.ACTIVE);
-        parameter.setCreatedAt(LocalDate.now());
-        parameter.setUpdatedAt(LocalDate.now());
-
-        Parameter savedParameter = parameterRepository.save(parameter);
-        log.info("Parameter created successfully with id: {}", savedParameter.getId());
-
-        return parameterMapper.toResponseDto(savedParameter);
-    }
-
-    @Override
-    public ParameterResponseDTO updateParameter(Long id, ParameterRequestDTO requestDTO) {
-        log.info("Updating parameter with id: {}", id);
-
-        Parameter existingParameter = parameterRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Parameter not found with id: " + id));
-
-        if (existingParameter.getStatus() == ParameterStatus.INACTIVE) {
-            throw new IllegalStateException("Cannot update inactive parameter");
-        }
-
-        parameterMapper.updateEntity(requestDTO, existingParameter);
-        existingParameter.setUpdatedAt(LocalDate.now());
-
-        Parameter updatedParameter = parameterRepository.save(existingParameter);
-        log.info("Parameter updated successfully with id: {}", updatedParameter.getId());
-
-        return parameterMapper.toResponseDto(updatedParameter);
-    }
-
-    @Override
-    public void deleteParameter(Long id) {
-        log.info("Deleting parameter with id: {}", id);
-
-        Parameter parameter = parameterRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Parameter not found with id: " + id));
-
-        if (parameter.getStatus() == ParameterStatus.INACTIVE) {
-            throw new IllegalStateException("Parameter already deleted");
-        }
-
-        parameter.setStatus(ParameterStatus.INACTIVE);
-        parameter.setUpdatedAt(LocalDate.now());
-
-        parameterRepository.save(parameter);
-        log.info("Parameter deleted successfully with id: {}", id);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public ParameterResponseDTO getParameterById(Long id) {
         log.info("Fetching parameter with id: {}", id);

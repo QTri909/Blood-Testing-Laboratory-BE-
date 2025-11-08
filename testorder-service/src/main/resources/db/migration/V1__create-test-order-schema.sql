@@ -47,6 +47,7 @@ CREATE TABLE parameters (
                             unit VARCHAR(255) CHECK (unit IN (
                                                               'PERCENTAGE','CELSIUS','BPM','CELLS_PER_UL','MILLIONS_PER_UL','FL','PG','G_PER_DL'
                                 )),
+                            price BIGINT NOT NULL,
                             CONSTRAINT unique_param_code_per_gender UNIQUE (param_code, gender)
 );
 
