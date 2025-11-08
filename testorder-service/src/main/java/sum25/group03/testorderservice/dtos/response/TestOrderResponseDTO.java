@@ -12,6 +12,7 @@ import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Builder
 @Data
@@ -23,6 +24,7 @@ public class TestOrderResponseDTO {
     private Long patientId;
     private Long createdBy;
     private Long runBy;
+    private String code;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy")
     private LocalDate runDate;
     private TestOrderStatus status;

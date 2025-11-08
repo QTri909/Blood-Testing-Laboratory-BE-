@@ -91,6 +91,11 @@ public class TestOrderServiceImpl implements TestOrderService {
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
 
         List<TestOrder> orders = repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+        // debug:
+        for (TestOrder test: orders) {
+            log.info("Test order code: {}", test.getCode());
+        }
+
         return orders.stream().map(testOrderMapper::toResponseDto).toList();
     }
 
