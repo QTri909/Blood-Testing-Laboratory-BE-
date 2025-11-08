@@ -23,4 +23,7 @@ public class TestResultResponseDTO {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<CommentResponseDTO> comments;
+
+    // additional fields can be added here
+    private Long price;
 }

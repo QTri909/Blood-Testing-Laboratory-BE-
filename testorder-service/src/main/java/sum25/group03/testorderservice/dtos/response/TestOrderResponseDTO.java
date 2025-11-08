@@ -32,5 +32,6 @@ public class TestOrderResponseDTO {
     private LocalDateTime updatedAt;
     private List<TestResultResponseDTO> testResults;
     private List<CommentResponseDTO> comments;
-   private String barcode;
+    private String barcode;
+    private Long totalPrice;
 }

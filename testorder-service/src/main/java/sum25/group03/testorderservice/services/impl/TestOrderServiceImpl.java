@@ -15,7 +15,9 @@ import sum25.group03.testorderservice.entities.TestResult;
 import sum25.group03.testorderservice.enums.ActionTypeFeatures;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
+import sum25.group03.testorderservice.helpers.ParameterHelpers;
 import sum25.group03.testorderservice.mapper.TestOrderMapper;
+import sum25.group03.testorderservice.mapper.TestResultMapper;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
 import sum25.group03.testorderservice.repositories.TestResultRepository;
 import sum25.group03.testorderservice.services.interfaces.TestOrderKafkaProducer;
@@ -24,6 +26,7 @@ import sum25.group03.testorderservice.specification.TestOrderSpecification;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,14 +36,16 @@ import java.util.stream.Collectors;
 public class TestOrderServiceImpl implements TestOrderService {
 
     private final TestOrderRepository testOrderRepository;
-    private final TestOrderMapper testOrderMapper;
     private final TestOrderKafkaProducer testOrderKafkaProducer;
 
-    private final TestResultRepository testResultRepository;
-
     private final TestOrderRepository repository;
-    private final TestOrderMapper mapper;
+    private final TestOrderMapper testOrderMapper;
+
+    private final TestResultMapper testResultMapper;
     private final ActionLogService actionLogService;
+
+    private final ParameterHelpers parameterHelpers;
+
 
     // -------- THUYEN--------
     // TODO 1: Write a function call to IAM service to verify viewerId exists in the system
@@ -57,10 +62,24 @@ public class TestOrderServiceImpl implements TestOrderService {
         TestOrder entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TestOrder not found with id " + id));
 
-        // find all related test results
-//        List<TestResult> relatedResults = testResultRepository.findByTestOrderId(entity.getId());
+        // get all related test results and map to DTOs
+        List<TestResult> relatedResults = entity.getTestResults();
+        List<TestResultResponseDTO> testResultDtos = testResultMapper.toResponseDtos(relatedResults);
 
-        return mapper.toResponseDto(entity);
+        // adjust parameter prices in test results
+        Long totalPrice = 0L;
+        Map<Long, Long> parameterPriceMap = parameterHelpers.loadParameterIdWithPriceMap();
+        for (TestResultResponseDTO resultDto : testResultDtos) {
+            Long parameterId = resultDto.getParameterId();
+            Long price = parameterPriceMap.get(parameterId);
+            totalPrice += price;
+            resultDto.setPrice(price);
+        }
+
+        TestOrderResponseDTO result = testOrderMapper.toResponseDto(entity);
+        result.setTestResults(testResultDtos);
+        result.setTotalPrice(totalPrice);
+        return result;
     }
 
     @Override
@@ -72,7 +91,7 @@ public class TestOrderServiceImpl implements TestOrderService {
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
 
         List<TestOrder> orders = repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-        return orders.stream().map(mapper::toResponseDto).toList();
+        return orders.stream().map(testOrderMapper::toResponseDto).toList();
     }
 
     @Override
@@ -90,7 +109,7 @@ public class TestOrderServiceImpl implements TestOrderService {
                         .and(TestOrderSpecification.createdBetween(filterInfo.fromDate(), filterInfo.toDate()));
 
         List<TestOrder> results = repository.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return results.stream().map(mapper::toResponseDto).toList();
+        return results.stream().map(testOrderMapper::toResponseDto).toList();
     }
 
     // ------- HUY -----------
