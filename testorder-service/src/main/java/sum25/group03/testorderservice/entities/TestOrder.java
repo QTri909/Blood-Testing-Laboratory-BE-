@@ -80,6 +80,6 @@ public class TestOrder {
     @PrePersist
     private void prePersist() {
         if (this.status == null)
-            this.status = TestOrderStatus.PENDING;
+            this.status = TestOrderStatus.WAITING_PAYMENT;
     }
 }
