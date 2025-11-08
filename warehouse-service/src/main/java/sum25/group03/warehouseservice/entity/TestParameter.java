@@ -32,6 +32,9 @@ public class TestParameter {
     @Column(name = "gender")
     private Gender gender;
 
+    @Column(name = "price")
+    private Double price;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private ParameterStatus status;
