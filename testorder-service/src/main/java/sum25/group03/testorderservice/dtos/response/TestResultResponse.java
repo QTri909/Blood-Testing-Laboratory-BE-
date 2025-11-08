@@ -14,7 +14,6 @@ public class TestResultResponse {
     private Long id;
     private Long testOrderId;
     private Long instrumentId;
-    private Long parameterSnapshotId;
     private String flagStatus;
     private TestResultStatus testResultStatus;
     private Double value;

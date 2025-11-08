@@ -15,7 +15,6 @@ public class TestResultResponseDTO {
     private Long id;
     private Long testOrderId;
     private Long instrumentId;
-    private Long parameterSnapshotId;
     private Long parameterId;
     private String parameterName;
     private String flagStatus;

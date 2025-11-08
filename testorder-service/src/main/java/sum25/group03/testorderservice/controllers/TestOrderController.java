@@ -29,10 +29,10 @@ public class TestOrderController {
     // -------- THUYEN --------
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<List<TestOrderResponseDTO>> getAllTestOrders(
+    public ApiResponse<List<TestOrderResponseDTO>> getAllTestOrders(
             @RequestHeader("X-User-Id") Long viewerId
     ) {
-        return ResponseEntity.ok(testOrderService.getAllTestOrders(viewerId));
+        return ApiResponse.add("Get all test orders successfully", testOrderService.getAllTestOrders(viewerId));
     }
 
     @GetMapping("/{id}")

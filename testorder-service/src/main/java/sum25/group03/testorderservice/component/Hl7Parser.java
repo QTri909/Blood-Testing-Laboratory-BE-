@@ -62,7 +62,6 @@ public class Hl7Parser {
         }
 
         Long instrumentId = 1L;
-        Long parameterSnapshotId = 1L;
         TestResultStatus status = TestResultStatus.COMPLETED;
 
         String orderCode = obr.getPlacerOrderNumber().getEntityIdentifier().getValue();
