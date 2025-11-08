@@ -33,27 +33,6 @@ VALUES
 (NOW(), NOW(), FLOOR(RANDOM() * 5 + 1011)::INT, FLOOR(RANDOM() * 5 + 1011)::INT, 'Mean Corpuscular Haemoglobin Concentration', 'MCHC', 'MCHC', 'Calculates the average concentration of haemoglobin in red blood cells.', 32, 36, 'ACTIVE', 'G_PER_DL', 'BOTH', 7000);
 
 -- =========================================================
--- Table: reagent_used
--- =========================================================
-INSERT INTO reagent_used (quantity, reagent_id, updated_at, used_at, slot_number)
-VALUES
-    (50, 1001, now(), now(), 'A1'),
-    (30, 1002, now(), now(), 'A2'),
-    (20, 1003, now(), now(), 'A3'),
-    (10, 1004, now(), now(), 'A4'),
-    (15, 1005, now(), now(), 'A5'),
-    (60, 1006, now(), now(), 'B1'),
-    (25, 1007, now(), now(), 'B2'),
-    (40, 1008, now(), now(), 'B3'),
-    (35, 1009, now(), now(), 'C1'),
-    (28, 1010, now(), now(), 'C2'),
-    (18, 1011, now(), now(), 'C3'),
-    (12, 1012, now(), now(), 'C4'),
-    (45, 1013, now(), now(), 'C5'),
-    (33, 1014, now(), now(), 'D1'),
-    (22, 1015, now(), now(), 'D2');
-
--- =========================================================
 -- Table: synced_configurations
 -- =========================================================
 INSERT INTO synced_configurations (id, minValue, maxValue, syncedAt, configKey, description, status, unit)
