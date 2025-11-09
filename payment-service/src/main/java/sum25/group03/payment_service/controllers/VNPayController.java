@@ -3,11 +3,13 @@ package sum25.group03.payment_service.controllers;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.view.RedirectView;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.payment_service.dtos.request.VNPayCreatePaymentRequest;
 import sum25.group03.payment_service.dtos.response.PaymentRequestResponse;
@@ -24,6 +26,9 @@ import java.util.Map;
 public class VNPayController {
     private final VNPayService service;
 
+    @Value("${frontend.url}")
+    private String frontEndUrl;
+
     public VNPayController(VNPayService service) {
         this.service = service;
     }
@@ -39,9 +44,6 @@ public class VNPayController {
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<Map<String, String>> ipn(@RequestParam MultiValueMap<String, String> params) {
 
-        log.info("ipn::VNPay has called this!");
-        log.info("ipn::VNPay give this to me: {}", params.toString());
-
         Map<String, String> flat = new HashMap<>();
         // use getFirst() to avoid list indexing warning and handle single-valued params
         params.forEach((k, v) -> flat.put(k, params.getFirst(k)));
@@ -49,13 +51,18 @@ public class VNPayController {
     }
 
     @GetMapping(path = "/return")
-    @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<PaymentResponseDTO> returnUrl(@RequestParam Map<String, String> params) {
+    public RedirectView returnUrl(@RequestParam Map<String, String> params) {
+        // handle return
+        PaymentResponseDTO response = service.handleReturn(params);
 
-        log.info("return::VNPay return called this!");
-        log.info("return::VNPay give this to me: {}", params.toString());
+        // Build redirect URL with query parameters
+        String urlRedirect = String.format("%s/payment/result?status=%s&order_code=%s&transaction_id=%s",
+                frontEndUrl,
+                response.getStatus(),
+                response.getOrderCode(),
+                response.getTransactionId());
 
-        return ApiResponse.add("VNPay return handled", service.handleReturn(params));
+        return new RedirectView(urlRedirect);
     }
 
     @Transactional
