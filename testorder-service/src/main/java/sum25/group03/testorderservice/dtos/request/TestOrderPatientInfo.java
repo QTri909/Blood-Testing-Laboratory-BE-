@@ -13,9 +13,9 @@ import java.time.LocalDate;
 @Builder
 @Data
 public class TestOrderPatientInfo implements Serializable {
-    private String patientId; // null if not registered
-    private String identificationNumber;
-    private String name;
+    private String id; // null if not registered
+    private String identityNumber;
+    private String fullName;
     private LocalDate dateOfBirth;
     private Integer age;
     private String gender;
@@ -26,9 +26,9 @@ public class TestOrderPatientInfo implements Serializable {
     @Override
     public String toString() {
         return "{" +
-                "patientId='" + patientId + '\'' +
-                ", identificationNumber='" + identificationNumber + '\'' +
-                ", name='" + name + '\'' +
+                "patientId='" + id + '\'' +
+                ", identificationNumber='" + identityNumber + '\'' +
+                ", name='" + fullName + '\'' +
                 ", dateOfBirth=" + dateOfBirth +
                 ", age=" + age + '\'' +
                 ", gender='" + gender + '\'' +

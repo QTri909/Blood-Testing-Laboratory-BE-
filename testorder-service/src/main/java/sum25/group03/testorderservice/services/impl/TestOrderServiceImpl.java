@@ -124,10 +124,6 @@ public class TestOrderServiceImpl implements TestOrderService {
         // get patientInfo from requestDTO
         TestOrderPatientInfo patientInfo = requestDTO.getPatientInfo();
 
-        // if patientId is null => new patient, send to kafka broker to IAM to create new patient
-        if (patientInfo.getPatientId() == null)
-            testOrderKafkaProducer.sendPatientInfoMessage("patient-info", patientInfo);
-
         // map requestDTO to entity
         TestOrder testOrder = testOrderMapper.toEntity(requestDTO);
         testOrder.setCreatedBy(createdBy);
@@ -139,6 +135,11 @@ public class TestOrderServiceImpl implements TestOrderService {
             ActionTypeFeatures.CREATE_TEST_ORDER,
             savedTestOrder.getId()
         );
+
+        // if patientId is null => new patient, send to kafka broker to IAM to create new patient
+        // send only when persisting new test order successfully
+        if (patientInfo.getId() == null)
+            testOrderKafkaProducer.sendPatientInfoMessage("patient-info", patientInfo);
 
         return testOrderMapper.toResponseDto(savedTestOrder);
     }
