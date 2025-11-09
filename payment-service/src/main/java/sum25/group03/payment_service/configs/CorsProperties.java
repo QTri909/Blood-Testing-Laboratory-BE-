@@ -6,9 +6,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
-@ConfigurationProperties(prefix = "app.cors")
-@Data
+// disable for applying api gateway CORS settings
+//@Component
+//@ConfigurationProperties(prefix = "app.cors")
+//@Data
 public class CorsProperties {
     private List<String> allowedOrigins;
     private List<String> allowedMethods;
