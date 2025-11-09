@@ -18,7 +18,7 @@ public class KafkaUserConsumerService {
     private final UserService userService;
 
     @KafkaListener(
-            topics = "test-order-user-created", // topic do TestOrder-service gửi
+            topics = "test-order-user-created",
             groupId = "iam-service-group",
             containerFactory = "userCreatedEventKafkaListenerContainerFactory"
     )
@@ -26,11 +26,11 @@ public class KafkaUserConsumerService {
         log.info("📩 Received UserCreatedEvent from TestOrder-service: {}", event);
 
         try {
-            // Chuyển event sang request phù hợp với createUser()
+
             UserCreateRequest request = new UserCreateRequest();
             request.setFullName(event.getFullName());
             request.setEmail(event.getEmail());
-            request.setPassword("Temp@123"); // 👈 đặt mật khẩu tạm
+            request.setPassword("Temp123123!");
             request.setPhoneNumber(event.getPhoneNumber());
             request.setGender(event.getGender() != null ? event.getGender().toUpperCase() : "OTHER");
             request.setDateOfBirth(event.getDateOfBirth() != null ? event.getDateOfBirth() : LocalDate.now());
@@ -39,7 +39,7 @@ public class KafkaUserConsumerService {
             request.setRoleCodes(
                     (event.getRoles() != null && !event.getRoles().isEmpty())
                             ? event.getRoles()
-                            : Set.of("USER") // 👈 mặc định nếu không có
+                            : Set.of("USER")
             );
 
             userService.createUser(request);
