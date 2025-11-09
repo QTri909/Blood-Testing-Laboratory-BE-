@@ -22,6 +22,8 @@ public class KafkaUserConsumerService {
             groupId = "iam-service-group",
             containerFactory = "userCreatedEventKafkaListenerContainerFactory"
     )
+
+
     public void handleUserCreatedFromTestOrder(UserCreatedEvent event) {
         log.info("📩 Received UserCreatedEvent from TestOrder-service: {}", event);
 
@@ -30,16 +32,15 @@ public class KafkaUserConsumerService {
             UserCreateRequest request = new UserCreateRequest();
             request.setFullName(event.getFullName());
             request.setEmail(event.getEmail());
-            request.setPassword("Temp123123!");
             request.setPhoneNumber(event.getPhoneNumber());
             request.setGender(event.getGender() != null ? event.getGender().toUpperCase() : "OTHER");
-            request.setDateOfBirth(event.getDateOfBirth() != null ? event.getDateOfBirth() : LocalDate.now());
+            request.setDateOfBirth(event.getDateOfBirth());
             request.setIdentityNumber(event.getIdentityNumber());
             request.setAddress(event.getAddress());
             request.setRoleCodes(
                     (event.getRoles() != null && !event.getRoles().isEmpty())
                             ? event.getRoles()
-                            : Set.of("USER")
+                            : Set.of("PATIENT")
             );
 
             userService.createUser(request);

@@ -151,8 +151,11 @@ public class KafkaConfig {
         return TopicBuilder.name("iam.password.changed").partitions(3).replicas(1).build();
     }
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> origin/Team07/iam-login
     @Bean
     public ConsumerFactory<String, UserCreatedEvent> userCreatedEventConsumerFactory() {
         JsonDeserializer<UserCreatedEvent> deserializer = new JsonDeserializer<>(UserCreatedEvent.class);
