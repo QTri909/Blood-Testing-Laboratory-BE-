@@ -151,4 +151,26 @@ public class KafkaConfig {
         return TopicBuilder.name("iam.password.changed").partitions(3).replicas(1).build();
     }
 
+    @Bean
+    public ConsumerFactory<String, UserCreatedEvent> userCreatedEventConsumerFactory() {
+        JsonDeserializer<UserCreatedEvent> deserializer = new JsonDeserializer<>(UserCreatedEvent.class);
+        deserializer.addTrustedPackages("*");
+
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "iam-service-group");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+
+        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, UserCreatedEvent> userCreatedEventKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, UserCreatedEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(userCreatedEventConsumerFactory());
+        return factory;
+    }
 }
