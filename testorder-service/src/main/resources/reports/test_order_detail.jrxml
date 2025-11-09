@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport
+        xmlns="http://jasperreports.sourceforge.net/jasperreports"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:c="http://jasperreports.sourceforge.net/jasperreports/components"
+        xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+        http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+        name="test_order_detail"
+        pageWidth="595"
+        pageHeight="842"
+        columnWidth="555"
+        leftMargin="20"
+        rightMargin="20"
+        topMargin="20"
+        bottomMargin="20">
+    <!--  Font cấu hình mặc định hỗ trợ tiếng Việt -->
+    <property name="net.sf.jasperreports.default.font.name" value="DejaVu Sans"/>
+    <property name="net.sf.jasperreports.default.pdf.font.name" value="DejaVuSans.ttf"/>
+    <property name="net.sf.jasperreports.default.pdf.encoding" value="Identity-H"/>
+    <property name="net.sf.jasperreports.default.pdf.embedded" value="true"/>
+
+    <!-- ==================== SUBDATASET ==================== -->
+    <subDataset name="TestResultDataset">
+        <field name="parameterName" class="java.lang.String"/>
+        <field name="value" class="java.lang.Double"/>
+        <field name="flagStatus" class="sum25.group03.testorderservice.enums.FlagStatus"/>
+        <field name="status" class="sum25.group03.testorderservice.enums.TestResultStatus"/>
+        <field name="commentTexts" class="java.lang.String"/>
+    </subDataset>
+
+
+    <!-- ==================== PARAMETERS ==================== -->
+    <parameter name="PATIENT_NAME" class="java.lang.String"/>
+    <parameter name="REPORT_DATE" class="java.lang.String"/>
+
+    <!-- ==================== ROOT DATASET FIELDS ==================== -->
+    <field name="id" class="java.lang.Long"/>
+    <field name="patientName" class="java.lang.String"/>
+    <field name="phoneNumber" class="java.lang.String"/>
+    <field name="status" class="sum25.group03.testorderservice.enums.TestOrderStatus"/>
+    <field name="createdBy" class="java.lang.Long"/>
+    <field name="createdAt" class="java.time.LocalDateTime"/>
+    <field name="runBy" class="java.lang.Long"/>
+    <field name="runOn" class="java.time.LocalDate"/>
+    <field name="results" class="java.util.List"/>
+    <field name="orderComments" class="java.lang.String"/>
+
+
+    <!-- ==================== TITLE ==================== -->
+    <title>
+        <band height="60">
+            <textField>
+                <reportElement x="0" y="10" width="555" height="20"/>
+                <textElement>
+                    <font fontName="DejaVu Sans"
+                          pdfFontName="fonts/DejaVuSans.ttf"
+                          pdfEncoding="Identity-H"
+                          isPdfEmbedded="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Test Order Detail for " + ($P{PATIENT_NAME} != null ? $P{PATIENT_NAME} : "")]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="35" width="555" height="20"/>
+
+                <textElement>
+                    <font fontName="DejaVu Sans"
+                          pdfFontName="fonts/DejaVuSans.ttf"
+                          pdfEncoding="Identity-H"
+                          isPdfEmbedded="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Date: " + ($P{REPORT_DATE} != null ? $P{REPORT_DATE} : "")]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <!-- ==================== DETAIL ==================== -->
+    <detail>
+        <band height="200">
+            <staticText>
+                <reportElement x="0" y="0" width="555" height="20"/>
+                <text><![CDATA[Order Information]]></text>
+            </staticText>
+
+            <textField>
+                <reportElement x="0" y="25" width="300" height="18"/>
+                <textFieldExpression><![CDATA["Order ID: " + ($F{id} != null ? $F{id} : "")]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="45" width="300" height="18"/>
+                <textElement>
+                    <font fontName="DejaVu Sans"
+                          pdfFontName="fonts/DejaVuSans.ttf"
+                          pdfEncoding="Identity-H"
+                          isPdfEmbedded="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Patient: " + ($F{patientName} != null ? $F{patientName} : "")]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="65" width="300" height="18"/>
+                <textFieldExpression><![CDATA["Phone: " + ($F{phoneNumber} != null ? $F{phoneNumber} : "")]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="85" width="300" height="18"/>
+                <textFieldExpression><![CDATA["Status: " + ($F{status} != null ? $F{status}.name() : "")]]></textFieldExpression>
+            </textField>
+
+
+            <textField>
+                <reportElement x="0" y="105" width="555" height="18"/>
+                <textFieldExpression><![CDATA["Created By: " + ($F{createdBy} != null ? $F{createdBy}.toString() : "")
+                + " | Created On: " + ($F{createdAt} != null
+                     ? new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+                    .format(java.sql.Timestamp.valueOf($F{createdAt}))
+                    : "")]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="125" width="555" height="18"/>
+                <textFieldExpression><![CDATA["Run By: " + ($F{runBy} != null ? $F{runBy}.toString() : "")
+                + " | Run On: " + ($F{runOn} != null ? $F{runOn}.toString() : "")]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="145" width="555" height="18"/>
+                <textElement>
+                    <font fontName="DejaVu Sans"
+                          pdfFontName="fonts/DejaVuSans.ttf"
+                          pdfEncoding="Identity-H"
+                          isPdfEmbedded="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Order Comments: " + ($F{orderComments} != null ? $F{orderComments} : "")]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+
+    <!-- ==================== SUMMARY (TABLE) ==================== -->
+    <summary>
+        <band height="300">
+            <staticText>
+                <reportElement x="0" y="0" width="555" height="20"/>
+                <text><![CDATA[Test Results and Comments]]></text>
+            </staticText>
+
+            <componentElement>
+                <reportElement x="0" y="25" width="555" height="260"/>
+
+                <c:table>
+                    <datasetRun subDataset="TestResultDataset">
+                        <dataSourceExpression><![CDATA[
+                            new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{results} != null ? $F{results} : java.util.Collections.emptyList())
+                        ]]></dataSourceExpression>
+                    </datasetRun>
+
+                    <!-- Column 1: Parameter -->
+                    <c:column width="100">
+                        <c:columnHeader height="20">
+                            <staticText>
+                                <reportElement x="0" y="0" width="100" height="20"/>
+                                <text><![CDATA[Parameter]]></text>
+                            </staticText>
+                        </c:columnHeader>
+                        <c:detailCell height="20">
+                            <textField textAdjust="StretchHeight">
+                                <reportElement x="0" y="0" width="100" height="20"/>
+                                <textFieldExpression><![CDATA[$F{parameterName} != null ? $F{parameterName} : ""]]></textFieldExpression>
+                            </textField>
+                        </c:detailCell>
+                    </c:column>
+
+                    <!-- Column 2: Value -->
+                    <c:column width="70">
+                        <c:columnHeader height="20">
+                            <staticText>
+                                <reportElement x="0" y="0" width="70" height="20"/>
+                                <text><![CDATA[Value]]></text>
+                            </staticText>
+                        </c:columnHeader>
+                        <c:detailCell height="20">
+                            <textField textAdjust="StretchHeight">
+                                <reportElement x="0" y="0" width="70" height="20"/>
+                                <textFieldExpression><![CDATA[$F{value} != null ? $F{value} : ""]]></textFieldExpression>
+                            </textField>
+                        </c:detailCell>
+                    </c:column>
+
+                    <!-- Column 3: Flag -->
+                    <c:column width="80">
+                        <c:columnHeader height="20">
+                            <staticText>
+                                <reportElement x="0" y="0" width="80" height="20"/>
+                                <text><![CDATA[Flag]]></text>
+                            </staticText>
+                        </c:columnHeader>
+                        <c:detailCell height="20">
+                            <textField textAdjust="StretchHeight">
+                                <reportElement x="0" y="0" width="80" height="20"/>
+                                <textFieldExpression><![CDATA[$F{flagStatus} != null ? $F{flagStatus}.name() : ""]]></textFieldExpression>
+                            </textField>
+                        </c:detailCell>
+                    </c:column>
+
+                    <!-- Column 4: Status -->
+                    <c:column width="80">
+                        <c:columnHeader height="20">
+                            <staticText>
+                                <reportElement x="0" y="0" width="80" height="20"/>
+                                <text><![CDATA[Status]]></text>
+                            </staticText>
+                        </c:columnHeader>
+                        <c:detailCell height="20">
+                            <textField textAdjust="StretchHeight">
+                                <reportElement x="0" y="0" width="80" height="20"/>
+                                <textFieldExpression><![CDATA[$F{status} != null ? $F{status}.name() : ""]]></textFieldExpression>
+                            </textField>
+                        </c:detailCell>
+                    </c:column>
+
+                    <!-- Column 5: Comments -->
+                    <c:column width="225">
+                        <c:columnHeader height="20">
+                            <staticText>
+                                <reportElement x="0" y="0" width="225" height="20"/>
+                                <text><![CDATA[Comments]]></text>
+                            </staticText>
+                        </c:columnHeader>
+                        <c:detailCell height="20">
+                            <textField textAdjust="StretchHeight">
+                                <reportElement x="0" y="0" width="225" height="20"/>
+                                <textElement>
+                                    <font fontName="DejaVu Sans"
+                                          pdfFontName="fonts/DejaVuSans.ttf"
+                                          pdfEncoding="Identity-H"
+                                          isPdfEmbedded="true"/>
+                                </textElement>
+                                <textFieldExpression><![CDATA[$F{commentTexts} != null ? $F{commentTexts} : ""]]></textFieldExpression>
+                            </textField>
+                        </c:detailCell>
+                    </c:column>
+
+                </c:table>
+            </componentElement>
+        </band>
+    </summary>
+
+</jasperReport>

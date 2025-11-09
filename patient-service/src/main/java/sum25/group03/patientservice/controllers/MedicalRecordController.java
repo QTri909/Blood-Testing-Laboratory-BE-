@@ -1,6 +1,7 @@
 package sum25.group03.patientservice.controllers;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,7 @@ import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/medical-records")
+@RequestMapping("/api/v1/medical-records")
 @RequiredArgsConstructor
 @Slf4j
 public class MedicalRecordController {
@@ -26,8 +27,8 @@ public class MedicalRecordController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<MedicalRecordResponse> registerMedicalRecord(@Valid @RequestBody MedicalRecordRequest medicalRecordRequest) {
-        return ApiResponse.add("Created", medicalRecordService.registerMedicalRecord(medicalRecordRequest));
+    public ApiResponse<MedicalRecordResponse> registerMedicalRecord(@NotNull @RequestHeader("X-User-Id") Long creatorId) {
+        return ApiResponse.add("Created", medicalRecordService.registerMedicalRecord(creatorId));
     }
 
     @PatchMapping("/assigned-doctor")

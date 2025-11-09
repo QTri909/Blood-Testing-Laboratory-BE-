@@ -80,6 +80,36 @@ public class ApiResponse<T> {
                 .build();
     }
 
+    // handle not found error
+    public static <T> ApiResponse<T> notFound(String message, String path) {
+        return ApiResponse.<T>builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .error(HttpStatus.NOT_FOUND.getReasonPhrase())
+                .message(message)
+                .path(path)
+                .build();
+    }
+
+    // handle bad request error
+    public static <T> ApiResponse<T> badRequest(String message, String path) {
+        return ApiResponse.<T>builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(message)
+                .path(path)
+                .build();
+    }
+
+    // handle internal server error
+    public static <T> ApiResponse<T> internalServerError(String message, String path) {
+        return ApiResponse.<T>builder()
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
+                .message(message)
+                .path(path)
+                .build();
+    }
+
     public static <T> ApiResponse<T> error(HttpStatus status, String message, String path) {
         return ApiResponse.<T>builder()
                 .status(status.value())

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.patientservice.dtos.response.PatientResponseDTO;
 //import sum25.group03.patientservice.grpc.TestOrderResponse;
+import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
 import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderDTO;
 import sum25.group03.patientservice.services.interfaces.PatientService;
 
@@ -23,14 +24,23 @@ public class PatientController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<List<PatientResponseDTO>> getAllPatients(
+    public ApiResponse<List<UserSnapshotResponse>> getAllPatients(
             @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) Integer size,
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) Integer page
     ) {
         return ApiResponse.ok(patientService.getAllPatientsWith(size, page));
     }
 
-    @GetMapping("/test-orders/latest/{patientId}")
+    @GetMapping("iam")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<PatientResponseDTO>> getAllPatientsIAM(
+            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) Integer size,
+            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) Integer page
+    ) {
+        return ApiResponse.ok(patientService.getAllIAMPatientsWith(size, page));
+    }
+
+    @GetMapping("/test-orders/{patientId}")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<Object> getPatientById(
             @PathVariable(name = "patientId") Long patientId

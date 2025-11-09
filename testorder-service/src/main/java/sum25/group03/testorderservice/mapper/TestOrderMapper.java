@@ -13,6 +13,7 @@ public interface TestOrderMapper {
 
     @Mapping(target = "testResults", source = "testResults")
     @Mapping(target = "comments", source = "comments")
+    @Mapping(target = "code", source = "code")
     TestOrderResponseDTO toResponseDto(TestOrder testOrder);
 
     @Mapping(target = "testResults", source = "testResults")

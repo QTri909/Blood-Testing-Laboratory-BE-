@@ -11,7 +11,7 @@ import sum25.group03.patientservice.services.interfaces.ClinicalNoteService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/clinical-notes")
+@RequestMapping("/api/v1/clinical-notes")
 @RequiredArgsConstructor
 public class ClinicalNoteController {
 

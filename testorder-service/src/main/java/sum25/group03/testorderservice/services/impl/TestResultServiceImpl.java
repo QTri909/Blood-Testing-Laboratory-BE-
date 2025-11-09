@@ -61,24 +61,8 @@ public class TestResultServiceImpl implements TestResultService {
     // Huy
     @Override
     public TestResultResponseDTO createTestResult(TestResultRequestDTO requestDTO) {
-        log.info("Creating test result for test order id: {}", requestDTO.getTestOrderId());
-
-
-//        var testOrder = testOrderRepository.findById(requestDTO.getTestOrderId())
-//                .orElseThrow(() -> new ResourceNotFoundException("Test order not found with id: " + requestDTO.getTestOrderId()));
-
         TestResult testResult = testResultMapper.toEntity(requestDTO);
-//        testResult.setTestOrder(testOrder);
-        testResult.setCreatedAt(LocalDateTime.now());
-        testResult.setUpdatedAt(LocalDateTime.now());
-
-        if (testResult.getStatus() == null) {
-            testResult.setStatus(TestResultStatus.PENDING);
-        }
-
         TestResult savedResult = testResultRepository.save(testResult);
-        log.info("Test result created successfully with id: {}", savedResult.getId());
-
         return testResultMapper.toResponseDto(savedResult);
     }
 
@@ -129,17 +113,6 @@ public class TestResultServiceImpl implements TestResultService {
 
         testResultRepository.delete(testResult);
         log.info("Test result deleted successfully with id: {}", id);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public List<TestResultResponseDTO> getTestResultsByInstrumentId(Long instrumentId) {
-        log.info("Retrieving test results for instrument id: {}", instrumentId);
-
-        List<TestResult> testResults = testResultRepository.findByInstrumentId(instrumentId);
-        return testResults.stream()
-                .map(testResultMapper::toResponseDto)
-                .toList();
     }
 
     @Override

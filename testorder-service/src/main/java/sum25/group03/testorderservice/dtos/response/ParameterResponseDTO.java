@@ -23,4 +23,5 @@ public class ParameterResponseDTO {
     private ParameterStatus status;
     private LocalDate createdAt;
     private LocalDate updatedAt;
+    private Long price;
 }
