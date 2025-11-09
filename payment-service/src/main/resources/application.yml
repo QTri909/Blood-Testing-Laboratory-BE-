@@ -1,4 +1,4 @@
 
 spring:
   profiles:
-    active: paymentdb,redis,cors,gateways
+    active: paymentdb,redis,gateways # disable 'cors'

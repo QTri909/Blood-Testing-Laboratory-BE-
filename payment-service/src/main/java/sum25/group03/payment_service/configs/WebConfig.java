@@ -5,10 +5,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-@Configuration
-@RequiredArgsConstructor
+// Disable for applying api gateway CORS settings
+//@Configuration
+//@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
+    /*
     private final CorsProperties corsProperties;
 
     @Override
@@ -20,4 +22,5 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowCredentials(corsProperties.isAllowCredentials())
                 .maxAge(corsProperties.getMaxAge());
     }
+    */
 }
