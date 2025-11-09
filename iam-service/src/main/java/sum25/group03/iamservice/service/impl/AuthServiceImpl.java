@@ -1,4 +1,4 @@
-package sum25.group03.iamservice.service;
+package sum25.group03.iamservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -10,6 +10,7 @@ import sum25.group03.iamservice.entity.User;
 import sum25.group03.iamservice.repository.UserRepository;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
+import sum25.group03.iamservice.service.Interface.AuthService;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -67,10 +68,9 @@ public class AuthServiceImpl implements AuthService {
 
         try {
             // 3. Dùng AdminInitiateAuth thay vì InitiateAuth
-            AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
-                    .userPoolId(config.getUserPoolId())
+            InitiateAuthRequest authRequest = InitiateAuthRequest.builder()
                     .clientId(config.getClientId())
-                    .authFlow(AuthFlowType.ADMIN_USER_PASSWORD_AUTH)
+                    .authFlow(AuthFlowType.USER_PASSWORD_AUTH)
                     .authParameters(Map.of(
                             "USERNAME", request.getEmail(),
                             "PASSWORD", request.getPassword(),
@@ -78,7 +78,7 @@ public class AuthServiceImpl implements AuthService {
                     ))
                     .build();
 
-            AdminInitiateAuthResponse response = cognitoClient.adminInitiateAuth(authRequest);
+            InitiateAuthResponse response = cognitoClient.initiateAuth(authRequest);
 
             if (response.challengeName() != null) {
                 String challenge = response.challengeNameAsString();

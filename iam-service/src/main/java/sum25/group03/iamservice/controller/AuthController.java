@@ -4,7 +4,6 @@ package sum25.group03.iamservice.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.iamservice.dto.request.ConfirmForgotPasswordRequest;
@@ -12,10 +11,10 @@ import sum25.group03.iamservice.dto.request.ForgotPasswordRequest;
 import sum25.group03.iamservice.dto.request.LoginRequest;
 import sum25.group03.iamservice.dto.request.PasswordChangeRequest;
 import sum25.group03.iamservice.dto.response.LoginResponse;
-import sum25.group03.iamservice.service.AuthService;
+import sum25.group03.iamservice.service.Interface.AuthService;
 
 import jakarta.validation.Valid;
-import sum25.group03.iamservice.service.UserService;
+import sum25.group03.iamservice.service.Interface.UserService;
 
 import java.util.List;
 import java.util.Map;
@@ -37,6 +36,8 @@ public class AuthController {
                 .message("Login successful")
                 .build();
     }
+
+
 
     @GetMapping("/privileges")
     @ResponseStatus(HttpStatus.OK)

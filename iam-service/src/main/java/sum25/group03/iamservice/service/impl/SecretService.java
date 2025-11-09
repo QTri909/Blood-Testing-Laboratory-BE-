@@ -1,4 +1,4 @@
-package sum25.group03.iamservice.service;
+package sum25.group03.iamservice.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;

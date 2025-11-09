@@ -18,7 +18,7 @@
     </properties>
 
     <dependencies>
-        <!-- ✅ AWS Lambda Core (bắt buộc) -->
+        <!--  AWS Lambda Core (bắt buộc) -->
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-core</artifactId>

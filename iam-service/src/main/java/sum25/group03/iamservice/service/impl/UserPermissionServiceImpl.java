@@ -1,4 +1,4 @@
-package sum25.group03.iamservice.service;
+package sum25.group03.iamservice.service.impl;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,7 @@ import sum25.group03.iamservice.entity.Role;
 import sum25.group03.iamservice.entity.User;
 import sum25.group03.iamservice.entity.UserPrivilege;
 import sum25.group03.iamservice.repository.UserRepository;
-import sum25.group03.iamservice.service.UserPermissionService;
+import sum25.group03.iamservice.service.Interface.UserPermissionService;
 
 import java.util.HashSet;
 import java.util.Set;

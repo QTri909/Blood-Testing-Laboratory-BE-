@@ -1,4 +1,4 @@
-package sum25.group03.iamservice.service;
+package sum25.group03.iamservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +17,9 @@ import sum25.group03.iamservice.entity.UserRole;
 import sum25.group03.iamservice.repository.RoleRepository;
 import sum25.group03.iamservice.repository.UserRepository;
 import sum25.group03.iamservice.repository.UserRoleRepository;
+import sum25.group03.iamservice.service.Interface.AuditLogService;
+import sum25.group03.iamservice.service.Interface.CognitoService;
+import sum25.group03.iamservice.service.Interface.UserService;
 
 import java.util.*;
 
