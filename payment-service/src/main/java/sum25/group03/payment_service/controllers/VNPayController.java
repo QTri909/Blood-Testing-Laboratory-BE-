@@ -60,7 +60,7 @@ public class VNPayController {
                 frontEndUrl,
                 response.getStatus(),
                 response.getOrderCode(),
-                response.getTransactionId());
+                response.getTxnRef());
 
         return new RedirectView(urlRedirect);
     }

@@ -191,6 +191,7 @@ public class VNPayServiceImpl implements VNPayService {
         String txnRef = params.get("vnp_TxnRef");
         var dto = new PaymentResponseDTO();
         dto.setTxnRef(txnRef);
+        dto.setOrderCode(params.get("vnp_OrderInfo"));
         String status = cache.getStatus(txnRef).orElse("UNKNOWN");
         dto.setStatus(status);
         dto.setDataSource(status.equals("UNKNOWN") ? "DATABASE" : "REDIS");
