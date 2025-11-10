@@ -1,4 +1,4 @@
-package sum25.group03.iamservice.config;
+package sum25.group03.common.response.security;
 
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
@@ -38,10 +38,10 @@ public class SecurityConfig {
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwkSetUri(
-                                "https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_7UGXSOgJj/.well-known/jwks.json"
+                                                "https://cognito-idp.ap-southeast-2.amazonaws.com/ap-southeast-2_7UGXSOgJj/.well-known/jwks.json"
 
-                        )
-                                .jwtAuthenticationConverter(customJwtConverter)
+                                        )
+                                        .jwtAuthenticationConverter(customJwtConverter)
                         )
                         .authenticationEntryPoint((request, response, authException) ->
                                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")

@@ -12,6 +12,7 @@ import sum25.group03.iamservice.repository.UserRepository;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 import sum25.group03.iamservice.service.Interface.AuthService;
+import sum25.group03.iamservice.service.KafkaProducerService;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;

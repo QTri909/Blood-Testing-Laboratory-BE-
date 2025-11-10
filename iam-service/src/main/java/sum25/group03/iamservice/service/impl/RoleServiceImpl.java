@@ -12,6 +12,7 @@ import sum25.group03.iamservice.event.RoleUpdatedEvent;
 import sum25.group03.iamservice.repository.*;
 import sum25.group03.iamservice.service.Interface.AuditLogService;
 import sum25.group03.iamservice.service.Interface.RoleService;
+import sum25.group03.iamservice.service.KafkaProducerService;
 
 import java.util.HashSet;
 import java.util.List;

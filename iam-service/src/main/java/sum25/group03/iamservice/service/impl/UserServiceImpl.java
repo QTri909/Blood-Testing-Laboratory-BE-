@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.dto.request.UserUpdateRequest;
-
 import sum25.group03.iamservice.dto.response.UserResponse;
 import sum25.group03.iamservice.entity.Role;
 import sum25.group03.iamservice.entity.User;
@@ -23,6 +22,7 @@ import sum25.group03.iamservice.repository.UserRoleRepository;
 import sum25.group03.iamservice.service.Interface.AuditLogService;
 import sum25.group03.iamservice.service.Interface.CognitoService;
 import sum25.group03.iamservice.service.Interface.UserService;
+import sum25.group03.iamservice.service.KafkaProducerService;
 
 import java.util.*;
 
