@@ -176,18 +176,39 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         Page<MedicalRecordEntity> medicalRecordEntities = medicalRecordRepository.findAll(pageable);
 
         Page<MedicalRecordResponse> result = medicalRecordMapper.toMedicalRecordResponsePage(medicalRecordEntities);
+
+        // get all patientIds and assignedUserIds to reduce number of queries
+        List<Long> patientIds = result.stream()
+                .map(MedicalRecordResponse::getPatientId)
+                .distinct()
+                .collect(Collectors.toList());
+        List<Long> assignedUserIds = result.stream()
+                .map(MedicalRecordResponse::getAssignedUser)
+                .distinct()
+                .collect(Collectors.toList());
+
+        // use query in clause to get all user snapshots at once
+        var patientSnapshots = userSnapshotRepository.findByExternalUserIdIn(patientIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        snapshot -> snapshot.getExternalUserId(),
+                        snapshot -> snapshot.getFullName()
+                ));
+
+        var assignedUserSnapshots = userSnapshotRepository.findByExternalUserIdIn(assignedUserIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        snapshot -> snapshot.getExternalUserId(),
+                        snapshot -> snapshot.getFullName()
+                ));
+
         // adjust result to add patientName and assignedUserName
         result.forEach(entity -> {
             Long patientId = entity.getPatientId();
             Long assignedUserId = entity.getAssignedUser();
 
-            String patientName = userSnapshotRepository.findByExternalUserId(patientId)
-                    .map(userSnapshot -> userSnapshot.getFullName())
-                    .orElse(null);
-
-            String assignedUserName = userSnapshotRepository.findByExternalUserId(assignedUserId)
-                    .map(userSnapshot -> userSnapshot.getFullName())
-                    .orElse(null);
+            String patientName = patientSnapshots.get(patientId);
+            String assignedUserName = assignedUserSnapshots.get(assignedUserId);
 
             entity.setPatientName(patientName);
             entity.setAssignedUserName(assignedUserName);
