@@ -22,6 +22,7 @@ import sum25.group03.patientservice.mapper.MedicalRecordMapper;
 import sum25.group03.patientservice.repositories.postgres.MedicalRecordRepository;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
+import sum25.group03.patientservice.services.interfaces.UserSnapshotService;
 
 
 import java.util.List;
@@ -41,6 +42,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private final AuditEntryMongoServiceImpl auditEntryMongoService;
 
     private final ActionLogService actionLogService;
+    private final UserSnapshotService userSnapshotService;
 
     // check if a viewerId belongs to our system or not, if not, throw exception and warn to admin
     private void validateViewerExistence(Long actorId) {
@@ -147,9 +149,18 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         // log the view action
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_PATIENT_MEDICAL_RECORD_DETAIL, recordId);
 
-        return medicalRecordRepository.findById(recordId)
+        MedicalRecordResponse result = medicalRecordRepository.findById(recordId)
                 .map(medicalRecordMapper::toMedicalRecordResponse)
                 .orElseThrow(() -> new RuntimeException("Medical Record not found"));
+
+        // search for patient name and assigned user name
+        Long patientId = result.getPatientId();
+        Long assignedUserId = result.getAssignedUser();
+        String patientName = userSnapshotService.getFullNameByExternalUserId(patientId);
+        String assignedUserName = userSnapshotService.getFullNameByExternalUserId(assignedUserId);
+        result.setPatientName(patientName);
+        result.setAssignedUserName(assignedUserName);
+        return result;
     }
 
     @Override

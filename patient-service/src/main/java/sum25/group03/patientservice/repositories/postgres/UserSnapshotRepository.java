@@ -15,6 +15,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserSnapshotRepository extends JpaRepository<UserSnapshotEntity, Long> {
+
     Optional<UserSnapshotEntity> findByExternalUserId(Long externalUserId);
     boolean existsByExternalUserId(Long externalUserId);
 
