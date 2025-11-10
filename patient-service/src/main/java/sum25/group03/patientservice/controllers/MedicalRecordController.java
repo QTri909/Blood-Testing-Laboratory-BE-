@@ -4,6 +4,9 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
@@ -39,13 +42,20 @@ public class MedicalRecordController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<List<MedicalRecordResponse>> getAll(@RequestParam Long viewerId) {
-        return ApiResponse.ok(medicalRecordService.getAll(viewerId));
+    public ApiResponse<Page<MedicalRecordResponse>> getAll(
+            @RequestHeader("X-User-Id") Long viewerId,
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "size", defaultValue = "10") Integer size
+    ) {
+        return ApiResponse.ok(medicalRecordService.getAll(page, size, viewerId));
     }
 
     @GetMapping("/{recordId}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<MedicalRecordResponse> getById(@PathVariable Long recordId, @RequestParam Long viewerId) {
+    public ApiResponse<MedicalRecordResponse> getById(
+            @PathVariable Long recordId,
+            @RequestHeader("X-User-Id") Long viewerId
+    ) {
         return ApiResponse.ok(medicalRecordService.getById(recordId, viewerId));
     }
 

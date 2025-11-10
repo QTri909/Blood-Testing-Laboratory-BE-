@@ -17,4 +17,6 @@ public class MedicalRecordResponse {
     private Long updatedBy;
     private LocalDateTime visitDate;
     private UUID recordCode;
+    private String patientName;
+    private String assignedUserName;
 }

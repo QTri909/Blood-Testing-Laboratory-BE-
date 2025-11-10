@@ -2,6 +2,10 @@ package sum25.group03.patientservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.patientservice.documents.AuditEntryDocument;
@@ -156,7 +160,9 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Override
-    public List<MedicalRecordResponse> getAll(Long viewerId) {
+    public Page<MedicalRecordResponse> getAll(
+            Integer page, Integer size, Long viewerId
+    ) {
 
         // validate viewer existence
         validateViewerExistence(viewerId);
@@ -164,10 +170,29 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         // log the view all action
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_ALL_PATIENT_MEDICAL_RECORDS, null);
 
-        return medicalRecordRepository.findAll()
-                .stream()
-                .map(medicalRecordMapper::toMedicalRecordResponse)
-                .collect(Collectors.toList());
+        // create pagable with desc by createdAt
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<MedicalRecordEntity> medicalRecordEntities = medicalRecordRepository.findAll(pageable);
+
+        Page<MedicalRecordResponse> result = medicalRecordMapper.toMedicalRecordResponsePage(medicalRecordEntities);
+        // adjust result to add patientName and assignedUserName
+        result.forEach(entity -> {
+            Long patientId = entity.getPatientId();
+            Long assignedUserId = entity.getAssignedUser();
+
+            String patientName = userSnapshotRepository.findByExternalUserId(patientId)
+                    .map(userSnapshot -> userSnapshot.getFullName())
+                    .orElse(null);
+
+            String assignedUserName = userSnapshotRepository.findByExternalUserId(assignedUserId)
+                    .map(userSnapshot -> userSnapshot.getFullName())
+                    .orElse(null);
+
+            entity.setPatientName(patientName);
+            entity.setAssignedUserName(assignedUserName);
+        });
+        return result;
     }
 
     @Override

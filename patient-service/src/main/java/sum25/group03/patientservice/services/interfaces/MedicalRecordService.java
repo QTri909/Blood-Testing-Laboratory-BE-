@@ -1,5 +1,6 @@
 package sum25.group03.patientservice.services.interfaces;
 
+import org.springframework.data.domain.Page;
 import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
@@ -13,7 +14,7 @@ public interface MedicalRecordService {
     UpdatedAssignedDoctor updateAssignedDoctor(UpdatedAssignedDoctor updateInfo);
     MedicalRecordResponse getById(Long recordId, Long viewerId);
     MedicalRecordResponse getByCode(UUID recordCode);
-    List<MedicalRecordResponse> getAll(Long viewerId);
+    Page<MedicalRecordResponse> getAll(Integer page, Integer size, Long viewerId);
     List<MedicalRecordResponse> getByPatientId(Long patientId);
     void deleteById(NewRecordStatusRequest newStatusRequest);
 }
