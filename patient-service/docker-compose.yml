@@ -1,0 +1,49 @@
+version: '4'
+services:
+  mongodb_audit_service:
+    image: mongo:7.0.5
+    container_name: mongodb_audit_service_container
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 12345
+      MONGO_INITDB_DATABASE: medicalAuditDb
+    volumes:
+      - medicalAuditVolume:/data/db
+    networks:
+      medical_audit_mongo_network:
+
+  postgres-patient-service:
+    image: postgres:15.5
+    container_name: postgres_patient_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: patientdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - patient_volume:/var/lib/postgresql/data
+
+  patient-elasticsearch-service:
+    container_name: patient-elasticsearch-container
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    networks:
+      - patient-elasticsearch-net
+    ports:
+      - 9200:9200
+    volumes:
+      - patient-elasticsearch-data:/usr/share/elasticsearch/data
+
+volumes:
+  medicalAuditVolume:
+  patient_volume:
+  patient-elasticsearch-data:
+
+networks:
+  medical_audit_mongo_network:
+  patient-elasticsearch-net:

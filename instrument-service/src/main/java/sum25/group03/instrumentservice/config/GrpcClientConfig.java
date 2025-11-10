@@ -3,7 +3,6 @@ package sum25.group03.instrumentservice.config;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import net.devh.boot.grpc.client.channelfactory.GrpcChannelConfigurer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,0 +1,32 @@
+
+version: '3.8'
+services:
+  postgres-payment-service:
+    image: postgres:15.5
+    container_name: postgres_payment_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: paymentdb
+    ports:
+      - "5435:5432"
+    volumes:
+      - patient_volume:/var/lib/postgresql/data
+    networks:
+      - payment-network
+
+  redis-payment-service:
+    image: redis:7-alpine
+    container_name: redis_payment_cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_payment_volume:/data
+    networks:
+      - payment-network
+volumes:
+  patient_volume:
+  redis_payment_volume:
+networks:
+  payment-network:
+    driver: bridge

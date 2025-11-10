@@ -8,6 +8,7 @@ import sum25.group03.iamservice.dto.request.UserUpdateRequest;
 import sum25.group03.iamservice.dto.response.UserResponse;
 
 import java.util.List;
+import java.util.Map;
 
 
 public interface UserService {
@@ -18,5 +19,8 @@ public interface UserService {
     Page<UserResponse> getAllUsers(Pageable pageable);
     Page<UserResponse> getAllPatients(Pageable pageable);
 
+    Map<String, List<String>> getRolesAndPrivilegesByEmail(String email);
+
+    UserResponse getUserById(Long id);
 
 }

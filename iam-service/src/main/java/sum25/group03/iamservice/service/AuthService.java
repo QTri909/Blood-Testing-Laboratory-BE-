@@ -9,4 +9,10 @@ public interface AuthService {
 
     LoginResponse login(LoginRequest request);
     LoginResponse refreshToken(RefreshTokenRequest refreshToken);
+    void changePassword(String accessToken, String oldPassword, String newPassword);
+
+    void forgotPassword(String email);
+    void confirmForgotPassword(String email, String confirmationCode, String newPassword);
+
+    void logout(String accessToken);
 }

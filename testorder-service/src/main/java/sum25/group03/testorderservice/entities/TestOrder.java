@@ -4,9 +4,12 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
-import sum25.group03.testorderservice.enums.TestOrderStatus; // Giả sử bạn có enum này
+import org.hibernate.type.SqlTypes;
+import sum25.group03.testorderservice.enums.TestOrderStatus;
+import sum25.group03.testorderservice.enums.TestOrderType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,31 +31,36 @@ public class TestOrder {
 
     @UuidGenerator
     @Column(name = "code", nullable = false, unique = true, updatable = false)
-    private String code;
+    @JdbcTypeCode(SqlTypes.UUID)
+    private UUID code;
+
+    @Pattern(regexp = "^BC-\\d{6}$", message = "Order number must follow the pattern 'BC-XXXXXX' where X is a digit.")
+    @Column(name = "barcode", nullable = false, unique = true)
+    private String barcode;
+
+    @Enumerated(EnumType.STRING)
+    private TestOrderType type;
 
     @Column(name = "external_medical_record_id", nullable = true)
     private Long externalMedicalRecordId;
 
-    @Column(name = "patient_id", nullable = true)
-    private Long patientId;
+    @Column(name = "patient_id", nullable = false)
+    private Long patientId; // User Id ( IAMService)
 
-    @Column(name = "created_by")
-    private Long createdBy;
-
-    @Pattern(regexp = "^BC-\\d{6}$",
-            message = "Barcode phải có định dạng BC-123456 (ví dụ: BC-987654)")
-    @Column(name= "barcode")
-    private String barcode;
-
+    @Column(name = "created_by", nullable = true)
+    private Long createdBy; // user ID ( IAMService)
 
     @Column(name = "run_by")
-    private Long runBy;
+    private Long runBy; // user ID ( IAMService)
 
     @Column(name = "run_date")
     private LocalDate runDate;
 
     @Enumerated(EnumType.STRING)
     private TestOrderStatus status;
+
+    @Column(name = "instrument_id")
+    private Long instrumentId;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -71,12 +79,7 @@ public class TestOrder {
 
     @PrePersist
     private void prePersist() {
-        if (this.status == null) {
-            if (this.patientId == null) {
-                this.status = TestOrderStatus.UNMATCHED;
-            } else {
-                this.status = TestOrderStatus.PENDING;
-            }
-        }
+        if (this.status == null)
+            this.status = TestOrderStatus.WAITING_PAYMENT;
     }
 }

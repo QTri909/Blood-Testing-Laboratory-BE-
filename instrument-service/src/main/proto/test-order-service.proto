@@ -1,16 +1,26 @@
 syntax = "proto3";
-
 package sum25.group03.testorder;
 option java_multiple_files = true;
 option java_package = "sum25.group03.testorder.grpc";
 
-
 service TestOrderService {
-
   rpc GetTestOrderByBarcode(GetTestOrderByBarcodeRequest) returns (GetTestOrderByBarcodeResponse);
   rpc CreateUnmatchedOrder(CreateUnmatchedOrderRequest) returns (CreateUnmatchedOrderResponse);
+  rpc GetLatestTestOrderByPatientId (GetLatestTestOrderRequest) returns (TestOrderResponse);
 }
 
+message GetLatestTestOrderRequest {
+  int64 patientId = 1;
+}
+
+message TestOrderResponse {
+  int64 id = 1;
+  string barcode = 2;
+  string type = 3;
+  int64 patientId = 4;
+  string status = 5;
+  string createdAt = 6;
+}
 
 message GetTestOrderByBarcodeRequest {
   string barcode = 1;
@@ -36,6 +46,7 @@ message GetTestOrderByBarcodeResponse {
 message CreateUnmatchedOrderRequest {
   string barcode = 1;
 }
+
 message CreateUnmatchedOrderResponse {
   int64 id = 1;
   string code = 3;

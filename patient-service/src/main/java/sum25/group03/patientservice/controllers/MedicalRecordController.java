@@ -1,11 +1,12 @@
 package sum25.group03.patientservice.controllers;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
 import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
@@ -17,7 +18,7 @@ import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/medical-records")
+@RequestMapping("/api/v1/medical-records")
 @RequiredArgsConstructor
 @Slf4j
 public class MedicalRecordController {
@@ -26,24 +27,26 @@ public class MedicalRecordController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public MedicalRecordResponse registerMedicalRecord(@Valid @RequestBody MedicalRecordRequest medicalRecordRequest) {
-        return medicalRecordService.registerMedicalRecord(medicalRecordRequest);
+    public ApiResponse<MedicalRecordResponse> registerMedicalRecord(@NotNull @RequestHeader("X-User-Id") Long creatorId) {
+        return ApiResponse.add("Created", medicalRecordService.registerMedicalRecord(creatorId));
     }
 
     @PatchMapping("/assigned-doctor")
     @ResponseStatus(HttpStatus.OK)
-    public UpdatedAssignedDoctor updateAssignedDoctor(@Valid @RequestBody UpdatedAssignedDoctor updateInfo) {
-        return medicalRecordService.updateAssignedDoctor(updateInfo);
+    public ApiResponse<UpdatedAssignedDoctor> updateAssignedDoctor(@Valid @RequestBody UpdatedAssignedDoctor updateInfo) {
+        return ApiResponse.ok(medicalRecordService.updateAssignedDoctor(updateInfo));
     }
 
     @GetMapping
-    public ResponseEntity<List<MedicalRecordResponse>> getAll(@RequestParam Long viewerId) {
-        return ResponseEntity.ok(medicalRecordService.getAll(viewerId));
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<MedicalRecordResponse>> getAll(@RequestParam Long viewerId) {
+        return ApiResponse.ok(medicalRecordService.getAll(viewerId));
     }
 
     @GetMapping("/{recordId}")
-    public ResponseEntity<MedicalRecordResponse> getById(@PathVariable Long recordId, @RequestParam Long viewerId) {
-        return ResponseEntity.ok(medicalRecordService.getById(recordId, viewerId));
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<MedicalRecordResponse> getById(@PathVariable Long recordId, @RequestParam Long viewerId) {
+        return ApiResponse.ok(medicalRecordService.getById(recordId, viewerId));
     }
 
     @DeleteMapping("/{recordId}")
@@ -56,10 +59,4 @@ public class MedicalRecordController {
         medicalRecordService.deleteById(requestInfo);
     }
 
-    /*
-    @GetMapping("/patient/{patientId}")
-    public ResponseEntity<List<MedicalRecordResponse>> getByPatientId(@PathVariable Long patientId) {
-        return ResponseEntity.ok(medicalRecordService.getByPatientId(patientId));
-    }
-     */
 }

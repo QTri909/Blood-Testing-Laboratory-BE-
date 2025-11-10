@@ -6,6 +6,9 @@ import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.iamservice.dto.request.RoleCreateRequest;
 import sum25.group03.iamservice.dto.response.RoleResponse;
 import sum25.group03.iamservice.entity.*;
+import sum25.group03.iamservice.event.RoleCreatedEvent;
+import sum25.group03.iamservice.event.RoleDeletedEvent;
+import sum25.group03.iamservice.event.RoleUpdatedEvent;
 import sum25.group03.iamservice.repository.*;
 
 import java.util.HashSet;
@@ -23,6 +26,7 @@ public class RoleServiceImpl implements RoleService {
     private final PrivilegeRepository privilegeRepository;
     private final RolePrivilegeRepository rolePrivilegeRepository;
     private final UserPrivilegeRepository userPrivilegeRepository;
+    private final KafkaProducerService kafkaProducerService;
 
     @Override
     public RoleResponse createRole(RoleCreateRequest request) {
@@ -69,6 +73,22 @@ public class RoleServiceImpl implements RoleService {
                     "Created role: " + role.getRoleCode()
             );
 
+            try {
+                RoleCreatedEvent event = RoleCreatedEvent.builder()
+                        .Id(role.getId())
+                        .roleCode(role.getRoleCode())
+                        .roleName(role.getRoleName())
+                        .roleDescription(role.getRoleDescription())
+                        .privileges(
+                                role.getRolePrivileges().stream()
+                                        .map(rp -> rp.getPrivilege().getPrivilegeName())
+                                        .collect(Collectors.toSet())
+                        )
+                        .build();
+                kafkaProducerService.sendRoleCreated(event);
+            } catch (Exception ignored) {
+            }
+
         }
 
 
@@ -112,6 +132,22 @@ public class RoleServiceImpl implements RoleService {
                 "Updated privileges for role: " + role.getRoleCode()
         );
 
+        try {
+            RoleUpdatedEvent event = RoleUpdatedEvent.builder()
+                    .Id(role.getId())
+                    .roleCode(role.getRoleCode())
+                    .roleName(role.getRoleName())
+                    .roleDescription(role.getRoleDescription())
+                    .privileges(
+                            rolePrivileges.stream()
+                                    .map(rp -> rp.getPrivilege().getPrivilegeName())
+                                    .collect(Collectors.toSet())
+                    )
+                    .build();
+            kafkaProducerService.sendRoleUpdated(event);
+        } catch (Exception ignored) {
+        }
+
 
 
         cascadeRolePermissionChanges(roleId);
@@ -120,6 +156,7 @@ public class RoleServiceImpl implements RoleService {
                 .id(role.getId())
                 .roleName(role.getRoleName())
                 .roleCode(role.getRoleCode())
+                .roleDescription(role.getRoleDescription())
                 .privileges(
                         rolePrivileges.stream().map(rp -> rp.getPrivilege().getPrivilegeName()).collect(Collectors.toSet())
                 )
@@ -130,13 +167,13 @@ public class RoleServiceImpl implements RoleService {
     public void cascadeRolePermissionChanges(Long roleId) {
         List<UserRole> userRoles = userRoleRepository.findByRoleId(roleId);
 
-        // Lấy các quyền mới của role
+
         List<Privilege> privileges = privilegeRepository.findByRoleId(roleId);
 
         for (UserRole ur : userRoles) {
             userPrivilegeRepository.deleteByUserId(ur.getUser().getId());
 
-            // Cấp lại quyền tương ứng
+
             List<UserPrivilege> ups = privileges.stream()
                     .map(p -> UserPrivilege.builder()
                             .user(ur.getUser())
@@ -181,7 +218,32 @@ public class RoleServiceImpl implements RoleService {
                 "system",
                 "Deleted role: " + role.getRoleCode()
         );
+        try {
+            RoleDeletedEvent event = RoleDeletedEvent.builder()
+                    .Id(role.getId())
+                    .roleCode(role.getRoleCode())
+                    .roleName(role.getRoleName())
+                    .roleDescription(role.getRoleDescription())
+                    .build();
+            kafkaProducerService.sendRoleDeleted(event);
+        } catch (Exception ignored) {
+        }
 
+    }
 
+    @Override
+    public List<RoleResponse> getAllRoles() {
+        List<Role> roles = roleRepository.findAll();
+
+        return roles.stream().map(role -> RoleResponse.builder()
+                .id(role.getId())
+                .roleName(role.getRoleName())
+                .roleCode(role.getRoleCode())
+                .roleDescription(role.getRoleDescription())
+                .privileges(role.getRolePrivileges().stream()
+                        .map(rp -> rp.getPrivilege().getPrivilegeName())
+                        .collect(Collectors.toSet()))
+                .build()
+        ).collect(Collectors.toList());
     }
 }

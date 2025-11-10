@@ -1,5 +1,5 @@
 server:
-  port: 8086
+  port: 8081
   error:
     include-stacktrace: never
     include-message: always
@@ -37,10 +37,10 @@ logging:
 grpc:
   warehouse:
     host: localhost
-    port: 9001
+    port: 9002
   testorder:
     host: localhost
-    port: 9002
+    port: 9001
 
 aws:
   region: ap-southeast-1

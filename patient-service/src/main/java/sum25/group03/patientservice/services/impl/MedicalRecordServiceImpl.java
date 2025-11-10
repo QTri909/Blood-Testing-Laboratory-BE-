@@ -2,12 +2,9 @@ package sum25.group03.patientservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.patientservice.documents.AuditEntryDocument;
-import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
 import sum25.group03.patientservice.dtos.response.MedicalRecordResponse;
@@ -32,14 +29,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MedicalRecordServiceImpl implements MedicalRecordService {
 
-    private static final Logger log = LoggerFactory.getLogger(MedicalRecordServiceImpl.class);
     private final MedicalRecordRepository medicalRecordRepository;
     private final MedicalRecordMapper medicalRecordMapper;
     private final UserSnapshotRepository userSnapshotRepository;
 
     private final MedicalRecordMongoServiceImpl medicalRecordMongoService;
     private final AuditEntryMongoServiceImpl auditEntryMongoService;
-    private final MedicalRecordMapper recordMapper;
 
     private final ActionLogService actionLogService;
 
@@ -53,21 +48,25 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Transactional
-    public MedicalRecordResponse registerMedicalRecord(MedicalRecordRequest request) {
+    public MedicalRecordResponse registerMedicalRecord(Long creatorId) {
 
         // map request to entity
         MedicalRecordEntity entity = MedicalRecordEntity.builder()
-                .patientId(request.patientId())
-                .assignedUser(request.assignedUser())
-                .createdBy(request.createdBy())
-                .updatedBy(request.updatedBy())
-                .build();
+                        .createdBy(creatorId)
+                        .build();
 
         // save to database
         medicalRecordRepository.save(entity);
 
         // save to mongoDb
         medicalRecordMongoService.createNewMedicalRecordInMongoDb(entity);
+
+        // logs:
+        actionLogService.logAction(
+                creatorId,
+                ActionTypeFeatures.CREATE_NEW_PATIENT_MEDICAL_RECORD,
+                entity.getRecordId()
+        );
 
         return medicalRecordMapper.toMedicalRecordResponse(entity);
     }
@@ -195,7 +194,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 recordId, MedicalRecordStatus.DELETED
         ).orElseThrow(() -> new RuntimeException("Medical Record not found!"));
 
-        // soft' delete from database, and log the delete action
+        // soft delete from database, and log the delete action
         MedicalRecordStatus oldStatus = entity.getStatus();
         entity.setStatus(newStatus);
         entity.setUpdatedBy(deleterId);
@@ -213,4 +212,5 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .build();
         auditEntryMongoService.saveAuditEntry(auditEntryStatusChange);
     }
+
 }

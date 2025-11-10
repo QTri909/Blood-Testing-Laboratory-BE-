@@ -81,7 +81,7 @@ public class MedicalRecordEntity implements Serializable {
     @PrePersist
     public void prePersist() {
         if (status == null) {
-            status = MedicalRecordStatus.ACTIVE;
+            status = MedicalRecordStatus.EMPTY;
         }
     }
 

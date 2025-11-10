@@ -15,32 +15,19 @@ import java.util.List;
 public class TestOrderResponse{
 
     private Long id;
-
     private Long externalMedicalRecordId;
-
     private String code;
-
     private Long patientId;
-
     private Long createdBy;
-
     private Long runBy;
-
     private String barcode;
-
     private String testType;
-
-
     private LocalDate runDate;
-
     private TestOrderStatus status;
-
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
 
     // Nested
     private List<TestResultResponse> testResults;
-
-    private List<CommentResponse> comments;
+    private List<CommentResponseDTO> comments;
 }

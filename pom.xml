@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>api-gateway</module>
         <module>iam-service</module>
         <module>instrument-service</module>
         <module>monitoring-service</module>
@@ -17,5 +18,6 @@
         <module>testorder-service</module>
         <module>warehouse-service</module>
         <module>payment-service</module>
+        <module>common</module>
     </modules>
 </project>

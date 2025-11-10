@@ -6,20 +6,27 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.testorderservice.dtos.request.TestOrderPatientInfo;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.*;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
 import sum25.group03.testorderservice.entities.TestOrder;
+import sum25.group03.testorderservice.entities.TestResult;
 import sum25.group03.testorderservice.enums.ActionTypeFeatures;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
+import sum25.group03.testorderservice.helpers.ParameterHelpers;
 import sum25.group03.testorderservice.mapper.TestOrderMapper;
+import sum25.group03.testorderservice.mapper.TestResultMapper;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
+import sum25.group03.testorderservice.repositories.TestResultRepository;
+import sum25.group03.testorderservice.services.interfaces.TestOrderKafkaProducer;
 import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 import sum25.group03.testorderservice.specification.TestOrderSpecification;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,18 +36,23 @@ import java.util.stream.Collectors;
 public class TestOrderServiceImpl implements TestOrderService {
 
     private final TestOrderRepository testOrderRepository;
-    private final TestOrderMapper testOrderMapper;
+    private final TestOrderKafkaProducer testOrderKafkaProducer;
 
     private final TestOrderRepository repository;
-    private final TestOrderMapper mapper;
+    private final TestOrderMapper testOrderMapper;
+
+    private final TestResultMapper testResultMapper;
     private final ActionLogService actionLogService;
+
+    private final ParameterHelpers parameterHelpers;
+
 
     // -------- THUYEN--------
     // TODO 1: Write a function call to IAM service to verify viewerId exists in the system
     // If not, throw an exception and log a warning to the admin via cloudwatch logging
 
     @Override
-    public TestOrderResponse getTestOrderById(Long id, Long viewerId) {
+    public TestOrderResponseDTO getTestOrderById(Long id, Long viewerId) {
 
         // TODO 2: Verify viewerId existence in the system using todo_1
 
@@ -49,11 +61,29 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         TestOrder entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TestOrder not found with id " + id));
-        return mapper.toResponse(entity);
+
+        // get all related test results and map to DTOs
+        List<TestResult> relatedResults = entity.getTestResults();
+        List<TestResultResponseDTO> testResultDtos = testResultMapper.toResponseDtos(relatedResults);
+
+        // adjust parameter prices in test results
+        Long totalPrice = 0L;
+        Map<Long, Long> parameterPriceMap = parameterHelpers.loadParameterIdWithPriceMap();
+        for (TestResultResponseDTO resultDto : testResultDtos) {
+            Long parameterId = resultDto.getParameterId();
+            Long price = parameterPriceMap.get(parameterId);
+            totalPrice += price;
+            resultDto.setPrice(price);
+        }
+
+        TestOrderResponseDTO result = testOrderMapper.toResponseDto(entity);
+        result.setTestResults(testResultDtos);
+        result.setTotalPrice(totalPrice);
+        return result;
     }
 
     @Override
-    public List<TestOrderResponse> getAllTestOrders(Long viewerId) {
+    public List<TestOrderResponseDTO> getAllTestOrders(Long viewerId) {
 
         // TODO 3: Verify viewerId existence in the system using todo_1
 
@@ -61,11 +91,16 @@ public class TestOrderServiceImpl implements TestOrderService {
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
 
         List<TestOrder> orders = repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-        return orders.stream().map(mapper::toResponse).toList();
+        // debug:
+        for (TestOrder test: orders) {
+            log.info("Test order code: {}", test.getCode());
+        }
+
+        return orders.stream().map(testOrderMapper::toResponseDto).toList();
     }
 
     @Override
-    public List<TestOrderResponse> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId) {
+    public List<TestOrderResponseDTO> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId) {
 
         // TODO 4: Verify viewerId existence in the system using todo_1
 
@@ -79,21 +114,32 @@ public class TestOrderServiceImpl implements TestOrderService {
                         .and(TestOrderSpecification.createdBetween(filterInfo.fromDate(), filterInfo.toDate()));
 
         List<TestOrder> results = repository.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return results.stream().map(mapper::toResponse).toList();
+        return results.stream().map(testOrderMapper::toResponseDto).toList();
     }
 
     // ------- HUY -----------
     @Override
-    public TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO) {
-        log.info("Creating new test order for patientId: {}", requestDTO.getPatientId());
+    public TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO, Long createdBy) {
 
+        // get patientInfo from requestDTO
+        TestOrderPatientInfo patientInfo = requestDTO.getPatientInfo();
+
+        // map requestDTO to entity
         TestOrder testOrder = testOrderMapper.toEntity(requestDTO);
-        testOrder.setStatus(TestOrderStatus.PENDING);
-        testOrder.setCreatedAt(LocalDateTime.now());
-        testOrder.setUpdatedAt(LocalDateTime.now());
+        testOrder.setCreatedBy(createdBy);
 
+        // save to database
         TestOrder savedTestOrder = testOrderRepository.save(testOrder);
-        log.info("Test order created successfully with id: {}", savedTestOrder.getId());
+        actionLogService.logAction(
+            createdBy,
+            ActionTypeFeatures.CREATE_TEST_ORDER,
+            savedTestOrder.getId()
+        );
+
+        // if patientId is null => new patient, send to kafka broker to IAM to create new patient
+        // send only when persisting new test order successfully
+        if (patientInfo.getId() == null)
+            testOrderKafkaProducer.sendPatientInfoMessage("patient-info", patientInfo);
 
         return testOrderMapper.toResponseDto(savedTestOrder);
     }
@@ -113,10 +159,14 @@ public class TestOrderServiceImpl implements TestOrderService {
         TestOrderStatus originalStatus = existingTestOrder.getStatus();
 
         testOrderMapper.updateEntity(requestDTO, existingTestOrder);
+        // Cập nhật status nếu DTO có giá trị
+        if (requestDTO.getStatus() != null) {
+            existingTestOrder.setStatus(requestDTO.getStatus());
+        }
 
         TestOrder updatedTestOrder = testOrderRepository.save(existingTestOrder);
-        log.info("Test order updated successfully. ID: {}, UpdatedBy: {}, PatientId changed: {} -> {}",
-                id, updatedBy, originalPatientId, updatedTestOrder.getPatientId());
+        log.info("Test order updated successfully. ID: {}, UpdatedBy: {}, UpdateStatus: {}, PatientId changed: {} -> {}",
+                id, updatedBy, originalPatientId, originalStatus, updatedTestOrder.getPatientId());
 
         return testOrderMapper.toResponseDto(updatedTestOrder);
     }
@@ -199,9 +249,12 @@ public class TestOrderServiceImpl implements TestOrderService {
     public TestOrderResponseForInstrument findLatestByBarcode(String barcode) {
         TestOrder testOrder = testOrderRepository
                 .findFirstByBarcodeOrderByCreatedAtDesc(barcode)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Không tìm thấy TestOrder nào cho barcode: " + barcode
-                ));
+                .orElse(null);
+
+        if (testOrder == null) {
+            return null;
+        }
+
         return TestOrderResponseForInstrument.builder()
                 .id(testOrder.getId())
                 .code(testOrder.getCode())
@@ -221,6 +274,7 @@ public class TestOrderServiceImpl implements TestOrderService {
     public CreationTestOrderResponse createTestOrderForExternalSystem(String barcode) {
         TestOrder newOrder = TestOrder.builder()
                 .barcode(barcode)
+                .status(TestOrderStatus.UNMATCHED)
                 .build();
         TestOrder savedOrder = testOrderRepository.save(newOrder);
         return CreationTestOrderResponse.builder()

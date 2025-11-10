@@ -9,7 +9,7 @@ import java.util.UUID;
 
 
 public interface MedicalRecordService {
-    MedicalRecordResponse registerMedicalRecord(MedicalRecordRequest request);
+    MedicalRecordResponse registerMedicalRecord(Long creatorId);
     UpdatedAssignedDoctor updateAssignedDoctor(UpdatedAssignedDoctor updateInfo);
     MedicalRecordResponse getById(Long recordId, Long viewerId);
     MedicalRecordResponse getByCode(UUID recordCode);

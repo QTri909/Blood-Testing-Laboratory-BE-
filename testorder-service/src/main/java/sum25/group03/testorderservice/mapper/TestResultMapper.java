@@ -4,16 +4,19 @@ import org.mapstruct.*;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entities.TestResult;
-import sum25.group03.testorderservice.dtos.response.TestResultResponse;
-import sum25.group03.testorderservice.entities.ReagentUsed;
 
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, uses = {ReagentUsedMapper.class, CommentMapper.class})
+import java.util.List;
+
+@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, uses = {CommentMapper.class})
 public interface TestResultMapper {
 
     @Mapping(source = "testOrder.id", target = "testOrderId")
     @Mapping(source = "parameter.id", target = "parameterId")
     @Mapping(source = "parameter.name", target = "parameterName")
+//    @Mapping( source = "status", target = "testResultStatus")
     TestResultResponseDTO toResponseDto(TestResult testResult);
+
+    List<TestResultResponseDTO> toResponseDtos(List<TestResult> testResults);
 
     @Mapping(source = "testOrderId", target = "testOrder.id")
     @Mapping(source = "parameterId", target = "parameter.id")
@@ -21,7 +24,6 @@ public interface TestResultMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "reagentsUsed", ignore = true)
     @Mapping(target = "comments", ignore = true)
     TestResult toEntity(TestResultRequestDTO requestDto);
 
@@ -31,7 +33,6 @@ public interface TestResultMapper {
     @Mapping(target = "status", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
-    @Mapping(target = "reagentsUsed", ignore = true)
     @Mapping(target = "comments", ignore = true)
     void updateEntity(TestResultRequestDTO requestDto, @MappingTarget TestResult testResult);
 }

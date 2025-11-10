@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
 import sum25.group03.patientservice.dtos.request.AuditEntryRequestDTO;
 import sum25.group03.patientservice.dtos.response.AuditEntryResponseDTO;
 import sum25.group03.patientservice.enums.DocumentType;
@@ -40,7 +41,7 @@ public class AuditEntryController {
 
     @GetMapping("/{documentType}")
     @ResponseStatus(HttpStatus.OK)
-    public Page<AuditEntryResponseDTO> listAuditEntriesWithPagination(
+    public ApiResponse<Page<AuditEntryResponseDTO>> listAuditEntriesWithPagination(
             @PathVariable DocumentType documentType,
             @ModelAttribute AuditEntryRequestDTO auditEntryRequestDTO,
             @RequestHeader("X-Viewer-Id") Long viewerId
@@ -55,7 +56,9 @@ public class AuditEntryController {
                 criteria
         );
 
-        return auditEntryService.queryLogsWithPagination(
-                pageable, documentType, viewerId);
+    Page<AuditEntryResponseDTO> page = auditEntryService.queryLogsWithPagination(
+        pageable, documentType, viewerId);
+
+    return ApiResponse.ok(page);
     }
 }

@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.concurrent.CompletableFuture;
 
 @RestController
-@RequestMapping("/api/v1/blood-testing")
+@RequestMapping("/api/v1/instruments/blood-testing")
 @RequiredArgsConstructor
 @Slf4j
 public class BloodTestingController {

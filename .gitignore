@@ -37,3 +37,6 @@ buildNumber.properties
 # logs by log appender
 logs/
 mock-server/
+
+docs/
+postmans/

@@ -46,7 +46,7 @@ public class UserSnapshotEntity implements Serializable {
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 
-    // Bidirectional relationships with MedicalRecord
+    // Bidirectional relationships with ESMedicalRecord
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<MedicalRecordEntity> patientRecords;
 

@@ -13,13 +13,13 @@ import java.util.List;
 public interface TestOrderService{
 
     // -------- THUYEN---------
-    TestOrderResponse getTestOrderById(Long id, Long viewerId);
-    List<TestOrderResponse> getAllTestOrders(Long viewerId);
-    List<TestOrderResponse> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId);
+    TestOrderResponseDTO getTestOrderById(Long id, Long viewerId);
+    List<TestOrderResponseDTO> getAllTestOrders(Long viewerId);
+    List<TestOrderResponseDTO> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId);
 
     // -------- HUY -----------
     //3.5.1.3 Create Patient's Test Order
-    TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO);
+    TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO, Long createdBy);
     //3.5.1.4 Modify Patient's Test Order
     TestOrderResponseDTO updateTestOrder(Long id, TestOrderRequestDTO requestDTO, Long updatedBy);
     //3.5.1.5 Delete Patient Test Order
