@@ -15,6 +15,9 @@ import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
 import sum25.group03.patientservice.dtos.response.MedicalRecordResponse;
 import sum25.group03.patientservice.enums.MedicalRecordStatus;
+import sum25.group03.patientservice.grpc.TestOrderGrpcClient;
+import sum25.group03.patientservice.grpc.TestOrderResponse;
+import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderFullFieldDTO;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 
 
@@ -79,6 +82,13 @@ public class MedicalRecordController {
         medicalRecordService.deleteById(requestInfo);
     }
 
-    // get all test orders of a medical record by its id:
-
+    // get all test orders of a medical record by its id: (Grpc call)
+    @GetMapping("/{recordId}/test-orders")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<GrpcTestOrderFullFieldDTO>> getByTestOrderId(
+            @PathVariable Long recordId,
+            @RequestHeader("X-User-Id") Long viewerId
+    ) {
+        return ApiResponse.ok(medicalRecordService.getAllTestOrdersByMedicalRecordId(recordId, viewerId));
+    }
 }

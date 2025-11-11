@@ -35,6 +35,7 @@ public class TestOrderController {
         return ApiResponse.add("Get all test orders successfully", testOrderService.getAllTestOrders(viewerId));
     }
 
+    /*
     @GetMapping("/by-medical-record/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<List<TestOrderResponseDTO>> getAllTestOrdersByMedicalRecordId(
@@ -44,6 +45,7 @@ public class TestOrderController {
         return ApiResponse.add("Get all test orders by medical record id successfully",
                 testOrderService.getAllTestOrdersByMedicalRecordId(medicalRecordId, viewerId));
     }
+    */
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)

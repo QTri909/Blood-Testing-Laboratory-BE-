@@ -19,6 +19,8 @@ import sum25.group03.patientservice.enums.DocumentType;
 import sum25.group03.patientservice.enums.MedicalRecordStatus;
 import sum25.group03.patientservice.exception.medical.record.MedicalRecordNotFound;
 import sum25.group03.patientservice.exception.user.snapshot.UserNotFoundException;
+import sum25.group03.patientservice.grpc.TestOrderGrpcClient;
+import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderFullFieldDTO;
 import sum25.group03.patientservice.mapper.MedicalRecordMapper;
 import sum25.group03.patientservice.repositories.postgres.MedicalRecordRepository;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
@@ -38,6 +40,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private final MedicalRecordRepository medicalRecordRepository;
     private final MedicalRecordMapper medicalRecordMapper;
     private final UserSnapshotRepository userSnapshotRepository;
+
+    private final TestOrderGrpcClient testOrderGrpcClient;
 
     private final MedicalRecordMongoServiceImpl medicalRecordMongoService;
     private final AuditEntryMongoServiceImpl auditEntryMongoService;
@@ -280,5 +284,10 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .entityType(DocumentType.MEDICAL_RECORD)
                 .build();
         auditEntryMongoService.saveAuditEntry(auditEntryStatusChange);
+    }
+
+    @Override
+    public List<GrpcTestOrderFullFieldDTO> getAllTestOrdersByMedicalRecordId(Long medicalRecordId, Long viewerId) {
+        return testOrderGrpcClient.getAllTestOrdersByMedicalRecordId(medicalRecordId, viewerId);
     }
 }
