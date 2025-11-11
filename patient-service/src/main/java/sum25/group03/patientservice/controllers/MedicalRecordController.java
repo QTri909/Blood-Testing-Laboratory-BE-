@@ -82,6 +82,18 @@ public class MedicalRecordController {
         medicalRecordService.deleteById(requestInfo);
     }
 
+    @PutMapping("/{recordId}/publish")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<MedicalRecordResponse> publishMedicalRecord(
+            @PathVariable Long recordId,
+            @RequestHeader("X-User-Id") Long publisherId
+    ) {
+        MedicalRecordResponse response = medicalRecordService.updateMedicalRecordStatus(
+                MedicalRecordStatus.PUBLISHED, recordId, publisherId
+        );
+        return ApiResponse.add("Published medical record with id=" + recordId + " successfully!", response);
+    }
+
     // get all test orders of a medical record by its id: (Grpc call)
     @GetMapping("/{recordId}/test-orders")
     @ResponseStatus(HttpStatus.OK)
@@ -91,4 +103,5 @@ public class MedicalRecordController {
     ) {
         return ApiResponse.ok(medicalRecordService.getAllTestOrdersByMedicalRecordId(recordId, viewerId));
     }
+
 }

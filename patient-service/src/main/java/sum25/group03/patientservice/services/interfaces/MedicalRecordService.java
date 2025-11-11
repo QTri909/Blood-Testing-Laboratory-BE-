@@ -5,6 +5,7 @@ import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
 import sum25.group03.patientservice.dtos.response.MedicalRecordResponse;
+import sum25.group03.patientservice.enums.MedicalRecordStatus;
 import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderFullFieldDTO;
 
 import java.util.List;
@@ -20,4 +21,6 @@ public interface MedicalRecordService {
     Page<MedicalRecordResponse> getByPatientId(Long patientId, Integer page, Integer size);
     void deleteById(NewRecordStatusRequest newStatusRequest);
     List<GrpcTestOrderFullFieldDTO> getAllTestOrdersByMedicalRecordId(Long medicalRecordId, Long viewerId);
+
+    MedicalRecordResponse updateMedicalRecordStatus(MedicalRecordStatus newStatus, Long recordId, Long updaterId);
 }

@@ -290,4 +290,40 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     public List<GrpcTestOrderFullFieldDTO> getAllTestOrdersByMedicalRecordId(Long medicalRecordId, Long viewerId) {
         return testOrderGrpcClient.getAllTestOrdersByMedicalRecordId(medicalRecordId, viewerId);
     }
+
+    @Override
+    @Transactional
+    public MedicalRecordResponse updateMedicalRecordStatus(MedicalRecordStatus newStatus, Long recordId, Long updaterId) {
+
+        if (newStatus == null)
+            throw new IllegalArgumentException("New status must not be null!");
+
+        // logs the update action
+        actionLogService.logAction(updaterId, ActionTypeFeatures.UPDATE_PATIENT_MEDICAL_RECORD_STATUS, recordId);
+
+        // query for the old record
+        MedicalRecordEntity entity = medicalRecordRepository.findById(recordId)
+                .orElseThrow(() -> new MedicalRecordNotFound("Medical record with id " + recordId + " not found!"));
+
+        // store old status for auditing
+        MedicalRecordStatus oldStatus = entity.getStatus();
+
+        if (newStatus == MedicalRecordStatus.PUBLISHED && oldStatus != MedicalRecordStatus.EMPTY)
+            throw new IllegalStateException("Medical record status is already published!");
+
+        AuditEntryDocument auditEntryStatusChange = AuditEntryDocument.builder()
+                .entityId(recordId)
+                .fieldChanged("status")
+                .oldValue(oldStatus.name())
+                .newValue(newStatus.name())
+                .changedBy(updaterId)
+                .entityType(DocumentType.MEDICAL_RECORD)
+                .build();
+
+        // update new status
+        entity.setStatus(newStatus);
+        entity.setUpdatedBy(updaterId);
+        medicalRecordRepository.save(entity);
+        return medicalRecordMapper.toMedicalRecordResponse(entity);
+    }
 }
