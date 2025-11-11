@@ -100,6 +100,15 @@ public class TestOrderServiceImpl implements TestOrderService {
     }
 
     @Override
+    public List<TestOrderResponseDTO> getAllTestOrdersByMedicalRecordId(Long medicalRecordId, Long viewerId) {
+        // Log the action of viewing the test order list
+        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
+
+        List<TestOrder> orders = repository.findAllByExternalMedicalRecordId(medicalRecordId, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return testOrderMapper.toResponseDtoList(orders);
+    }
+
+    @Override
     public List<TestOrderResponseDTO> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId) {
 
         // TODO 4: Verify viewerId existence in the system using todo_1

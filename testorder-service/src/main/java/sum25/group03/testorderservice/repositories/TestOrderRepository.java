@@ -1,8 +1,10 @@
 package sum25.group03.testorderservice.repositories;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.util.Streamable;
 import org.springframework.stereotype.Repository;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 
@@ -19,12 +21,7 @@ public interface TestOrderRepository extends JpaRepository<TestOrder,Long>, JpaS
     List<TestOrder> findByPatientId(Long patientId);
     List<TestOrder> findByStatus(TestOrderStatus status);
     List<TestOrder> findByCreatedBy(Long createdBy);
-
-//    // ✅ Lấy tất cả test order của 1 bệnh nhân, chưa bị xóa
-//    List<TestOrder> findByPatientIdAndDeletedFalse(Long patientId);
-
-//    @EntityGraph(attributePaths = {"testResults.parameter", "comments"})
-//    Optional<TestOrder> findById(Long id);
+    List<TestOrder> findAllByExternalMedicalRecordId(Long externalMedicalRecordId, Sort sort);
 
     Optional<TestOrder> findFirstByBarcodeOrderByCreatedAtDesc(String barcode);
     Optional<TestOrder> findTopByPatientIdOrderByCreatedAtDesc(Long patientId);

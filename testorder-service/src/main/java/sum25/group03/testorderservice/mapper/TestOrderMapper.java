@@ -7,6 +7,8 @@ import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
 import sum25.group03.testorderservice.entities.TestOrder;
 
+import java.util.List;
+
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, uses = {TestResultMapper.class, CommentMapper.class})
 public interface TestOrderMapper {
 
@@ -15,6 +17,8 @@ public interface TestOrderMapper {
     @Mapping(target = "comments", source = "comments")
     @Mapping(target = "code", source = "code")
     TestOrderResponseDTO toResponseDto(TestOrder testOrder);
+
+    List<TestOrderResponseDTO> toResponseDtoList(List<TestOrder> testOrders);
 
     @Mapping(target = "testResults", source = "testResults")
     @Mapping(target = "comments", source = "comments")

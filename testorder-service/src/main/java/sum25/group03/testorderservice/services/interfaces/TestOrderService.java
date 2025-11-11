@@ -15,6 +15,7 @@ public interface TestOrderService{
     // -------- THUYEN---------
     TestOrderResponseDTO getTestOrderById(Long id, Long viewerId);
     List<TestOrderResponseDTO> getAllTestOrders(Long viewerId);
+    List<TestOrderResponseDTO> getAllTestOrdersByMedicalRecordId(Long medicalRecordId, Long viewerId);
     List<TestOrderResponseDTO> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId);
 
     // -------- HUY -----------
