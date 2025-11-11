@@ -6,10 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
-import sum25.group03.iamservice.dto.request.ConfirmForgotPasswordRequest;
-import sum25.group03.iamservice.dto.request.ForgotPasswordRequest;
-import sum25.group03.iamservice.dto.request.LoginRequest;
-import sum25.group03.iamservice.dto.request.PasswordChangeRequest;
+import sum25.group03.iamservice.dto.request.*;
 import sum25.group03.iamservice.dto.response.LoginResponse;
 import sum25.group03.iamservice.service.Interface.AuthService;
 
@@ -36,6 +33,26 @@ public class AuthController {
                 .message("Login successful")
                 .build();
     }
+
+    @PostMapping("/first-login-change-password")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<LoginResponse> firstLoginChangePassword(
+            @RequestBody FirstLoginChangePasswordRequest req) {
+
+        LoginResponse response = authService.firstLoginChangePassword(
+                req.getUsername(),
+                req.getSession(),
+                req.getNewPassword()
+        );
+
+        return ApiResponse.data(response)
+                .message("First login password changed successfully")
+                .build();
+    }
+
+
+
+
 
 
 

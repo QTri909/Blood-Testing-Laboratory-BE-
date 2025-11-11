@@ -14,6 +14,8 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 import sum25.group03.iamservice.service.Interface.AuthService;
 import sum25.group03.iamservice.service.KafkaProducerService;
 
+
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.time.LocalDateTime;
@@ -84,10 +86,15 @@ public class AuthServiceImpl implements AuthService {
 
             InitiateAuthResponse response = cognitoClient.initiateAuth(authRequest);
 
-            if (response.challengeName() != null) {
-                String challenge = response.challengeNameAsString();
-                String session = response.session();
-                throw new RuntimeException("FIRST_LOGIN: " + challenge + (session != null ? ("; session=" + session) : ""));
+            if (response.challengeName() != null &&
+                    response.challengeName() == ChallengeNameType.NEW_PASSWORD_REQUIRED) {
+
+
+                LoginResponse loginResponse = new LoginResponse();
+                loginResponse.setFirstLogin(true);
+                loginResponse.setSession(response.session());
+                loginResponse.setChallenge(response.challengeNameAsString());
+                return loginResponse;
             }
 
             if (response.authenticationResult() == null) {
@@ -119,6 +126,42 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public LoginResponse firstLoginChangePassword(String username, String session, String newPassword) {
+        CognitoConfig config = getConfig();
+
+        try {
+            RespondToAuthChallengeRequest challengeRequest = RespondToAuthChallengeRequest.builder()
+                    .clientId(config.getClientId())
+                    .challengeName(ChallengeNameType.NEW_PASSWORD_REQUIRED)
+                    .session(session)
+                    .challengeResponses(Map.of(
+                            "USERNAME", username,
+                            "NEW_PASSWORD", newPassword,
+                            "SECRET_HASH", calculateSecretHash(username, config.getClientSecret(), config.getClientId())
+                    ))
+                    .build();
+
+            RespondToAuthChallengeResponse response = cognitoClient.respondToAuthChallenge(challengeRequest);
+
+            if (response.authenticationResult() == null) {
+                throw new RuntimeException("First login password change failed: no authenticationResult returned");
+            }
+
+            LoginResponse loginResponse = new LoginResponse();
+            loginResponse.setAccessToken(response.authenticationResult().accessToken());
+            loginResponse.setIdToken(response.authenticationResult().idToken());
+            loginResponse.setRefreshToken(response.authenticationResult().refreshToken());
+            loginResponse.setExpiresIn(response.authenticationResult().expiresIn());
+
+            return loginResponse;
+        } catch (Exception e) {
+            throw new RuntimeException("First login password change error: " + e.getMessage(), e);
+        }
+    }
+
+
+
+    @Override
     public LoginResponse refreshToken(RefreshTokenRequest request) {
         CognitoConfig config = getConfig();
 
@@ -146,6 +189,9 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid or expired refresh token: " + e.getMessage(), e);
         }
     }
+
+
+
 
     @Override
     public void changePassword(String accessToken, String oldPassword, String newPassword) {
