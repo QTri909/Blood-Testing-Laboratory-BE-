@@ -310,6 +310,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
         if (newStatus == MedicalRecordStatus.PUBLISHED && oldStatus != MedicalRecordStatus.EMPTY)
             throw new IllegalStateException("Medical record status is already published!");
+        if (newStatus == MedicalRecordStatus.COMPLETED && oldStatus != MedicalRecordStatus.PUBLISHED)
+            throw new IllegalStateException("Only published medical records can be completed!");
 
         AuditEntryDocument auditEntryStatusChange = AuditEntryDocument.builder()
                 .entityId(recordId)

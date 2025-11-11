@@ -94,6 +94,18 @@ public class MedicalRecordController {
         return ApiResponse.add("Published medical record with id=" + recordId + " successfully!", response);
     }
 
+    @PutMapping("/{recordId}/complete")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<MedicalRecordResponse> completeMedicalRecord(
+            @PathVariable Long recordId,
+            @RequestHeader("X-User-Id") Long updaterId
+    ) {
+        MedicalRecordResponse response = medicalRecordService.updateMedicalRecordStatus(
+                MedicalRecordStatus.COMPLETED, recordId, updaterId
+        );
+        return ApiResponse.add("Completed medical record with id=" + recordId + " successfully!", response);
+    }
+
     // get all test orders of a medical record by its id: (Grpc call)
     @GetMapping("/{recordId}/test-orders")
     @ResponseStatus(HttpStatus.OK)
