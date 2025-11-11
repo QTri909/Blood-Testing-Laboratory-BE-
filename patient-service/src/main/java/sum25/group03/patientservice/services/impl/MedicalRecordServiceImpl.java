@@ -170,30 +170,13 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .orElseThrow(() -> new RuntimeException("Medical Record not found"));
     }
 
-    @Override
-    public Page<MedicalRecordResponse> getAll(
-            Integer page, Integer size, Long viewerId
-    ) {
-
-        // validate viewer existence
-        validateViewerExistence(viewerId);
-
-        // log the view all action
-        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_ALL_PATIENT_MEDICAL_RECORDS, null);
-
-        // create pagable with desc by createdAt
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-        Page<MedicalRecordEntity> medicalRecordEntities = medicalRecordRepository.findAll(pageable);
-
-        Page<MedicalRecordResponse> result = medicalRecordMapper.toMedicalRecordResponsePage(medicalRecordEntities);
-
+    private void fillPatientNameAndAssignedUserName(Page<MedicalRecordResponse> records) {
         // get all patientIds and assignedUserIds to reduce number of queries
-        List<Long> patientIds = result.stream()
+        List<Long> patientIds = records.stream()
                 .map(MedicalRecordResponse::getPatientId)
                 .distinct()
                 .collect(Collectors.toList());
-        List<Long> assignedUserIds = result.stream()
+        List<Long> assignedUserIds = records.stream()
                 .map(MedicalRecordResponse::getAssignedUser)
                 .distinct()
                 .collect(Collectors.toList());
@@ -214,7 +197,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 ));
 
         // adjust result to add patientName and assignedUserName
-        result.forEach(entity -> {
+        records.forEach(entity -> {
             Long patientId = entity.getPatientId();
             Long assignedUserId = entity.getAssignedUser();
 
@@ -224,6 +207,28 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             entity.setPatientName(patientName);
             entity.setAssignedUserName(assignedUserName);
         });
+    }
+
+    @Override
+    public Page<MedicalRecordResponse> getAll(
+            Integer page, Integer size, Long viewerId
+    ) {
+
+        // validate viewer existence
+        validateViewerExistence(viewerId);
+
+        // log the view all action
+        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_ALL_PATIENT_MEDICAL_RECORDS, null);
+
+        // create pagable with desc by createdAt
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<MedicalRecordEntity> medicalRecordEntities = medicalRecordRepository.findAll(pageable);
+        Page<MedicalRecordResponse> result = medicalRecordMapper.toMedicalRecordResponsePage(medicalRecordEntities);
+
+        // fill patient name and assignedUserName
+        fillPatientNameAndAssignedUserName(result);
+
         return result;
     }
 
@@ -234,7 +239,11 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<MedicalRecordEntity> entities =  medicalRecordRepository.findByPatientId(patientId, pageable);
 
-        return medicalRecordMapper.toMedicalRecordResponsePage(entities);
+        Page<MedicalRecordResponse> result = medicalRecordMapper.toMedicalRecordResponsePage(entities);
+
+        // fill patient name and assignedUserName
+        fillPatientNameAndAssignedUserName(result);
+        return result;
     }
 
     @Override
