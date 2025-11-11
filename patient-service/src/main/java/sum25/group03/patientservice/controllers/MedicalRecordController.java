@@ -79,4 +79,6 @@ public class MedicalRecordController {
         medicalRecordService.deleteById(requestInfo);
     }
 
+    // get all test orders of a medical record by its id:
+
 }

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 import sum25.group03.patientservice.documents.AuditEntryDocument;
 import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
@@ -280,5 +281,4 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .build();
         auditEntryMongoService.saveAuditEntry(auditEntryStatusChange);
     }
-
 }
