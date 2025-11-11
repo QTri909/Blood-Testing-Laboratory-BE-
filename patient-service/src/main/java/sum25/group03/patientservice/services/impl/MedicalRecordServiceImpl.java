@@ -228,11 +228,13 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Override
-    public List<MedicalRecordResponse> getByPatientId(Long patientId) {
-        return medicalRecordRepository.findByPatientId(patientId)
-                .stream()
-                .map(medicalRecordMapper::toMedicalRecordResponse)
-                .collect(Collectors.toList());
+    public Page<MedicalRecordResponse> getByPatientId(
+            Long patientId, Integer page, Integer size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<MedicalRecordEntity> entities =  medicalRecordRepository.findByPatientId(patientId, pageable);
+
+        return medicalRecordMapper.toMedicalRecordResponsePage(entities);
     }
 
     @Override

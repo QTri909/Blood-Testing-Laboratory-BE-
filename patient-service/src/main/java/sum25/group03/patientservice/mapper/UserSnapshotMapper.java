@@ -1,6 +1,8 @@
 package sum25.group03.patientservice.mapper;
 
 import org.mapstruct.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import sum25.group03.patientservice.dtos.request.KafkaUserDTO;
 import sum25.group03.patientservice.dtos.request.UserSnapshotRequest;
 import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
@@ -32,4 +34,11 @@ public interface UserSnapshotMapper {
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromKafkaDTO(KafkaUserDTO kafkaUserDTO, @MappingTarget UserSnapshotEntity userSnapshotEntity);
+
+    // convert from 'Page< UserSnapshotEntity >' to 'Page< UserSnapshotResponse >'
+    default Page<UserSnapshotResponse> toResponsePage(Page<UserSnapshotEntity> entities) {
+        List<UserSnapshotEntity> content = entities.getContent();
+        List<UserSnapshotResponse> responseList = this.toResponseList(content);
+        return new PageImpl<>(responseList, entities.getPageable(), entities.getTotalElements());
+    }
 }

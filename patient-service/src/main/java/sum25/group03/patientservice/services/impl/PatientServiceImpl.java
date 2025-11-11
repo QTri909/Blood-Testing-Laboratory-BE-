@@ -56,7 +56,7 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public List<UserSnapshotResponse> getAllPatientsWith(Integer size, Integer page) {
+    public Page<UserSnapshotResponse> getAllPatientsWith(Integer size, Integer page) {
 
         // find all patients by role:
         Pageable pageable = PageRequest.of(page, size);
@@ -65,8 +65,7 @@ public class PatientServiceImpl implements PatientService {
                 .findByRolesContaining(role, pageable);
 
         // debug:
-        log.info("Found {} patient entities from database", patientEntities.getTotalElements());
-        return userSnapshotMapper.toResponseList(patientEntities.getContent());
+        return userSnapshotMapper.toResponsePage(patientEntities);
     }
 
     @Override

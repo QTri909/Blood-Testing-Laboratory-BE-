@@ -50,6 +50,16 @@ public class MedicalRecordController {
         return ApiResponse.ok(medicalRecordService.getAll(page, size, viewerId));
     }
 
+    @GetMapping("/patients/{patientId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Page<MedicalRecordResponse>> getByPatientId(
+            @PathVariable(name = "patientId") Long patientId,
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "size", defaultValue = "10") Integer size
+    ) {
+        return ApiResponse.ok(medicalRecordService.getByPatientId(patientId, page, size));
+    }
+
     @GetMapping("/{recordId}")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<MedicalRecordResponse> getById(

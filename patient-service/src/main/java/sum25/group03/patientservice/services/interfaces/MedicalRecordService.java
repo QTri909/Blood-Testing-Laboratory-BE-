@@ -15,6 +15,6 @@ public interface MedicalRecordService {
     MedicalRecordResponse getById(Long recordId, Long viewerId);
     MedicalRecordResponse getByCode(UUID recordCode);
     Page<MedicalRecordResponse> getAll(Integer page, Integer size, Long viewerId);
-    List<MedicalRecordResponse> getByPatientId(Long patientId);
+    Page<MedicalRecordResponse> getByPatientId(Long patientId, Integer page, Integer size);
     void deleteById(NewRecordStatusRequest newStatusRequest);
 }
