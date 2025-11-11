@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import sum25.group03.warehouseservice.audit.annotation.SkipAuditLog;
 import sum25.group03.warehouseservice.dto.request.AssignConfigAndReagentReq;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
-import sum25.group03.warehouseservice.dto.response.MessageResponse;
 import sum25.group03.warehouseservice.service.instrument.InstrumentService;
 
 @RestController
