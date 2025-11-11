@@ -107,7 +107,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaAdmin kafkaAdmin(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
+    public KafkaAdmin kafkaAdmin(@Value("${spring.kafka.admin.properties.bootstrap.servers}") String bootstrapServers) {
         Map<String, Object> configs = new HashMap<>();
         configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         return new KafkaAdmin(configs);

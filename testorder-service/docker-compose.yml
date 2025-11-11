@@ -11,7 +11,7 @@ services:
     volumes:
       - test_order_volume:/var/lib/postgresql/data
 
-  kafka-service:
+  kafka:
     image: confluentinc/cp-kafka:latest
     container_name: kafka
     ports:
@@ -38,7 +38,7 @@ services:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
     depends_on:
-      - kafka-service
+      - kafka
     ports:
       - "7070:8080"
     environment:
