@@ -2,6 +2,9 @@ package sum25.group03.testorderservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -83,20 +86,18 @@ public class TestOrderServiceImpl implements TestOrderService {
     }
 
     @Override
-    public List<TestOrderResponseDTO> getAllTestOrders(Long viewerId) {
+    public Page<TestOrderResponseDTO> getAllTestOrders(Integer page, Integer size, Long viewerId) {
 
         // TODO 3: Verify viewerId existence in the system using todo_1
 
         // Log the action of viewing the test order list
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
 
-        List<TestOrder> orders = repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-        // debug:
-        for (TestOrder test: orders) {
-            log.info("Test order code: {}", test.getCode());
-        }
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        return orders.stream().map(testOrderMapper::toResponseDto).toList();
+        Page<TestOrder> orders = repository.findAll(pageable);
+
+        return testOrderMapper.toResponseDtoPage(orders);
     }
 
     @Override

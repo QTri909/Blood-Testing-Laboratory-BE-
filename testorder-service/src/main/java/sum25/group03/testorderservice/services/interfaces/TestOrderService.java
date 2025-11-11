@@ -1,5 +1,6 @@
 package sum25.group03.testorderservice.services.interfaces;
 
+import org.springframework.data.domain.Page;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.CreationTestOrderResponse;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
@@ -14,7 +15,7 @@ public interface TestOrderService{
 
     // -------- THUYEN---------
     TestOrderResponseDTO getTestOrderById(Long id, Long viewerId);
-    List<TestOrderResponseDTO> getAllTestOrders(Long viewerId);
+    Page<TestOrderResponseDTO> getAllTestOrders(Integer page, Integer size, Long viewerId);
     List<TestOrderResponseDTO> getAllTestOrdersByMedicalRecordId(Long medicalRecordId, Long viewerId);
     List<TestOrderResponseDTO> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId);
 

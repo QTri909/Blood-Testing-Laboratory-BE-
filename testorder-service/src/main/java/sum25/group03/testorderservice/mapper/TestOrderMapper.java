@@ -1,6 +1,8 @@
 package sum25.group03.testorderservice.mapper;
 
 import org.mapstruct.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequest;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.CommentResponseDTO;
@@ -57,6 +59,13 @@ public interface TestOrderMapper {
     @Mapping(target = "testResults", ignore = true)
     @Mapping(target = "comments", ignore = true)
     void updateEntity(TestOrderRequestDTO requestDto, @MappingTarget TestOrder testOrder);
+
+    // manually mappings Page<TestOrder> to Page<TestOrderResponseDTO>
+    default Page<TestOrderResponseDTO> toResponseDtoPage(Page<TestOrder> testOrders) {
+        List<TestOrder> entities = testOrders.getContent();
+        List<TestOrderResponseDTO> dtoList = toResponseDtoList(entities);
+        return new PageImpl<>(dtoList, testOrders.getPageable(), testOrders.getTotalElements());
+    }
 
     // GRPC Mappings
     default TestOrdersByMedicalRecordResponse toGrpcMedicalRecordResponse(TestOrderResponseDTO dto) {
