@@ -6,7 +6,7 @@ import sum25.group03.common.response.ApiResponse;
 import sum25.group03.monitoringservice.service.SyncUpService;
 
 @RestController
-@RequestMapping("/api/admin/sync")
+@RequestMapping("/api/v1/admin/sync")
 public class SyncUpController {
 
     private final SyncUpService syncUpService;
