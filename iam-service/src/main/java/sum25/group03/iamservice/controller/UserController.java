@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +12,14 @@ import sum25.group03.common.response.ApiResponse;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.dto.request.UserUpdateRequest;
 import sum25.group03.iamservice.dto.response.UserResponse;
-import sum25.group03.iamservice.service.UserService;
+
+import sum25.group03.iamservice.service.Interface.UserService;
+
+import sum25.group03.iamservice.entity.PendingUser;
+import sum25.group03.iamservice.repository.PendingUserRepository;
 
 
-
+import java.util.List;
 
 
 @RestController
@@ -25,6 +28,7 @@ import sum25.group03.iamservice.service.UserService;
 public class UserController {
 
     private final UserService userService;
+    private  final PendingUserRepository pendingUserRepository;
 
 
     @PreAuthorize("hasAuthority('USER_UPDATE')")
@@ -104,6 +108,27 @@ public class UserController {
         UserResponse response = userService.getUserById(id);
         return ApiResponse.data(response)
                 .message("User retrieved successfully")
+                .build();
+    }
+
+
+    @PreAuthorize("hasAuthority('USER_VIEW')")
+    @GetMapping("/pending")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<PendingUser>> getAllPendingUsers() {
+        List<PendingUser> list = pendingUserRepository.findByApprovedFalse();
+        return ApiResponse.data(list)
+                .message("Pending users retrieved successfully")
+                .build();
+    }
+
+    @PreAuthorize("hasAuthority('USER_CREATE')")
+    @PostMapping("/pending/{id}/approve")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<String> approvePendingUser(@PathVariable Long id) {
+        String message = userService.approvePendingUser(id);
+        return ApiResponse.data(message)
+                .message("Pending user approved successfully")
                 .build();
     }
 }

@@ -3,13 +3,12 @@ package sum25.group03.iamservice.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.iamservice.dto.request.RoleCreateRequest;
 import sum25.group03.iamservice.dto.response.RoleResponse;
-import sum25.group03.iamservice.service.RoleService;
+import sum25.group03.iamservice.service.Interface.RoleService;
 
 import java.util.List;
 

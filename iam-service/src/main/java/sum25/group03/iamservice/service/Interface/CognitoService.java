@@ -1,4 +1,4 @@
-package sum25.group03.iamservice.service;
+package sum25.group03.iamservice.service.Interface;
 
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.entity.User;

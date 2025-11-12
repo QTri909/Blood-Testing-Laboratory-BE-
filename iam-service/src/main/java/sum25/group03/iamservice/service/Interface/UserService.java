@@ -1,4 +1,4 @@
-package sum25.group03.iamservice.service;
+package sum25.group03.iamservice.service.Interface;
 
 
 import org.springframework.data.domain.Page;
@@ -22,5 +22,5 @@ public interface UserService {
     Map<String, List<String>> getRolesAndPrivilegesByEmail(String email);
 
     UserResponse getUserById(Long id);
-
+    String approvePendingUser(Long id);
 }

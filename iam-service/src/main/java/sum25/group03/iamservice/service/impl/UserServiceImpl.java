@@ -1,4 +1,4 @@
-package sum25.group03.iamservice.service;
+package sum25.group03.iamservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
 
@@ -9,17 +9,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.dto.request.UserUpdateRequest;
-
 import sum25.group03.iamservice.dto.response.UserResponse;
+import sum25.group03.iamservice.entity.PendingUser;
 import sum25.group03.iamservice.entity.Role;
 import sum25.group03.iamservice.entity.User;
 import sum25.group03.iamservice.entity.UserRole;
 import sum25.group03.iamservice.event.UserCreatedEvent;
 import sum25.group03.iamservice.event.UserDeletedEvent;
 import sum25.group03.iamservice.event.UserUpdatedEvent;
+import sum25.group03.iamservice.repository.PendingUserRepository;
 import sum25.group03.iamservice.repository.RoleRepository;
 import sum25.group03.iamservice.repository.UserRepository;
 import sum25.group03.iamservice.repository.UserRoleRepository;
+import sum25.group03.iamservice.service.Interface.AuditLogService;
+import sum25.group03.iamservice.service.Interface.CognitoService;
+import sum25.group03.iamservice.service.Interface.UserService;
+import sum25.group03.iamservice.service.KafkaProducerService;
 
 import java.util.*;
 
@@ -37,6 +42,7 @@ public class UserServiceImpl implements UserService {
     private final UserRoleRepository userRoleRepository;
     private final CognitoService cognitoService;
     private final KafkaProducerService kafkaProducerService;
+    private final PendingUserRepository pendingUserRepository;
 
 
     @Override
@@ -363,5 +369,43 @@ public class UserServiceImpl implements UserService {
                 .build();
         return response;
     }
+
+    @Transactional
+    public String approvePendingUser(Long id) {
+        PendingUser pending = pendingUserRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pending user not found"));
+
+        if (pending.isApproved()) {
+            throw new RuntimeException("This pending user was already approved!");
+        }
+
+        // Chuyển đổi PendingUser → UserCreateRequest
+        UserCreateRequest request = new UserCreateRequest();
+        request.setFullName(pending.getFullName());
+        request.setEmail(pending.getEmail());
+        request.setPhoneNumber(pending.getPhoneNumber());
+        request.setGender(pending.getGender());
+        request.setDateOfBirth(pending.getDateOfBirth());
+        request.setIdentityNumber(pending.getIdentityNumber());
+        request.setAddress(pending.getAddress());
+        request.setRoleCodes(pending.getRoleCodes());
+
+        createUser(request);
+
+        pending.setApproved(true);
+        pendingUserRepository.save(pending);
+
+        // Ghi nhật ký duyệt user
+        auditLogService.record(
+                "APPROVE",
+                "PendingUser",
+                pending.getId(),
+                "system",
+                "Approved pending user and created account: " + pending.getEmail()
+        );
+
+        return "User created successfully from pending list";
+    }
+
 
 }

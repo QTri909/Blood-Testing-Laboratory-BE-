@@ -1,4 +1,4 @@
-package sum25.group03.iamservice.service;
+package sum25.group03.iamservice.service.Interface;
 
 import sum25.group03.iamservice.dto.request.LoginRequest;
 import sum25.group03.iamservice.dto.request.RefreshTokenRequest;
@@ -8,6 +8,7 @@ public interface AuthService {
 
 
     LoginResponse login(LoginRequest request);
+    LoginResponse firstLoginChangePassword(String username, String session, String newPassword);
     LoginResponse refreshToken(RefreshTokenRequest refreshToken);
     void changePassword(String accessToken, String oldPassword, String newPassword);
 
