@@ -32,7 +32,7 @@ public class DataInitializer {
                     return roleRepository.save(newRole);
                 });
 
-        // 2️ Tạo user admin mặc định nếu chưa có
+        // 2️ Tạo user admin mặc định nếu chưa có Admin123!
         if (!userRepository.existsByEmail("admin@system.com")) {
             try {
                 // Tạo admin trong Cognito và nhận về sub
