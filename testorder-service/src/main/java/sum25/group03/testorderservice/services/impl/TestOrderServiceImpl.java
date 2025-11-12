@@ -2,24 +2,34 @@ package sum25.group03.testorderservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.testorderservice.dtos.request.TestOrderPatientInfo;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.*;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
 import sum25.group03.testorderservice.entities.TestOrder;
+import sum25.group03.testorderservice.entities.TestResult;
 import sum25.group03.testorderservice.enums.ActionTypeFeatures;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
+import sum25.group03.testorderservice.helpers.ParameterHelpers;
 import sum25.group03.testorderservice.mapper.TestOrderMapper;
+import sum25.group03.testorderservice.mapper.TestResultMapper;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
+import sum25.group03.testorderservice.repositories.TestResultRepository;
+import sum25.group03.testorderservice.services.interfaces.TestOrderKafkaProducer;
 import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 import sum25.group03.testorderservice.specification.TestOrderSpecification;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,11 +39,16 @@ import java.util.stream.Collectors;
 public class TestOrderServiceImpl implements TestOrderService {
 
     private final TestOrderRepository testOrderRepository;
-    private final TestOrderMapper testOrderMapper;
+    private final TestOrderKafkaProducer testOrderKafkaProducer;
 
     private final TestOrderRepository repository;
-    private final TestOrderMapper mapper;
+    private final TestOrderMapper testOrderMapper;
+
+    private final TestResultMapper testResultMapper;
     private final ActionLogService actionLogService;
+
+    private final ParameterHelpers parameterHelpers;
+
 
     // -------- THUYEN--------
     // TODO 1: Write a function call to IAM service to verify viewerId exists in the system
@@ -49,19 +64,49 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         TestOrder entity = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("TestOrder not found with id " + id));
-        return mapper.toResponseDto(entity);
+
+        // get all related test results and map to DTOs
+        List<TestResult> relatedResults = entity.getTestResults();
+        List<TestResultResponseDTO> testResultDtos = testResultMapper.toResponseDtos(relatedResults);
+
+        // adjust parameter prices in test results
+        Long totalPrice = 0L;
+        Map<Long, Long> parameterPriceMap = parameterHelpers.loadParameterIdWithPriceMap();
+        for (TestResultResponseDTO resultDto : testResultDtos) {
+            Long parameterId = resultDto.getParameterId();
+            Long price = parameterPriceMap.get(parameterId);
+            totalPrice += price;
+            resultDto.setPrice(price);
+        }
+
+        TestOrderResponseDTO result = testOrderMapper.toResponseDto(entity);
+        result.setTestResults(testResultDtos);
+        result.setTotalPrice(totalPrice);
+        return result;
     }
 
     @Override
-    public List<TestOrderResponseDTO> getAllTestOrders(Long viewerId) {
+    public Page<TestOrderResponseDTO> getAllTestOrders(Integer page, Integer size, Long viewerId) {
 
         // TODO 3: Verify viewerId existence in the system using todo_1
 
         // Log the action of viewing the test order list
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
 
-        List<TestOrder> orders = repository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
-        return orders.stream().map(mapper::toResponseDto).toList();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<TestOrder> orders = repository.findAll(pageable);
+
+        return testOrderMapper.toResponseDtoPage(orders);
+    }
+
+    @Override
+    public List<TestOrderResponseDTO> getAllTestOrdersByMedicalRecordId(Long medicalRecordId, Long viewerId) {
+        // Log the action of viewing the test order list
+        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
+
+        List<TestOrder> orders = repository.findAllByExternalMedicalRecordId(medicalRecordId, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return testOrderMapper.toResponseDtoList(orders);
     }
 
     @Override
@@ -79,21 +124,32 @@ public class TestOrderServiceImpl implements TestOrderService {
                         .and(TestOrderSpecification.createdBetween(filterInfo.fromDate(), filterInfo.toDate()));
 
         List<TestOrder> results = repository.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return results.stream().map(mapper::toResponseDto).toList();
+        return results.stream().map(testOrderMapper::toResponseDto).toList();
     }
 
     // ------- HUY -----------
     @Override
-    public TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO) {
-        log.info("Creating new test order for patientId: {}", requestDTO.getPatientId());
+    public TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO, Long createdBy) {
 
+        // get patientInfo from requestDTO
+        TestOrderPatientInfo patientInfo = requestDTO.getPatientInfo();
+
+        // map requestDTO to entity
         TestOrder testOrder = testOrderMapper.toEntity(requestDTO);
-        testOrder.setStatus(TestOrderStatus.PENDING);
-        testOrder.setCreatedAt(LocalDateTime.now());
-        testOrder.setUpdatedAt(LocalDateTime.now());
+        testOrder.setCreatedBy(createdBy);
 
+        // save to database
         TestOrder savedTestOrder = testOrderRepository.save(testOrder);
-        log.info("Test order created successfully with id: {}", savedTestOrder.getId());
+        actionLogService.logAction(
+            createdBy,
+            ActionTypeFeatures.CREATE_TEST_ORDER,
+            savedTestOrder.getId()
+        );
+
+        // if patientId is null => new patient, send to kafka broker to IAM to create new patient
+        // send only when persisting new test order successfully
+        if (patientInfo.getId() == null)
+            testOrderKafkaProducer.sendPatientInfoMessage("patient-info", patientInfo);
 
         return testOrderMapper.toResponseDto(savedTestOrder);
     }
@@ -113,10 +169,14 @@ public class TestOrderServiceImpl implements TestOrderService {
         TestOrderStatus originalStatus = existingTestOrder.getStatus();
 
         testOrderMapper.updateEntity(requestDTO, existingTestOrder);
+        // Cập nhật status nếu DTO có giá trị
+        if (requestDTO.getStatus() != null) {
+            existingTestOrder.setStatus(requestDTO.getStatus());
+        }
 
         TestOrder updatedTestOrder = testOrderRepository.save(existingTestOrder);
-        log.info("Test order updated successfully. ID: {}, UpdatedBy: {}, PatientId changed: {} -> {}",
-                id, updatedBy, originalPatientId, updatedTestOrder.getPatientId());
+        log.info("Test order updated successfully. ID: {}, UpdatedBy: {}, UpdateStatus: {}, PatientId changed: {} -> {}",
+                id, updatedBy, originalPatientId, originalStatus, updatedTestOrder.getPatientId());
 
         return testOrderMapper.toResponseDto(updatedTestOrder);
     }
@@ -147,13 +207,15 @@ public class TestOrderServiceImpl implements TestOrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TestOrderResponseDTO> getTestOrdersByPatientId(Long patientId) {
-        log.info("Fetching test orders for patientId: {}", patientId);
+    public Page<TestOrderResponseDTO> getTestOrdersByPatientId(Long patientId, Integer page, Integer size, Long viewerId) {
 
-        List<TestOrder> testOrders = testOrderRepository.findByPatientId(patientId);
-        return testOrders.stream()
-                .map(testOrderMapper::toResponseDto)
-                .collect(Collectors.toList());
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        // get all test orders by patientId with pagination
+        Page<TestOrder> testOrders = testOrderRepository.findByPatientId(patientId, pageable);
+
+        // map to Page<TestOrderResponseDTO>
+        return testOrderMapper.toResponseDtoPage(testOrders);
     }
 
     @Override

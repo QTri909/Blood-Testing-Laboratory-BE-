@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import sum25.group03.testorderservice.enums.ParameterGender;
 import sum25.group03.testorderservice.enums.ParameterStatus;
 import sum25.group03.testorderservice.enums.ParameterUnit;
 
@@ -44,6 +45,9 @@ public class Parameter {
     @Enumerated(EnumType.STRING)
     private ParameterStatus status;
 
+    @Enumerated(EnumType.STRING)
+    private ParameterGender gender;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDate createdAt;
@@ -54,12 +58,16 @@ public class Parameter {
 
     private Long createdBy;
     private Long updatedBy;
+    private Long price;
 
     @OneToMany(mappedBy = "parameter", cascade = CascadeType.ALL)
     private Set<TestResult> testResults;
 
     @PrePersist
     public void prePersist() {
-        this.status = ParameterStatus.ACTIVE;
+        if (this.status == null)
+            this.status = ParameterStatus.ACTIVE;
+        if (this.gender == null)
+            this.gender = ParameterGender.BOTH;
     }
 }

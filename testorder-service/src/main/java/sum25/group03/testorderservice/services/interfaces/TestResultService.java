@@ -16,6 +16,5 @@ public interface TestResultService {
     List<TestResultResponseDTO> getTestResultsByTestOrderId(Long testOrderId);
     TestResultResponseDTO updateTestResult(Long id, TestResultRequestDTO requestDTO);
     void deleteTestResult(Long id);
-    List<TestResultResponseDTO> getTestResultsByInstrumentId(Long instrumentId);
     List<TestResultResponseDTO> getTestResultsByParameterId(Long parameterId);
 }

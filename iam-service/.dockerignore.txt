@@ -1,0 +1,22 @@
+# Bỏ thư mục build và config IDE
+target/
+.idea/
+.vscode/
+*.iml
+
+# Bỏ git và tài liệu
+.git/
+.gitignore
+README.md
+
+# Bỏ file hệ thống và log
+*.log
+*.tmp
+
+# Bỏ các file môi trường cục bộ
+.env
+.DS_Store
+
+# Bỏ các thư mục test hoặc data tạm
+test/
+logs/

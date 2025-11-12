@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 import sum25.group03.payment_service.configs.VNPayProperties;
 import sum25.group03.payment_service.dtos.request.VNPayCreatePaymentRequest;
+import sum25.group03.payment_service.dtos.response.PaymentRequestResponse;
 import sum25.group03.payment_service.dtos.response.PaymentResponseDTO;
 import sum25.group03.payment_service.dtos.response.VNPayCreatePaymentResponse;
 import sum25.group03.payment_service.entities.PaymentProvider;
@@ -17,6 +18,7 @@ import sum25.group03.payment_service.enums.PaymentProviderStatus;
 import sum25.group03.payment_service.enums.PaymentRequestStatus;
 import sum25.group03.payment_service.enums.PaymentTransactionStatus;
 import sum25.group03.payment_service.helpers.VNPayHelpers;
+import sum25.group03.payment_service.mappers.PaymentRequestMapper;
 import sum25.group03.payment_service.mappers.PaymentStatusMapper;
 import sum25.group03.payment_service.repositories.PaymentProviderRepository;
 import sum25.group03.payment_service.repositories.PaymentRequestRepository;
@@ -39,6 +41,7 @@ public class VNPayServiceImpl implements VNPayService {
     private final VNPayProperties props;
     private final PaymentCacheService cache;
     private final QRCodeService qr;
+    private final PaymentRequestMapper paymentRequestMapper;
 
     private final PaymentRequestRepository paymentRequestRepository;
     private final PaymentProviderRepository paymentProviderRepository;
@@ -188,6 +191,7 @@ public class VNPayServiceImpl implements VNPayService {
         String txnRef = params.get("vnp_TxnRef");
         var dto = new PaymentResponseDTO();
         dto.setTxnRef(txnRef);
+        dto.setOrderCode(params.get("vnp_OrderInfo"));
         String status = cache.getStatus(txnRef).orElse("UNKNOWN");
         dto.setStatus(status);
         dto.setDataSource(status.equals("UNKNOWN") ? "DATABASE" : "REDIS");
@@ -202,5 +206,12 @@ public class VNPayServiceImpl implements VNPayService {
         dto.setStatus(status);
         dto.setDataSource(status.equals("UNKNOWN") ? "VNPAY_API" : "REDIS");
         return dto;
+    }
+
+    @Override
+    public PaymentRequestResponse queryRequestByTxnRef(String txnRef) {
+        PaymentRequest entity = paymentRequestRepository.findByTxnRef(txnRef)
+                .orElseThrow(() -> new IllegalStateException("No PaymentRequest found for transaction: " + txnRef));
+        return paymentRequestMapper.toResponse(entity);
     }
 }

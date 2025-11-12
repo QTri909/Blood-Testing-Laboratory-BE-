@@ -1,4 +1,4 @@
 
 spring:
   profiles:
-    active: patientdb,auditdb,es
+    active: patientdb,auditdb,es,kafka

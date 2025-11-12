@@ -2,6 +2,7 @@ package sum25.group03.testorderservice.services.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import sum25.group03.testorderservice.dtos.response.ActionLogDTO;
 import sum25.group03.testorderservice.enums.ActionTypeFeatures;
 
 import java.time.LocalDateTime;
@@ -10,14 +11,15 @@ import java.time.LocalDateTime;
 @Service
 public class ActionLogService {
 
-    public void logAction(Long viewerId, ActionTypeFeatures action, Long targetId) {
-        LocalDateTime timestamp = LocalDateTime.now();
+    public void logAction(Long actorId, ActionTypeFeatures action, Long targetId) {
+        ActionLogDTO actionLog = ActionLogDTO.builder()
+                .actorId(actorId)
+                .action(action)
+                .targetId(targetId)
+                .actionTime(LocalDateTime.now())
+                .build();
 
         // In ra console (và sẽ hiển thị trong logs)
-        if (targetId == null) {
-            log.info("User {} - {} - {}", viewerId, action, timestamp);
-            return;
-        }
-        log.info("User {} - {} - (targetId={}) - {}", viewerId, action, targetId, timestamp);
+        log.info(actionLog.toString());
     }
 }

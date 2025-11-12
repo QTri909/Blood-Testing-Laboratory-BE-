@@ -49,10 +49,19 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
         }
     }
 
+    private String validateMessage(Object message) {
+        if (!(message instanceof String))
+            throw new IllegalArgumentException("Message is not a string");
+        return (String) message;
+    }
+
     @Override
-    public void process(String message) {
+    public void process(Object message) {
+
+        String msgString = validateMessage(message);
+
         try {
-            JsonNode jsonNode = new ObjectMapper().readTree(message);
+            JsonNode jsonNode = new ObjectMapper().readTree(msgString);
             String hl7Content = jsonNode.get("message").asText().replace("\\n", "\r");
 
             if (!hl7Content.startsWith("MSH")) {
@@ -72,8 +81,11 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
     }
 
     @Override
-    public void sendToQuarantine(String message, String reason) {
-        String wrapped = "❌ INVALID HL7 [" + reason + "] → " + message;
+    public void sendToQuarantine(Object message, String reason) {
+
+        String msgStr = validateMessage(message);
+
+        String wrapped = "❌ INVALID HL7 [" + reason + "] → " + msgStr;
         kafkaTemplate.send("test-order-quaratine", wrapped);
         System.out.println("🚨 Sent to quarantine queue: " + wrapped);
     }

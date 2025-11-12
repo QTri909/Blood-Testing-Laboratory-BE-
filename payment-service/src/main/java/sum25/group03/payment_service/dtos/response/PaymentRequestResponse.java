@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PaymentRequestResponse {
-
     private String id;
     private Double amount;
     private StandardCurrency standardCurrency;

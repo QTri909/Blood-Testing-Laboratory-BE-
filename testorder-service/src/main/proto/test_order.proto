@@ -6,8 +6,10 @@ option java_outer_classname = "TestOrderProto";
 
 service TestOrderService {
   rpc GetLatestTestOrderByPatientId (GetLatestTestOrderRequest) returns (TestOrderResponse);
+  rpc GetAllTestOrdersByMedicalRecordId (MedicalRecordIdRequest) returns (TestOrdersByMedicalRecordResponseList);
 }
 
+//---------------------- Get latest test order by patient ID -----------------
 message GetLatestTestOrderRequest {
   int64 patientId = 1;
 }
@@ -19,4 +21,56 @@ message TestOrderResponse {
   int64 patientId = 4;
   string status = 5;
   string createdAt = 6;
+}
+//---------------------- Get all test orders by medical record ID -----------------
+message MedicalRecordIdRequest {
+  int64 medicalRecordId = 1;
+  int64 viewerId = 2;
+}
+
+message CommentResponse {
+  int64 id = 1;
+  int64 testOrderId = 2;
+  int64 testResultId = 3;
+  int64 userId = 4;
+  string commentText = 5;
+  string createdAt = 6;
+  string updatedAt = 7;
+  string status = 8;
+}
+
+message TestResultResponse {
+  int64 id = 1;
+  int64 testOrderId = 2;
+  int64 instrumentId = 3;
+  int64 parameterId = 4;
+  string parameterName = 5;
+  string flagStatus = 6;
+  string status = 7;
+  double value = 8;
+  string createdAt = 9;
+  string updatedAt = 10;
+  repeated CommentResponse comments = 11;
+  int64 price = 12;
+}
+
+message TestOrdersByMedicalRecordResponse {
+  int64 id = 1;
+  int64 externalMedicalRecordId = 2;
+  int64 patientId = 3;
+  int64 createdBy = 4;
+  int64 runBy = 5;
+  string code = 6;
+  string runDate = 7;
+  string status = 8;
+  string createdAt = 9;
+  string updatedAt = 10;
+  repeated TestResultResponse testResults = 11;
+  repeated CommentResponse comments = 12;
+  string barcode = 13;
+  int64 totalPrice = 14;
+}
+
+message TestOrdersByMedicalRecordResponseList {
+  repeated TestOrdersByMedicalRecordResponse testOrders = 1;
 }
