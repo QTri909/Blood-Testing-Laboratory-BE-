@@ -11,16 +11,57 @@ services:
       - MONGO_INITDB_DATABASE=monitoring_db
     ports:
       - "27017:27017"
-#    volumes:
-#      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
     networks:
       - internal
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: kafka
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+
+
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'MkQkDjFzNTcwNTJENDM2Qk'
+    networks:
+      - internal
+    restart: always
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:latest
+    container_name: kafka-exporter
+    command:
+      - '--kafka.server=kafka:29092'
+      - '--web.listen-address=:9308'
+    ports:
+      - "9308:9308"
+    networks:
+      - internal
+    restart: always
 
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
     ports:
       - "9090:9090"
     networks:
@@ -41,55 +82,16 @@ services:
       - internal
     restart: always
 
-#  kafka:
-#    image: bitnamilegacy/kafka:latest
-#    container_name: kafka
-#    restart: always
-#    environment:
-#      - KAFKA_CFG_PROCESS_ROLES=controller,broker
-#      - KAFKA_CFG_NODE_ID=0
-#      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
-#      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
-#      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
-#      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-#      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
-#    ports:
-#      - "9092:9092"
-#      - "9094:9094"
-#    networks:
-#      - internal
-#  kafka-exporter:
-#    image: danielqsj/kafka-exporter:latest
-#    container_name: kafka-exporter
-#    command:
-#      - '--kafka.server=kafka:9092'
-#      - '--web.listen-address=:9308'
-#    ports:
-#      - "9308:9308"
-#    networks:
-#      - internal
-#    depends_on:
-#      - kafka
-#    restart: always
-
-
-  monitoring-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: monitoring-service:latest
-    container_name: monitoring-service
-    restart: always
-    environment:
-      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - SPRING_DATA_MONGODB_URI=mongodb://root:root123@monitoring-service-db:27017/monitoring_db?authSource=admin
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alert-manager
+    volumes:
+      - ./alert_manager.yml:/etc/alertmanager/alertmanager.yml:ro
     ports:
-      - "8083:8083"
+      - "9093:9093"
     networks:
       - internal
-    depends_on:
-      - monitoring-service-db
-#      - kafka
+    restart: always
 
 volumes:
   grafana-storage:
