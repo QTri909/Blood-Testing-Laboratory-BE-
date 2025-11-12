@@ -1,4 +1,4 @@
-package sum25.group03.iamservice.config;
+package sum25.group03.common.response.security;
 
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;

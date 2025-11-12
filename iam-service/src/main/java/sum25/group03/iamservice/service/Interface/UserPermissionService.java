@@ -1,4 +1,4 @@
-package sum25.group03.iamservice.service;
+package sum25.group03.iamservice.service.Interface;
 
 import org.springframework.security.core.GrantedAuthority;
 

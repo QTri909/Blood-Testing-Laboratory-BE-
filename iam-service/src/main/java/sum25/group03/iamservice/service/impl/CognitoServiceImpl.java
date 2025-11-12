@@ -1,4 +1,4 @@
-package sum25.group03.iamservice.service;
+package sum25.group03.iamservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -7,6 +7,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 import sum25.group03.iamservice.dto.CognitoConfig;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.entity.User;
+import sum25.group03.iamservice.service.Interface.CognitoService;
 
 import java.util.List;
 

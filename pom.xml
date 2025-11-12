@@ -19,5 +19,6 @@
         <module>warehouse-service</module>
         <module>payment-service</module>
         <module>common</module>
+        <module>lambda</module>
     </modules>
 </project>
