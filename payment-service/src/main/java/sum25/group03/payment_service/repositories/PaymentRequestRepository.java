@@ -12,4 +12,5 @@ public interface PaymentRequestRepository extends JpaRepository<PaymentRequest,S
     Optional<PaymentRequest> findByTxnRef(String txnRef);
     List<PaymentRequest> findAllByUserId(Long userId);
     Optional<PaymentRequest> findByOrderCode(String orderCode);
+    List<PaymentRequest> findAllByOrderCode(String orderCode);
 }
