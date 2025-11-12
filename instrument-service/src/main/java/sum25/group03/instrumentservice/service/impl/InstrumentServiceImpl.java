@@ -14,6 +14,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import sum25.group03.instrumentservice.audit.annotation.SkipAuditLog;
 import sum25.group03.instrumentservice.audit.model.AuditLog;
 import sum25.group03.instrumentservice.client.WarehouseServiceClient;
+import sum25.group03.instrumentservice.client.response.ReagentResponse;
 import sum25.group03.instrumentservice.client.response.ReagentValidationResponse;
 import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.common.InstrumentStatus;
@@ -22,6 +23,7 @@ import sum25.group03.instrumentservice.controller.request.InstallReagentRequest;
 import sum25.group03.instrumentservice.controller.request.UpdateReagentStatusRequest;
 import sum25.group03.instrumentservice.controller.response.*;
 import sum25.group03.instrumentservice.exception.InstrumentModeChangeException;
+import sum25.group03.instrumentservice.exception.ReagentAlreadyInstalledException;
 import sum25.group03.instrumentservice.exception.ResourceNotFoundException;
 import sum25.group03.instrumentservice.exception.WarehouseServiceException;
 import sum25.group03.instrumentservice.event.InstrumentModeChangedEvent;
@@ -43,6 +45,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -70,7 +73,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                             "Instrument not found with id: " + request.getInstrumentId());
                 });
 
-        log.info("Instrument found: {} ", instrument.getInstrumentName());
+        log.info("Instrument found with ID: {} ", instrument.getInstrumentName());
 
 
 
@@ -131,10 +134,11 @@ public class InstrumentServiceImpl implements InstrumentService {
 
         Instrument instrument = instrumentRepository.findById(request.getInstrumentId())
                 .orElseThrow(() -> {
-                    log.error("Instrument not found with ID: {}", request.getInstrumentId());
+                    log.error("Instrument not found with ID : {}", request.getInstrumentId());
                     return new ResourceNotFoundException(
                             "Instrument not found with id: " + request.getInstrumentId());
                 });
+
 
         log.info("Instrument found: {}", instrument.getInstrumentName());
 
@@ -149,7 +153,6 @@ public class InstrumentServiceImpl implements InstrumentService {
                     "Cannot install reagent: Unable to validate with Warehouse Service. " + e.getMessage());
         }
 
-
         if (!reagentValidation.isValid()) {
             log.warn("Reagent validation failed: {}", reagentValidation.getMessage());
             throw new InstrumentModeChangeException(
@@ -160,10 +163,7 @@ public class InstrumentServiceImpl implements InstrumentService {
             throw new InstrumentModeChangeException(
                     "Cannot install reagent: " + reagentValidation.getMessage());
         }
-
-
         log.info("Reagent validation successful - reagent is valid and ready for use");
-
         if (request.getCurrentVolume() == null || request.getCurrentVolume() <= 0) {
             log.warn("Invalid current volume: {}", request.getCurrentVolume());
             throw new InstrumentModeChangeException("Current volume must be greater than 0");
@@ -175,12 +175,11 @@ public class InstrumentServiceImpl implements InstrumentService {
             if (reagent.getReagentId().equals(reagentValidation.getReagentId()) && reagent.getLotReagentId() != null) {
                 log.warn("Reagent with ID {} is already installed on instrument ID {}",
                         reagent.getReagentId(), reagentValidation.getReagentId());
-                throw new InstrumentModeChangeException(
+                throw new ReagentAlreadyInstalledException(
                         "Reagent with ID " + reagent.getReagentId() +
                                 " is already installed on this instrument. Please remove it before installing a new one.");
             }
         }
-
 
         InstalledReagent installedReagent = InstalledReagent.builder()
                 .instrument(instrument)
