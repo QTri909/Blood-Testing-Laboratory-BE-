@@ -72,24 +72,7 @@ public class InstrumentServiceImpl implements InstrumentService {
 
         log.info("Instrument found: {} ", instrument.getInstrumentName());
 
-        log.info("Checking instrument status with Warehouse Service");
-        boolean isActive;
-        try {
-            isActive = warehouseServiceClient.checkInstrumentStatus(request.getInstrumentId());
-        } catch (WarehouseServiceException e) {
-            log.error("Warehouse Service check failed: {}", e.getMessage());
-            throw new InstrumentModeChangeException(
-                    "Cannot change instrument mode: Unable to verify instrument status with Warehouse Service. " + e.getMessage());
-        }
 
-        if (!isActive) {
-            log.warn("Mode change denied - Instrument is not active in Warehouse Service");
-            throw new InstrumentModeChangeException(
-                    "Cannot change instrument mode: Instrument is not active in the Warehouse Service. " +
-                            "Please ensure the instrument is marked as active before attempting mode changes.");
-        }
-
-        log.info("Warehouse Service confirmed instrument is active - proceeding with mode change");
 
         validateModeChangeRequest(request, instrument);
 
@@ -112,26 +95,24 @@ public class InstrumentServiceImpl implements InstrumentService {
         );
 
         log.info("Instrument mode changed successfully from {} to {}", previousStatus, request.getNewStatus());
+        try {
+            InstrumentModeChangedEvent event = InstrumentModeChangedEvent.builder()
+                    .instrumentId(updatedInstrument.getId())
+                    .instrumentName(updatedInstrument.getInstrumentName())
+                    .previousStatus(String.valueOf(previousStatus))
+                    .newStatus(String.valueOf(request.getNewStatus()))
+                    .reason(request.getReason())
+                    .changedDate(LocalDate.now())
+                    .eventTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
+                    .build();
 
-        if (request.getNewStatus() == InstrumentStatus.INACTIVE || request.getNewStatus() == InstrumentStatus.MAINTENANCE) {
-            try {
-                InstrumentModeChangedEvent event = InstrumentModeChangedEvent.builder()
-                        .instrumentId(updatedInstrument.getId())
-                        .instrumentName(updatedInstrument.getInstrumentName())
-                        .previousStatus(String.valueOf(previousStatus))
-                        .newStatus(String.valueOf(request.getNewStatus()))
-                        .reason(request.getReason())
-                        .changedDate(LocalDate.now())
-                        .eventTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
-                        .build();
+            kafkaEventPublisher.publishInstrumentModeChangedEvent(event);
+            log.info("Instrument mode changed event published for instrument ID: {}", updatedInstrument.getId());
+        } catch (Exception e) {
+            log.error("Failed to publish instrument mode changed event, but mode change was successful: {}", e.getMessage());
 
-                kafkaEventPublisher.publishInstrumentModeChangedEvent(event);
-                log.info("Instrument mode changed event published for instrument ID: {}", updatedInstrument.getId());
-            } catch (Exception e) {
-                log.error("Failed to publish instrument mode changed event, but mode change was successful: {}", e.getMessage());
-
-            }
         }
+
 
         return ChangeInstrumentModeResponse.builder()
                 .instrumentId(updatedInstrument.getId())
@@ -191,7 +172,7 @@ public class InstrumentServiceImpl implements InstrumentService {
         List<InstalledReagent> reagents = installedReagentRepository
                 .findByInstrumentIdAndStatusIsNot(request.getInstrumentId(), InstalledReagentStatus.REMOVED);
         for (InstalledReagent reagent : reagents) {
-            if (reagent.getReagentId().equals(reagentValidation.getReagentId()) && reagent.getLotReagentId()!=null ) {
+            if (reagent.getReagentId().equals(reagentValidation.getReagentId()) && reagent.getLotReagentId() != null) {
                 log.warn("Reagent with ID {} is already installed on instrument ID {}",
                         reagent.getReagentId(), reagentValidation.getReagentId());
                 throw new InstrumentModeChangeException(

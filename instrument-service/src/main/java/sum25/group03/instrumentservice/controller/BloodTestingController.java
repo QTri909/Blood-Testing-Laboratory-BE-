@@ -11,12 +11,19 @@ import org.springframework.web.bind.annotation.*;
 import sum25.group03.instrumentservice.audit.service.AuditLogService;
 import sum25.group03.instrumentservice.controller.request.BloodTestingRequest;
 import sum25.group03.instrumentservice.controller.response.RawTestResultResponse;
+import sum25.group03.instrumentservice.exception.BarcodeAlreadyTestedException;
+import sum25.group03.instrumentservice.exception.InstrumentNotReadyException;
 import sum25.group03.instrumentservice.exception.InsufficientReagentException;
 import sum25.group03.instrumentservice.service.RawTestResultService;
 import sum25.group03.instrumentservice.service.SimulatorService;
 
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 @RestController
 @RequestMapping("/api/v1/instruments/blood-testing")
@@ -26,29 +33,11 @@ public class BloodTestingController {
 
     private final SimulatorService simulatorService;
     private final RawTestResultService rawTestResultService;
-    private final AuditLogService auditLogService;
 
     @PostMapping("/start-test")
-    @Operation(summary = "Bắt đầu chạy một xét nghiệm máu",
-            responses = {
-                    @ApiResponse(responseCode = "200",
-                            description = "Yêu cầu chạy xét nghiệm thành công (đang xử lý)",
-                            content = @Content(mediaType = "application/json")),
-
-                    @ApiResponse(responseCode = "400",
-                            description = "Dữ liệu đầu vào không hợp lệ (Validation failed)"),
-
-                    @ApiResponse(responseCode = "409",
-                            description = "Xung đột: Máy không sẵn sàng (Instrument not READY)"),
-
-                    @ApiResponse(responseCode = "503",
-                            description = "Lỗi dịch vụ ngoài (Warehouse Service Unavailable)"),
-
-                    @ApiResponse(responseCode = "500",
-                            description = "Lỗi hệ thống nội bộ")
-            }
+    @Operation(summary = "Bắt đầu chạy một xét nghiệm máu"
     )
-    public CompletableFuture<ResponseEntity<RawTestResultResponse>> startBloodTest(
+    public CompletableFuture<ResponseEntity<Object>> startBloodTest(
             @RequestBody BloodTestingRequest request,
             HttpServletRequest httpRequest) {
 
@@ -61,29 +50,63 @@ public class BloodTestingController {
         return simulatorService.startTest(request)
                 .thenApply(result -> {
                     simulatorService.logTestCompletion(request.getBarcode(), ipAddress, userAgent);
-                    return ResponseEntity.ok(result);
+                    return ResponseEntity.ok((Object) result);
                 })
                 .exceptionally(ex -> {
-                    if (ex.getCause() instanceof InsufficientReagentException) {
-                        simulatorService.logTestFailure(
-                                request.getBarcode(),
-                                ipAddress,
-                                userAgent,
-                                "INSUFFICIENT_REAGENT",
-                                "Không đủ hóa chất để thực hiện xét nghiệm"
-                        );
-                        return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED)
-                                .body(null);
-                    }
+                    Throwable cause = (ex instanceof CompletionException) ? ex.getCause() : ex;
+                    String errorMessage = (cause != null) ? cause.getMessage() : ex.getMessage();
+                    String errorType = (cause != null) ? cause.getClass().getSimpleName() : "UNKNOWN_ERROR";
                     simulatorService.logTestFailure(
                             request.getBarcode(),
                             ipAddress,
                             userAgent,
-                            ex.getCause() != null ? ex.getCause().getClass().getSimpleName() : "UNKNOWN_ERROR",
-                            ex.getMessage()
+                            errorType,
+                            errorMessage
                     );
-                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                            .body(null);
+
+
+                    Map<String, Object> errorBody = new HashMap<>();
+                    errorBody.put("timestamp", new Date());
+                    errorBody.put("path", httpRequest.getRequestURI());
+
+                    if (cause instanceof BarcodeAlreadyTestedException) {
+                        errorBody.put("status", HttpStatus.CONFLICT.value());
+                        errorBody.put("error", "Conflict");
+                        errorBody.put("message", errorMessage);
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorBody);
+                    }
+
+                    if (cause instanceof InstrumentNotReadyException) {
+                        errorBody.put("status", HttpStatus.CONFLICT.value());
+                        errorBody.put("error", "Conflict");
+                        errorBody.put("message", errorMessage);
+                        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorBody);
+                    }
+
+                    if (cause instanceof InsufficientReagentException) {
+                        errorBody.put("status", HttpStatus.PRECONDITION_FAILED.value());
+                        errorBody.put("error", "Precondition Failed");
+                        errorBody.put("message", errorMessage);
+                        return ResponseEntity.status(HttpStatus.PRECONDITION_FAILED).body(errorBody);
+                    }
+
+                    if (cause instanceof RuntimeException && errorMessage != null) {
+                        if (errorMessage.contains("Invalid barcode format") ||
+                                errorMessage.contains("Barcode is null or empty")) {
+
+                            errorBody.put("status", HttpStatus.BAD_REQUEST.value());
+                            errorBody.put("error", "Bad Request");
+                            errorBody.put("message", errorMessage);
+                            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorBody);
+                        }
+                    }
+
+                    log.error("Unhandled Async Error: ", cause); // Log stack trace
+                    errorBody.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+                    errorBody.put("error", "Internal Server Error");
+                    errorBody.put("message", "An unexpected error occurred. Please try again later.");
+
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorBody);
                 });
     }
 

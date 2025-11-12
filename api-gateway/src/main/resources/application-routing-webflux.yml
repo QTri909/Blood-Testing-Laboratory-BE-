@@ -20,6 +20,8 @@ spring:
               uri: http://localhost:8081
               predicates:
                 - Path=${app.api-version}/instruments/**
+              filters:
+                - RewritePath=${app.api-version}/instruments/(?<segment>.*), /api/v1/instruments/${segment}
 
             # for monitoring service
             - id: monitoring-service
