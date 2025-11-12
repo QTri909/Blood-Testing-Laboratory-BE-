@@ -124,7 +124,8 @@ public class ReportServiceImpl implements ReportService {
     public void exportExcel(Long patientId, HttpServletResponse response) throws Exception {
         List<TestOrder> orders ;
         if(patientId!=null){
-        orders= testOrderRepository.findByPatientId(patientId);}
+            orders= testOrderRepository.findByPatientId(patientId);
+        }
         else{
             // Nếu patientId null, lấy tất cả test orders của tháng hiện tại
             LocalDate firstDay = LocalDate.now().withDayOfMonth(1);

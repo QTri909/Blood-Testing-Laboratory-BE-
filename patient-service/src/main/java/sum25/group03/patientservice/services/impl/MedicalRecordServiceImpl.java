@@ -19,6 +19,8 @@ import sum25.group03.patientservice.enums.DocumentType;
 import sum25.group03.patientservice.enums.MedicalRecordStatus;
 import sum25.group03.patientservice.exception.medical.record.MedicalRecordNotFound;
 import sum25.group03.patientservice.exception.user.snapshot.UserNotFoundException;
+import sum25.group03.patientservice.grpc.TestOrderGrpcClient;
+import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderFullFieldDTO;
 import sum25.group03.patientservice.mapper.MedicalRecordMapper;
 import sum25.group03.patientservice.repositories.postgres.MedicalRecordRepository;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
@@ -38,6 +40,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private final MedicalRecordRepository medicalRecordRepository;
     private final MedicalRecordMapper medicalRecordMapper;
     private final UserSnapshotRepository userSnapshotRepository;
+
+    private final TestOrderGrpcClient testOrderGrpcClient;
 
     private final MedicalRecordMongoServiceImpl medicalRecordMongoService;
     private final AuditEntryMongoServiceImpl auditEntryMongoService;
@@ -280,5 +284,48 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .entityType(DocumentType.MEDICAL_RECORD)
                 .build();
         auditEntryMongoService.saveAuditEntry(auditEntryStatusChange);
+    }
+
+    @Override
+    public List<GrpcTestOrderFullFieldDTO> getAllTestOrdersByMedicalRecordId(Long medicalRecordId, Long viewerId) {
+        return testOrderGrpcClient.getAllTestOrdersByMedicalRecordId(medicalRecordId, viewerId);
+    }
+
+    @Override
+    @Transactional
+    public MedicalRecordResponse updateMedicalRecordStatus(MedicalRecordStatus newStatus, Long recordId, Long updaterId) {
+
+        if (newStatus == null)
+            throw new IllegalArgumentException("New status must not be null!");
+
+        // logs the update action
+        actionLogService.logAction(updaterId, ActionTypeFeatures.UPDATE_PATIENT_MEDICAL_RECORD_STATUS, recordId);
+
+        // query for the old record
+        MedicalRecordEntity entity = medicalRecordRepository.findById(recordId)
+                .orElseThrow(() -> new MedicalRecordNotFound("Medical record with id " + recordId + " not found!"));
+
+        // store old status for auditing
+        MedicalRecordStatus oldStatus = entity.getStatus();
+
+        if (newStatus == MedicalRecordStatus.PUBLISHED && oldStatus != MedicalRecordStatus.EMPTY)
+            throw new IllegalStateException("Medical record status is already published!");
+        if (newStatus == MedicalRecordStatus.COMPLETED && oldStatus != MedicalRecordStatus.PUBLISHED)
+            throw new IllegalStateException("Only published medical records can be completed!");
+
+        AuditEntryDocument auditEntryStatusChange = AuditEntryDocument.builder()
+                .entityId(recordId)
+                .fieldChanged("status")
+                .oldValue(oldStatus.name())
+                .newValue(newStatus.name())
+                .changedBy(updaterId)
+                .entityType(DocumentType.MEDICAL_RECORD)
+                .build();
+
+        // update new status
+        entity.setStatus(newStatus);
+        entity.setUpdatedBy(updaterId);
+        medicalRecordRepository.save(entity);
+        return medicalRecordMapper.toMedicalRecordResponse(entity);
     }
 }

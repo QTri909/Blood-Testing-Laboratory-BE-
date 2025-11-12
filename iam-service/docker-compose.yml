@@ -1,4 +1,4 @@
-
+version: '3.8'
 
 services:
   iam-service:
@@ -10,12 +10,19 @@ services:
     ports:
       - "8081:8080"
     environment:
+      # Database
       - SPRING_DATASOURCE_URL=jdbc:postgresql://iam.cjguysc2gq58.ap-southeast-2.rds.amazonaws.com:5432/postgres
       - SPRING_DATASOURCE_USERNAME=yoko
       - SPRING_DATASOURCE_PASSWORD=hoang229
+
+      # Kafka - kết nối tới Kafka bên Test Order
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
       - SPRING_KAFKA_CONSUMER_GROUP_ID=iam-service-group
+
+      # AWS config
       - AWS_REGION=ap-southeast-2
+
+    # KHÔNG khai báo Kafka ở đây nữa, dùng Kafka của Test Order
     networks:
       - shared-network
 

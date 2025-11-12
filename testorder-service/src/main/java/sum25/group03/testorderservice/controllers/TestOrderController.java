@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,12 +30,15 @@ public class TestOrderController {
     // -------- THUYEN --------
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<List<TestOrderResponseDTO>> getAllTestOrders(
-            @RequestHeader("X-User-Id") Long viewerId
+    public ApiResponse<Page<TestOrderResponseDTO>> getAllTestOrders(
+            @RequestHeader("X-User-Id") Long viewerId,
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "size", defaultValue = "10") Integer size
     ) {
-        return ApiResponse.add("Get all test orders successfully", testOrderService.getAllTestOrders(viewerId));
+        return ApiResponse.add("Get all test orders successfully", testOrderService.getAllTestOrders(page, size, viewerId));
     }
 
+    /*
     @GetMapping("/by-medical-record/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<List<TestOrderResponseDTO>> getAllTestOrdersByMedicalRecordId(
@@ -44,6 +48,7 @@ public class TestOrderController {
         return ApiResponse.add("Get all test orders by medical record id successfully",
                 testOrderService.getAllTestOrdersByMedicalRecordId(medicalRecordId, viewerId));
     }
+    */
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
@@ -98,10 +103,16 @@ public class TestOrderController {
     }
 
     @GetMapping("/patient/{patientId}")
-    public ApiResponse<List<TestOrderResponseDTO>> getTestOrdersByPatientId(
-            @PathVariable Long patientId)
+    public ApiResponse<Page<TestOrderResponseDTO>> getTestOrdersByPatientId(
+            @PathVariable Long patientId,
+            @RequestHeader("X-User-Id") Long viewerId,
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "size", defaultValue = "10") Integer size
+    )
     {
-        List<TestOrderResponseDTO> response = testOrderService.getTestOrdersByPatientId(patientId);
+        Page<TestOrderResponseDTO> response = testOrderService.getTestOrdersByPatientId(
+                patientId, page, size, viewerId
+        );
         return ApiResponse.add("Get test orders by patient ID successfully", response);
     }
 
