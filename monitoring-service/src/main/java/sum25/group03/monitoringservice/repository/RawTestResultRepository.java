@@ -6,7 +6,8 @@ import sum25.group03.monitoringservice.model.RawTestResult;
 import java.util.List;
 import java.util.Optional;
 
-public interface RawTestResultRepository extends MongoRepository<RawTestResult,String> {
+public interface RawTestResultRepository extends MongoRepository<RawTestResult, String> {
+    List<RawTestResult> findByTestOrderId(String testOrderId);
     Optional<RawTestResult> findFirstByTestOrderId(String testOrderId);
     List<RawTestResult> findAllByOrderByReceivedAtDesc();
     Optional<RawTestResult> findByBarcode(String barcode);
