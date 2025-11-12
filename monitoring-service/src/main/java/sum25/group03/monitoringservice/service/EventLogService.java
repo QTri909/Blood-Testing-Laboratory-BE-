@@ -3,7 +3,6 @@ package sum25.group03.monitoringservice.service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import sum25.group03.monitoringservice.kafka.MockProducer;
 import sum25.group03.monitoringservice.model.EventLog;
 import sum25.group03.monitoringservice.repository.EventLogRepository;
 
@@ -14,15 +13,13 @@ import java.util.Optional;
 @Service
 public class EventLogService {
     private final EventLogRepository eventLogRepo;
-    private final MockProducer mockProducer;
-    public EventLogService(EventLogRepository eventLogRepository,MockProducer mockProducer) {
+
+    public EventLogService(EventLogRepository eventLogRepository) {
         this.eventLogRepo = eventLogRepository;
-        this.mockProducer = mockProducer;
+
     }
     // send mock
-    public void sendMessage(){
-        mockProducer.sendMockEvent();
-    }
+
     public EventLog addEventLog(EventLog eventLog){
         eventLog.setCreatedAt(Instant.now());
         return eventLogRepo.save(eventLog);

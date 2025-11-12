@@ -7,9 +7,18 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    consumer:
+      group-id: monitoring-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        enable.auto.commit: false
+        max.poll.records: 100
+      listener:
+        ack-mode: manual
+        concurrency: 3
 
   data:
     mongodb:
@@ -35,5 +44,8 @@ management:
 
 monitoring:
   kafka:
-    topic: processed-test-results
-    raw-topic: raw-test-results
+    topics:
+      - test.order.created
+      - test.result.published
+      - instrument.activated
+      - instrument.deactivated

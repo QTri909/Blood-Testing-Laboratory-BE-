@@ -20,11 +20,6 @@ public class EventLogController {
         this.eventLogService = eventLogService;
     }
 
-    @GetMapping("/send")
-    public ApiResponse<String> sendMessage() {
-        eventLogService.sendMessage();
-        return ApiResponse.ok("Message sent successfully", "success");
-    }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)

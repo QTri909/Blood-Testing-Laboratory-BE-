@@ -22,8 +22,13 @@ public class EventLog {
     private String topic;
     private String action;
     private String message;
-    private String operator;
+    private Map<String, String> operator;
     private Instant createdAt;
-
+    private Instant timestamp;
+    private Instant receivedAt;
+    private String sourceService;
+    private Map<String, Object> payload;
+    private String checksum;
+    private String processingStatus;
     private Map<String, Object> data;
 }
