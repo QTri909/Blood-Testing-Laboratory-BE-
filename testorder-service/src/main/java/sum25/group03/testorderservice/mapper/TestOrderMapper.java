@@ -10,7 +10,7 @@ import sum25.group03.testorderservice.entities.TestOrder;
 import java.util.List;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, uses = {TestResultMapper.class, CommentMapper.class})
-public interface TestOrderMapper {
+publicinterface TestOrderMapper {
 
 
     @Mapping(target = "testResults", source = "testResults")
