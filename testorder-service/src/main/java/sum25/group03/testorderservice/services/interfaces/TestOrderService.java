@@ -26,7 +26,7 @@ public interface TestOrderService{
     TestOrderResponseDTO updateTestOrder(Long id, TestOrderRequestDTO requestDTO, Long updatedBy);
     //3.5.1.5 Delete Patient Test Order
     void deleteTestOrder(Long id, Long deletedBy);
-    List<TestOrderResponseDTO> getTestOrdersByPatientId(Long patientId);
+    Page<TestOrderResponseDTO> getTestOrdersByPatientId(Long patientId, Integer page, Integer size, Long viewerId);
     List<TestOrderResponseDTO> getTestOrdersByStatus(TestOrderStatus status);
     TestOrderResponseDTO updateTestOrderStatus(Long id, TestOrderStatus status, Long updatedBy);
     List<TestOrderResponseDTO> getTestOrdersByCreatedBy(Long createdBy);

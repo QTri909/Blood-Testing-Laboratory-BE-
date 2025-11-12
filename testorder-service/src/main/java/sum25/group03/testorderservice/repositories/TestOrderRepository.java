@@ -1,5 +1,7 @@
 package sum25.group03.testorderservice.repositories;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -20,7 +22,7 @@ import sum25.group03.testorderservice.grpc.TestOrdersByMedicalRecordResponse;
 
 @Repository
 public interface TestOrderRepository extends JpaRepository<TestOrder,Long>, JpaSpecificationExecutor<TestOrder> {
-    List<TestOrder> findByPatientId(Long patientId);
+    Page<TestOrder> findByPatientId(Long patientId, Pageable pageable);
     List<TestOrder> findByStatus(TestOrderStatus status);
     List<TestOrder> findByCreatedBy(Long createdBy);
     List<TestOrder> findAllByExternalMedicalRecordId(Long externalMedicalRecordId, Sort sort);

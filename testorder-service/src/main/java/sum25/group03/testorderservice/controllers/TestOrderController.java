@@ -103,10 +103,16 @@ public class TestOrderController {
     }
 
     @GetMapping("/patient/{patientId}")
-    public ApiResponse<List<TestOrderResponseDTO>> getTestOrdersByPatientId(
-            @PathVariable Long patientId)
+    public ApiResponse<Page<TestOrderResponseDTO>> getTestOrdersByPatientId(
+            @PathVariable Long patientId,
+            @RequestHeader("X-User-Id") Long viewerId,
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "size", defaultValue = "10") Integer size
+    )
     {
-        List<TestOrderResponseDTO> response = testOrderService.getTestOrdersByPatientId(patientId);
+        Page<TestOrderResponseDTO> response = testOrderService.getTestOrdersByPatientId(
+                patientId, page, size, viewerId
+        );
         return ApiResponse.add("Get test orders by patient ID successfully", response);
     }
 

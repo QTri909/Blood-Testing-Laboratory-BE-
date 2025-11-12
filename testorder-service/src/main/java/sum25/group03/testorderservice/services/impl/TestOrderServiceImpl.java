@@ -207,13 +207,15 @@ public class TestOrderServiceImpl implements TestOrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TestOrderResponseDTO> getTestOrdersByPatientId(Long patientId) {
-        log.info("Fetching test orders for patientId: {}", patientId);
+    public Page<TestOrderResponseDTO> getTestOrdersByPatientId(Long patientId, Integer page, Integer size, Long viewerId) {
 
-        List<TestOrder> testOrders = testOrderRepository.findByPatientId(patientId);
-        return testOrders.stream()
-                .map(testOrderMapper::toResponseDto)
-                .collect(Collectors.toList());
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        // get all test orders by patientId with pagination
+        Page<TestOrder> testOrders = testOrderRepository.findByPatientId(patientId, pageable);
+
+        // map to Page<TestOrderResponseDTO>
+        return testOrderMapper.toResponseDtoPage(testOrders);
     }
 
     @Override
