@@ -23,6 +23,7 @@ import sum25.group03.testorderservice.grpc.TestOrdersByMedicalRecordResponse;
 @Repository
 public interface TestOrderRepository extends JpaRepository<TestOrder,Long>, JpaSpecificationExecutor<TestOrder> {
     Page<TestOrder> findByPatientId(Long patientId, Pageable pageable);
+    List<TestOrder> findByPatientId(Long patientId);
     List<TestOrder> findByStatus(TestOrderStatus status);
     List<TestOrder> findByCreatedBy(Long createdBy);
     List<TestOrder> findAllByExternalMedicalRecordId(Long externalMedicalRecordId, Sort sort);
