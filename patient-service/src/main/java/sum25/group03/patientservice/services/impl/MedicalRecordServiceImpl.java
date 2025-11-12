@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.GetMapping;
 import sum25.group03.patientservice.documents.AuditEntryDocument;
 import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
@@ -18,6 +19,8 @@ import sum25.group03.patientservice.enums.DocumentType;
 import sum25.group03.patientservice.enums.MedicalRecordStatus;
 import sum25.group03.patientservice.exception.medical.record.MedicalRecordNotFound;
 import sum25.group03.patientservice.exception.user.snapshot.UserNotFoundException;
+import sum25.group03.patientservice.grpc.TestOrderGrpcClient;
+import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderFullFieldDTO;
 import sum25.group03.patientservice.mapper.MedicalRecordMapper;
 import sum25.group03.patientservice.repositories.postgres.MedicalRecordRepository;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
@@ -37,6 +40,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     private final MedicalRecordRepository medicalRecordRepository;
     private final MedicalRecordMapper medicalRecordMapper;
     private final UserSnapshotRepository userSnapshotRepository;
+
+    private final TestOrderGrpcClient testOrderGrpcClient;
 
     private final MedicalRecordMongoServiceImpl medicalRecordMongoService;
     private final AuditEntryMongoServiceImpl auditEntryMongoService;
@@ -170,30 +175,13 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .orElseThrow(() -> new RuntimeException("Medical Record not found"));
     }
 
-    @Override
-    public Page<MedicalRecordResponse> getAll(
-            Integer page, Integer size, Long viewerId
-    ) {
-
-        // validate viewer existence
-        validateViewerExistence(viewerId);
-
-        // log the view all action
-        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_ALL_PATIENT_MEDICAL_RECORDS, null);
-
-        // create pagable with desc by createdAt
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-
-        Page<MedicalRecordEntity> medicalRecordEntities = medicalRecordRepository.findAll(pageable);
-
-        Page<MedicalRecordResponse> result = medicalRecordMapper.toMedicalRecordResponsePage(medicalRecordEntities);
-
+    private void fillPatientNameAndAssignedUserName(Page<MedicalRecordResponse> records) {
         // get all patientIds and assignedUserIds to reduce number of queries
-        List<Long> patientIds = result.stream()
+        List<Long> patientIds = records.stream()
                 .map(MedicalRecordResponse::getPatientId)
                 .distinct()
                 .collect(Collectors.toList());
-        List<Long> assignedUserIds = result.stream()
+        List<Long> assignedUserIds = records.stream()
                 .map(MedicalRecordResponse::getAssignedUser)
                 .distinct()
                 .collect(Collectors.toList());
@@ -214,7 +202,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 ));
 
         // adjust result to add patientName and assignedUserName
-        result.forEach(entity -> {
+        records.forEach(entity -> {
             Long patientId = entity.getPatientId();
             Long assignedUserId = entity.getAssignedUser();
 
@@ -224,15 +212,43 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
             entity.setPatientName(patientName);
             entity.setAssignedUserName(assignedUserName);
         });
+    }
+
+    @Override
+    public Page<MedicalRecordResponse> getAll(
+            Integer page, Integer size, Long viewerId
+    ) {
+
+        // validate viewer existence
+        validateViewerExistence(viewerId);
+
+        // log the view all action
+        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_ALL_PATIENT_MEDICAL_RECORDS, null);
+
+        // create pagable with desc by createdAt
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<MedicalRecordEntity> medicalRecordEntities = medicalRecordRepository.findAll(pageable);
+        Page<MedicalRecordResponse> result = medicalRecordMapper.toMedicalRecordResponsePage(medicalRecordEntities);
+
+        // fill patient name and assignedUserName
+        fillPatientNameAndAssignedUserName(result);
+
         return result;
     }
 
     @Override
-    public List<MedicalRecordResponse> getByPatientId(Long patientId) {
-        return medicalRecordRepository.findByPatientId(patientId)
-                .stream()
-                .map(medicalRecordMapper::toMedicalRecordResponse)
-                .collect(Collectors.toList());
+    public Page<MedicalRecordResponse> getByPatientId(
+            Long patientId, Integer page, Integer size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<MedicalRecordEntity> entities =  medicalRecordRepository.findByPatientId(patientId, pageable);
+
+        Page<MedicalRecordResponse> result = medicalRecordMapper.toMedicalRecordResponsePage(entities);
+
+        // fill patient name and assignedUserName
+        fillPatientNameAndAssignedUserName(result);
+        return result;
     }
 
     @Override
@@ -270,4 +286,46 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         auditEntryMongoService.saveAuditEntry(auditEntryStatusChange);
     }
 
+    @Override
+    public List<GrpcTestOrderFullFieldDTO> getAllTestOrdersByMedicalRecordId(Long medicalRecordId, Long viewerId) {
+        return testOrderGrpcClient.getAllTestOrdersByMedicalRecordId(medicalRecordId, viewerId);
+    }
+
+    @Override
+    @Transactional
+    public MedicalRecordResponse updateMedicalRecordStatus(MedicalRecordStatus newStatus, Long recordId, Long updaterId) {
+
+        if (newStatus == null)
+            throw new IllegalArgumentException("New status must not be null!");
+
+        // logs the update action
+        actionLogService.logAction(updaterId, ActionTypeFeatures.UPDATE_PATIENT_MEDICAL_RECORD_STATUS, recordId);
+
+        // query for the old record
+        MedicalRecordEntity entity = medicalRecordRepository.findById(recordId)
+                .orElseThrow(() -> new MedicalRecordNotFound("Medical record with id " + recordId + " not found!"));
+
+        // store old status for auditing
+        MedicalRecordStatus oldStatus = entity.getStatus();
+
+        if (newStatus == MedicalRecordStatus.PUBLISHED && oldStatus != MedicalRecordStatus.EMPTY)
+            throw new IllegalStateException("Medical record status is already published!");
+        if (newStatus == MedicalRecordStatus.COMPLETED && oldStatus != MedicalRecordStatus.PUBLISHED)
+            throw new IllegalStateException("Only published medical records can be completed!");
+
+        AuditEntryDocument auditEntryStatusChange = AuditEntryDocument.builder()
+                .entityId(recordId)
+                .fieldChanged("status")
+                .oldValue(oldStatus.name())
+                .newValue(newStatus.name())
+                .changedBy(updaterId)
+                .entityType(DocumentType.MEDICAL_RECORD)
+                .build();
+
+        // update new status
+        entity.setStatus(newStatus);
+        entity.setUpdatedBy(updaterId);
+        medicalRecordRepository.save(entity);
+        return medicalRecordMapper.toMedicalRecordResponse(entity);
+    }
 }

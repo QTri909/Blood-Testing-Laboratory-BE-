@@ -14,6 +14,8 @@ spring:
               uri: http://localhost:8080
               predicates:
                 - Path=${app.api-version}/iam/**
+              filters:
+                - RewritePath=/api/v1/iam/(?<segment>(\\d+|auth|roles|logs|users.*)), /api/v1/${segment}
 
             # for instrument service
             - id: instrument-service
@@ -33,7 +35,7 @@ spring:
               predicates:
                 - Path=${app.api-version}/patients/**
               filters:
-                - RewritePath=${app.api-version}/patients/(?<segment>.*), ${app.api-version}/${segment}
+                - RewritePath=/api/v1/patients/(?<segment>(\\d+|audit-entries|clinical-notes|medical-records|user-snapshots.*)), /api/v1/${segment}
 
             # for payment service
             - id: payment-service

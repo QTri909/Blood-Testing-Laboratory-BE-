@@ -4,6 +4,7 @@ import org.mapstruct.*;
 import sum25.group03.testorderservice.dtos.request.CommentRequestDTO;
 import sum25.group03.testorderservice.dtos.response.CommentResponseDTO;
 import sum25.group03.testorderservice.entities.Comment;
+import sum25.group03.testorderservice.grpc.CommentResponse;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface CommentMapper {

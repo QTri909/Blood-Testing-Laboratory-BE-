@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import sum25.group03.patientservice.dtos.response.PatientResponseDTO;
 import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
+import sum25.group03.patientservice.enums.ActionTypeFeatures;
 import sum25.group03.patientservice.exception.user.snapshot.UserNotFoundException;
 import sum25.group03.patientservice.feign.IAMFeignClient;
 import sum25.group03.patientservice.feign.dtos.FeignPatientResponseWrapper;
@@ -31,6 +32,7 @@ public class PatientServiceImpl implements PatientService {
     private final UserSnapshotMapper userSnapshotMapper;
     private final TestOrderGrpcClient testOrderGrpcClient;
     private final UserSnapshotRepository userSnapshotRepository;
+    private final ActionLogService actionLogService;
 
     // check if a viewerId belongs to our system or not, if not, throw exception and warn to admin
     private void validateViewerExistence(Long actorId) {
@@ -56,7 +58,7 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public List<UserSnapshotResponse> getAllPatientsWith(Integer size, Integer page) {
+    public Page<UserSnapshotResponse> getAllPatientsWith(Integer size, Integer page) {
 
         // find all patients by role:
         Pageable pageable = PageRequest.of(page, size);
@@ -65,8 +67,24 @@ public class PatientServiceImpl implements PatientService {
                 .findByRolesContaining(role, pageable);
 
         // debug:
-        log.info("Found {} patient entities from database", patientEntities.getTotalElements());
-        return userSnapshotMapper.toResponseList(patientEntities.getContent());
+        return userSnapshotMapper.toResponsePage(patientEntities);
+    }
+
+    @Override
+    public UserSnapshotResponse getPatientByExternalUserId(Long patientId, Long viewerId) {
+
+        // logs for debug
+        actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_PATIENT_INFO_BY_ID, patientId);
+
+        // fetch from database the patient info:
+        UserSnapshotEntity patientEntity = userSnapshotRepository.findByExternalUserId(patientId)
+                .orElseThrow(() -> new UserNotFoundException("Patient with id " + patientId + " not found"));
+
+        if (patientEntity.getRoles() == null || !patientEntity.getRoles().contains("PATIENT")) {
+            throw new UserNotFoundException("User with id " + patientId + " is not a patient");
+        }
+
+        return userSnapshotMapper.toResponse(patientEntity);
     }
 
     @Override

@@ -21,7 +21,8 @@ CREATE TABLE medical_record (
     patient_id BIGINT,
     assigned_user BIGINT,
     created_by BIGINT NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'EMPTY',
+    status VARCHAR(20) NOT NULL DEFAULT 'EMPTY'
+        CHECK (status IN ('EMPTY', 'PUBLISHED', 'COMPLETED', 'ACTIVE', 'INACTIVE', 'DELETED', 'HIDDEN')),
     updated_by BIGINT,
     visit_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
