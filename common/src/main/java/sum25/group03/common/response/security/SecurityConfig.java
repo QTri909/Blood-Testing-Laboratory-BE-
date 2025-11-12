@@ -28,11 +28,11 @@ public class SecurityConfig {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/login",
-                                "/auth/forgot-password",
-                                "/auth/confirm-forgot-password",
-                                "/auth/privileges",
-                                "/auth/first-login-change-password"
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/forgot-password",
+                                "/api/v1/auth/confirm-forgot-password",
+                                "/api/v1/auth/privileges",
+                                "/api/v1/auth/first-login-change-password"
                         ).permitAll()
 
                         .anyRequest().authenticated()
