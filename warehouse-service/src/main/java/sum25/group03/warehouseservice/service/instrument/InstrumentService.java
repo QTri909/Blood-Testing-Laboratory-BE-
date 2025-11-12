@@ -9,4 +9,5 @@ public interface InstrumentService {
     void addInstrumentToWarehouse(InstrumentReq instrument);
     InstrumentConfigReagentRes addConfigAndReagentToInstrument(AssignConfigAndReagentReq req);
     InstrumentStatusResponse getInstrumentStatus(Long instrumentId);
+    InstrumentConfigReagentRes getInstrumentById(Long instrumentId);
 }
