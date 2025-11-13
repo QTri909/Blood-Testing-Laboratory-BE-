@@ -1,6 +1,8 @@
 package sum25.group03.iamservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.iamservice.dto.request.RoleCreateRequest;
@@ -235,18 +237,22 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public List<RoleResponse> getAllRoles() {
-        List<Role> roles = roleRepository.findAll();
+    public Page<RoleResponse> getAllRoles(Pageable pageable) {
 
-        return roles.stream().map(role -> RoleResponse.builder()
-                .id(role.getId())
-                .roleName(role.getRoleName())
-                .roleCode(role.getRoleCode())
-                .roleDescription(role.getRoleDescription())
-                .privileges(role.getRolePrivileges().stream()
-                        .map(rp -> rp.getPrivilege().getPrivilegeName())
-                        .collect(Collectors.toSet()))
-                .build()
-        ).collect(Collectors.toList());
+        Page<Role> roles = roleRepository.findAll(pageable);
+
+        return roles.map(role ->
+                RoleResponse.builder()
+                        .id(role.getId())
+                        .roleName(role.getRoleName())
+                        .roleCode(role.getRoleCode())
+                        .roleDescription(role.getRoleDescription())
+                        .privileges(
+                                role.getRolePrivileges().stream()
+                                        .map(rp -> rp.getPrivilege().getPrivilegeName())
+                                        .collect(Collectors.toSet())
+                        )
+                        .build()
+        );
     }
 }

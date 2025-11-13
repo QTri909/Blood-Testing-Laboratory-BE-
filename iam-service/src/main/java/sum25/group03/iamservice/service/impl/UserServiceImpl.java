@@ -156,6 +156,7 @@ public class UserServiceImpl implements UserService {
         if (request.getEmail() != null) user.setEmail(request.getEmail());
         if (request.getAddress() != null) user.setAddress(request.getAddress());
         if (request.getDateOfBirth() != null) user.setDateOfBirth(request.getDateOfBirth());
+        if (request.getGender() != null) user.setGender(request.getGender());
         if (request.getIdentityNumber() != null) user.setIdentityNumber(request.getIdentityNumber());
 
         if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()){
@@ -342,7 +343,12 @@ public class UserServiceImpl implements UserService {
                         .gender(user.getGender())
                         .dateOfBirth(user.getDateOfBirth())
                         .identityNumber(user.getIdentityNumber())
-
+                        .roles(
+                                user.getUserRoles()
+                                        .stream()
+                                        .map(ur -> ur.getRole().getRoleCode())
+                                        .collect(Collectors.toSet())
+                        )
                         .build())
                 .collect(Collectors.toList());
 
