@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import sum25.group03.warehouseservice.dto.response.PageRes;
 import sum25.group03.warehouseservice.entity.Reagents;
+import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
 
 import java.util.List;
 
@@ -39,4 +40,9 @@ public interface ReagentRepo extends JpaRepository<Reagents, Long> {
     WHERE (:reagentName IS NULL OR :reagentName = '' OR LOWER(r.reagentName) LIKE LOWER(CONCAT('%', :reagentName, '%')))
 """)
     Page<Reagents> filterReagents(@Param("reagentName") String reagentName, Pageable pageable);
+
+    List<Reagents> findAllByStatus(ReagentStatus status);
+
+    @Query("SELECT DISTINCT r FROM Reagents r")
+    List<Reagents> findAllDistinct();
 }

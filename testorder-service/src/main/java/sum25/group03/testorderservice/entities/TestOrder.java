@@ -41,13 +41,13 @@ public class TestOrder {
     @Enumerated(EnumType.STRING)
     private TestOrderType type;
 
-    @Column(name = "external_medical_record_id", nullable = false)
+    @Column(name = "external_medical_record_id")
     private Long externalMedicalRecordId;
 
-    @Column(name = "patient_id", nullable = false)
+    @Column(name = "patient_id")
     private Long patientId; // User Id ( IAMService)
 
-    @Column(name = "created_by", nullable = false)
+    @Column(name = "created_by")
     private Long createdBy; // user ID ( IAMService)
 
     @Column(name = "run_by")

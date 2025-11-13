@@ -22,8 +22,7 @@ public class InstrumentController {
 //    }
     @PostMapping("/add")
     public ApiResponse<?> addInstrument(@RequestBody InstrumentReq instrument) {
-        instrumentService.addInstrumentToWarehouse(instrument);
-        return ApiResponse.message("success").build();
+        return ApiResponse.ok( instrumentService.addInstrumentToWarehouse(instrument));
     }
 //    @PutMapping("config-reagents")
 //    public ResponseEntity<?> addConfigAndReagentToInstrument(@RequestBody AssignConfigAndReagentReq req) {
@@ -45,6 +44,18 @@ public class InstrumentController {
         return ApiResponse.ok(instrumentService.getInstrumentById(instrumentId));
         //return ApiResponse.add("get instrument by id",instrumentService.getInstrumentById(instrumentId));
     }
+    @GetMapping("all")
+    public ApiResponse<?> getAllInstruments(
+            @RequestParam(required = false) String key,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return ApiResponse.ok(instrumentService.getAllInstruments(page,size, key));
+    }
 
+    @GetMapping("list")
+    public ApiResponse<?> getList() {
+        return ApiResponse.ok(instrumentService.getList());
+    }
 
 }

@@ -18,7 +18,6 @@ public class ChangeInstrumentModeRequest {
     @NotNull(message = "New status is required")
     private InstrumentStatus newStatus;
 
-    @NotBlank(message = "Reason is required when changing to Maintenance or Inactive mode")
     private String reason;
 
     private String qcCheckDetails;

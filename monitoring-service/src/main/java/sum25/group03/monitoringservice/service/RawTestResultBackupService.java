@@ -10,6 +10,8 @@ import sum25.group03.monitoringservice.model.RawTestResult;
 import sum25.group03.monitoringservice.repository.RawTestResultRepository;
 import sum25.group03.monitoringservice.util.RawTestVerifier;
 
+import java.time.Instant;
+
 @Service
 @Slf4j
 public class RawTestResultBackupService {
@@ -50,4 +52,28 @@ public class RawTestResultBackupService {
             throw e;
         }
     }
+
+    public RawTestResult saveTestResultFromEvent(String testOrderId, String instrumentId, String barcode,
+                                                 String hl7Message, String rawData, String status) {
+        RawTestResult result = RawTestResult.builder()
+                .testOrderId(testOrderId)
+                .instrumentId(instrumentId)
+                .barcode(barcode)
+                .hl7Payload(hl7Message)
+                .rawData(rawData)
+                .status(status)
+                .receivedAt(Instant.now())
+                .build();
+
+        try {
+            RawTestResult saved = repository.save(result);
+//            backupLogs.add("SUCCESS (Kafka): " + testOrderId + " - " + barcode + " at " + result.getReceivedAt());
+            return saved;
+        } catch (Exception e) {
+//            failedInsertions.add(result);
+            log.error("LỖI KHI LƯU VÀO MONGODB: ", e);
+            return null;
+        }
+    }
+
 }
