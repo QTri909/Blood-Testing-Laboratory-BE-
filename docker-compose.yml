@@ -1,0 +1,121 @@
+services:
+  # --------------------------------- Kafka -----------------------------------#
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_OFFSETS_TOPIC_NUM_PARTITIONS: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://localhost:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'MkQkDjFzNTcwNTJENDM2Qk'
+
+  #------------------------------ Postgres (testorder:5434) ---------------------#
+  postgres-testorder-service:
+    image: postgres:15.5
+    container_name: postgres_test_order_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: testorder_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - test_order_volume:/var/lib/postgresql/data
+
+#--------------------------------- MongoDB (testorder - 27018) --------------------#
+  mongodb_audit_service:
+    image: mongo:7.0.5
+    container_name: mongodb_audit_service_container
+    ports:
+      - "27018:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 12345
+      MONGO_INITDB_DATABASE: medicalAuditDb
+    volumes:
+      - medicalAuditVolume:/data/db
+    networks:
+      medical_audit_mongo_network:
+
+#---------------------------------- # Postgres (testorder: 5433) ----------------------#
+  postgres-patient-service:
+    image: postgres:15.5
+    container_name: postgres_patient_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: patientdb
+    ports:
+      - "5433:5432"
+    volumes:
+      - patient_volume:/var/lib/postgresql/data
+
+#--------------------------------- # Elastic-search ------------------------------------#
+  patient-elasticsearch-service:
+    container_name: patient-elasticsearch-container
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+    networks:
+      - patient-elasticsearch-net
+    ports:
+      - 9200:9200
+    volumes:
+      - patient-elasticsearch-data:/usr/share/elasticsearch/data
+
+# ------------------------------------------ postgres (payment: 5435) --------------------#
+  postgres-payment-service:
+    image: postgres:15.5
+    container_name: postgres_payment_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: paymentdb
+    ports:
+      - "5435:5432"
+    volumes:
+      - payment_volume:/var/lib/postgresql/data
+    networks:
+      - payment-network
+
+  # ------------------------------------------ Redis (payment: 6379) --------------------#
+  redis-payment-service:
+    image: redis:7-alpine
+    container_name: redis_payment_cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_payment_volume:/data
+    networks:
+      - payment-network
+
+networks:
+  app-network:
+    driver: bridge
+  medical_audit_mongo_network:
+  patient-elasticsearch-net:
+  payment-network:
+
+volumes:
+  test_order_volume:
+  medicalAuditVolume:
+  patient_volume:
+  patient-elasticsearch-data:
+  payment_volume:
+  redis_payment_volume:
