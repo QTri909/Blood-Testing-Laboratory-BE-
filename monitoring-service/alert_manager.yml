@@ -1,0 +1,21 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 10m
+  repeat_interval: 1h
+  receiver: 'telegram-receiver'
+
+receivers:
+  - name: 'telegram-receiver'
+    telegram_configs:
+      - bot_token: "8145943729:AAHJnNkpEBBgNdiU3nNaDbosqq9TNHVTlY4"
+        chat_id: -4821904329
+        message: >-
+          🚨 *{{ .CommonAnnotations.summary }}*
+          {{ .CommonAnnotations.description }}
+          *Alert:* {{ .CommonLabels.alertname }}
+          *Severity:* {{ index .CommonLabels "severity" }}
+        parse_mode: "Markdown"

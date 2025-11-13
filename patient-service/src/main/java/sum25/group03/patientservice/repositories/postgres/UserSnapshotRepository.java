@@ -9,11 +9,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
 public interface UserSnapshotRepository extends JpaRepository<UserSnapshotEntity, Long> {
+
     Optional<UserSnapshotEntity> findByExternalUserId(Long externalUserId);
     boolean existsByExternalUserId(Long externalUserId);
 
@@ -24,4 +26,6 @@ public interface UserSnapshotRepository extends JpaRepository<UserSnapshotEntity
             nativeQuery = true
     )
     Page<UserSnapshotEntity> findByRolesContaining(@Param("role") String role, Pageable pageable);
+
+    Collection<UserSnapshotEntity> findByExternalUserIdIn(List<Long> patientIds);
 }

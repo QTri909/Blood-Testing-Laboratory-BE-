@@ -1,5 +1,6 @@
 package sum25.group03.testorderservice.services.interfaces;
 
+import org.springframework.data.domain.Page;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.CreationTestOrderResponse;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
@@ -14,7 +15,8 @@ public interface TestOrderService{
 
     // -------- THUYEN---------
     TestOrderResponseDTO getTestOrderById(Long id, Long viewerId);
-    List<TestOrderResponseDTO> getAllTestOrders(Long viewerId);
+    Page<TestOrderResponseDTO> getAllTestOrders(Integer page, Integer size, Long viewerId);
+    List<TestOrderResponseDTO> getAllTestOrdersByMedicalRecordId(Long medicalRecordId, Long viewerId);
     List<TestOrderResponseDTO> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId);
 
     // -------- HUY -----------
@@ -24,7 +26,7 @@ public interface TestOrderService{
     TestOrderResponseDTO updateTestOrder(Long id, TestOrderRequestDTO requestDTO, Long updatedBy);
     //3.5.1.5 Delete Patient Test Order
     void deleteTestOrder(Long id, Long deletedBy);
-    List<TestOrderResponseDTO> getTestOrdersByPatientId(Long patientId);
+    Page<TestOrderResponseDTO> getTestOrdersByPatientId(Long patientId, Integer page, Integer size, Long viewerId);
     List<TestOrderResponseDTO> getTestOrdersByStatus(TestOrderStatus status);
     TestOrderResponseDTO updateTestOrderStatus(Long id, TestOrderStatus status, Long updatedBy);
     List<TestOrderResponseDTO> getTestOrdersByCreatedBy(Long createdBy);

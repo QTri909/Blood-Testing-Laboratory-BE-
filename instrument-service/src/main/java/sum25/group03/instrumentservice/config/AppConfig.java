@@ -14,14 +14,14 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class AppConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request.requestMatchers("/**").permitAll()
-                        .anyRequest().authenticated())
-                .sessionManagement( manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-        return http.build();
-    }
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//        http.csrf(AbstractHttpConfigurer::disable)
+//                .authorizeHttpRequests(request -> request.requestMatchers("/**").permitAll()
+//                        .anyRequest().authenticated())
+//                .sessionManagement( manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+//        return http.build();
+//    }
 
     @Bean
     public WebSecurityCustomizer ignoreResources() {

@@ -13,6 +13,8 @@ public interface UserSnapshotService {
     UserSnapshotResponse getByExternalUserId(Long externalUserId);
     List<UserSnapshotResponse> getAll();
 
+    String getFullNameByExternalUserId(Long externalUserId);
+
     // test:
     void syncUserSnapshots();
 }

@@ -1,19 +1,20 @@
 package sum25.group03.testorderservice.grpc;
 
-
+import sum25.group03.testorder.grpc.*;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
-import sum25.group03.testorder.grpc.*;
-import sum25.group03.testorderservice.services.interfaces.TestOrderService;
-import sum25.group03.testorderservice.repositories.TestOrderRepository;
-
-import sum25.group03.testorderservice.entities.TestOrder;
-import sum25.group03.testorderservice.dtos.response.TestOrderResponseForInstrument;
 import sum25.group03.testorderservice.dtos.response.CreationTestOrderResponse;
+import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
+import sum25.group03.testorderservice.dtos.response.TestOrderResponseForInstrument;
+import sum25.group03.testorderservice.entities.TestOrder;
+import sum25.group03.testorderservice.mapper.TestOrderMapper;
+import sum25.group03.testorderservice.repositories.TestOrderRepository;
+import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Slf4j
 @GrpcService
@@ -22,8 +23,10 @@ public class TestOrderGrpcServer extends TestOrderServiceGrpc.TestOrderServiceIm
 
     private final TestOrderRepository testOrderRepository;
     private final TestOrderService testOrderService;
+    private final TestOrderMapper testOrderMapper;
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
+    private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
+
 
     @Override
     public void getLatestTestOrderByPatientId(
@@ -50,7 +53,7 @@ public class TestOrderGrpcServer extends TestOrderServiceGrpc.TestOrderServiceIm
                 .setType(order.getType() != null ? order.getType().name() : "")
                 .setPatientId(order.getPatientId())
                 .setStatus(order.getStatus() != null ? order.getStatus().name() : "")
-                .setCreatedAt(order.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))
+                .setCreatedAt(order.getCreatedAt().format(ISO_FORMATTER)) // 4. Sử dụng formatter
                 .build();
 
         responseObserver.onNext(response);
@@ -66,33 +69,37 @@ public class TestOrderGrpcServer extends TestOrderServiceGrpc.TestOrderServiceIm
             TestOrderResponseForInstrument testOrder = testOrderService.findLatestByBarcode(request.getBarcode());
 
             if (testOrder != null) {
-                GetTestOrderByBarcodeResponse response = GetTestOrderByBarcodeResponse.newBuilder()
-                        .setId(testOrder.getId() != null ? testOrder.getId() : 0L)
-                        .setExternalMedicalRecordId(
-                                testOrder.getExternalMedicalRecordId() != null ? testOrder.getExternalMedicalRecordId() : 0L
-                        )
+                GetTestOrderByBarcodeResponse.Builder builder = GetTestOrderByBarcodeResponse.newBuilder();
+
+                builder.setId(testOrder.getId() != null ? testOrder.getId() : 0L)
+                        .setExternalMedicalRecordId(testOrder.getExternalMedicalRecordId() != null ? testOrder.getExternalMedicalRecordId() : 0L)
                         .setCode(testOrder.getCode() != null ? testOrder.getCode().toString() : "")
                         .setPatientId(testOrder.getPatientId() != null ? testOrder.getPatientId() : 0L)
                         .setCreatedBy(testOrder.getCreatedBy() != null ? testOrder.getCreatedBy() : 0L)
                         .setRunBy(testOrder.getRunBy() != null ? testOrder.getRunBy() : 0L)
                         .setBarcode(testOrder.getBarcode() != null ? testOrder.getBarcode() : "")
                         .setTestType(testOrder.getTestType() != null ? testOrder.getTestType() : "")
-                        .setRunDate(testOrder.getRunDate() != null ? testOrder.getRunDate().toString() : "")
-
                         .setStatus(testOrder.getStatus() != null ? testOrder.getStatus().toString() : "")
-                        .setCreatedAt(testOrder.getCreatedAt() != null ? testOrder.getCreatedAt().toString() : "")
-                        .setUpdatedAt(testOrder.getUpdatedAt() != null ? testOrder.getUpdatedAt().toString() : "")
                         .setFound(true)
-                        .setMessage("Success")
-                        .build();
+                        .setMessage("Success");
 
-                responseObserver.onNext(response);
+
+                if (testOrder.getRunDate() != null) {
+                    builder.setRunDate(testOrder.getRunDate().format(ISO_FORMATTER));
+                }
+                if (testOrder.getCreatedAt() != null) {
+                    builder.setCreatedAt(testOrder.getCreatedAt().format(ISO_FORMATTER));
+                }
+                if (testOrder.getUpdatedAt() != null) {
+                    builder.setUpdatedAt(testOrder.getUpdatedAt().format(ISO_FORMATTER));
+                }
+
+                responseObserver.onNext(builder.build());
             } else {
                 GetTestOrderByBarcodeResponse response = GetTestOrderByBarcodeResponse.newBuilder()
                         .setFound(false)
                         .setMessage("Test order not found")
                         .build();
-
                 responseObserver.onNext(response);
             }
 
@@ -113,17 +120,20 @@ public class TestOrderGrpcServer extends TestOrderServiceGrpc.TestOrderServiceIm
             log.info("gRPC: CreateUnmatchedOrder called for barcode: {}", request.getBarcode());
             CreationTestOrderResponse createdOrder = testOrderService.createTestOrderForExternalSystem(request.getBarcode());
 
-            CreateUnmatchedOrderResponse response = CreateUnmatchedOrderResponse.newBuilder()
-                    .setId(createdOrder.getId() != null ? createdOrder.getId() : 0L)
+            CreateUnmatchedOrderResponse.Builder builder = CreateUnmatchedOrderResponse.newBuilder();
+
+            builder.setId(createdOrder.getId() != null ? createdOrder.getId() : 0L)
                     .setCode(createdOrder.getCode() != null ? createdOrder.getCode().toString() : "")
                     .setBarcode(createdOrder.getBarcode() != null ? createdOrder.getBarcode() : "")
                     .setStatus(createdOrder.getStatus() != null ? createdOrder.getStatus().toString() : "")
-                    .setCreatedAt(createdOrder.getCreatedAt() != null ? createdOrder.getCreatedAt().toString() : "")
                     .setSuccess(true)
-                    .setMessage("Unmatched order created successfully")
-                    .build();
+                    .setMessage("Unmatched order created successfully");
 
-            responseObserver.onNext(response);
+            if (createdOrder.getCreatedAt() != null) {
+                builder.setCreatedAt(createdOrder.getCreatedAt().format(ISO_FORMATTER));
+            }
+
+            responseObserver.onNext(builder.build());
             responseObserver.onCompleted();
         } catch (Exception e) {
             log.error("Error in createUnmatchedOrder", e);
@@ -133,8 +143,23 @@ public class TestOrderGrpcServer extends TestOrderServiceGrpc.TestOrderServiceIm
         }
     }
 
-    // Ghi chú: Hãy đảm bảo file .proto của bạn định nghĩa CẢ 3 phương thức này
-    // (getLatestTestOrderByPatientId, getTestOrderByBarcode, createUnmatchedOrder)
-    // bên trong 'service TestOrderService'.
+
+    @Override
+    public void getAllTestOrdersByMedicalRecordId(MedicalRecordIdRequest request, StreamObserver<TestOrdersByMedicalRecordResponseList> responseObserver) {
+        Long medicalRecordId = request.getMedicalRecordId();
+        Long viewerId = request.getViewerId();
+
+        List<TestOrderResponseDTO> testOrders = testOrderService.getAllTestOrdersByMedicalRecordId(medicalRecordId, viewerId);
+
+        TestOrdersByMedicalRecordResponseList.Builder responseListBuilder = TestOrdersByMedicalRecordResponseList.newBuilder();
+        for (TestOrderResponseDTO testOrder : testOrders) {
+            // Giả sử testOrderMapper.toGrpcMedicalRecordResponse đã xử lý null an toàn
+            TestOrdersByMedicalRecordResponse mappedOrder = testOrderMapper.toGrpcMedicalRecordResponse(testOrder);
+            responseListBuilder.addTestOrders(mappedOrder);
+        }
+
+        responseObserver.onNext(responseListBuilder.build());
+        responseObserver.onCompleted();
+    }
 
 }

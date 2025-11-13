@@ -14,7 +14,11 @@ public class UserSnapshotResponse {
     private Long externalUserId;
     private String fullName;
     private String email;
+    private String identityNumber;
+    private String address;
     private String phoneNumber;
+    private String dateOfBirth;
+    private String gender;
     private List<String> roles;
     private LocalDateTime lastUpdated;
 }

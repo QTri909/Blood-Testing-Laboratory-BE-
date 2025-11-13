@@ -2,6 +2,7 @@ package sum25.group03.warehouseservice.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +13,7 @@ import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface InstrumentRepo extends JpaRepository<Instrument,Long> {
@@ -34,4 +36,8 @@ public interface InstrumentRepo extends JpaRepository<Instrument,Long> {
     List<Instrument> findInactiveBefore(LocalDate threshold);
 
     List<Instrument> findByStatusAndAutoDeleteScheduledAtBefore(InstrumentStatus status, LocalDate date);
+
+    @EntityGraph(attributePaths = {"configuration", "reagentHistoryUsages", "reagentHistoryUsages.reagent"})
+    @Query("SELECT i FROM Instrument i WHERE i.instrumentId = :id")
+    Optional<Instrument> findInstrumentById(@Param("id") Long id);
 }

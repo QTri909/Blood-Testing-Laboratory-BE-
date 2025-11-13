@@ -4,6 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
+@SpringBootApplication(scanBasePackages = {
+       "sum25.group03.payment_service",
+       "sum25.group03.common"
+})
 @SpringBootApplication
 @ConfigurationPropertiesScan
 public class PaymentServiceApplication {

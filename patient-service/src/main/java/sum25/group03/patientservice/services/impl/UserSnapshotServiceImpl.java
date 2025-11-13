@@ -123,4 +123,11 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
                 .map(mapper::toResponse)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public String getFullNameByExternalUserId(Long externalUserId) {
+        return repository.findByExternalUserId(externalUserId)
+                .map(UserSnapshotEntity::getFullName)
+                .orElse(null);
+    }
 }

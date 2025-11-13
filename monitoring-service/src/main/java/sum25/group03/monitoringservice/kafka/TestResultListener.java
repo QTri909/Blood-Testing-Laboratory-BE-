@@ -11,10 +11,11 @@ import sum25.group03.monitoringservice.event.TestResultPublishedEvent;
 import sum25.group03.monitoringservice.model.RawTestResult;
 import sum25.group03.monitoringservice.service.EventLogService;
 import sum25.group03.monitoringservice.service.KafkaEventPublisher;
-import sum25.group03.monitoringservice.service.RawTestResultService;
+import sum25.group03.monitoringservice.service.RawTestResultBackupService;
 import sum25.group03.monitoringservice.util.RawTestVerifier;
 
 import java.time.Instant;
+import java.util.Map;
 
 /**
  * Capture all incoming test result messages automatically.
@@ -23,58 +24,58 @@ import java.time.Instant;
 @Service
 public class TestResultListener {
 
-    private final RawTestResultService rawService;
+    private final RawTestResultBackupService rawService;
     private final EventLogService eventLogService;
-    private final RawTestVerifier verifier;
+//    private final RawTestVerifier verifier;
     private final KafkaEventPublisher kafkaEventPublisher;
 
     @Autowired
     private ObjectMapper mapper;
-    public TestResultListener(RawTestResultService rawService,
+    public TestResultListener(RawTestResultBackupService rawService,
                               EventLogService eventLogService,
                               RawTestVerifier verifier, KafkaEventPublisher kafkaEventPublisher) {
         this.rawService = rawService;
         this.eventLogService = eventLogService;
-        this.verifier = verifier;
+//        this.verifier = verifier;
         this.kafkaEventPublisher = kafkaEventPublisher;
     }
 
-    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
-    @KafkaListener(topics = "raw-test-results", groupId = "monitoring-service")
-    public void onMessage(String message) {
-        try {
-            log.info("Captured new raw test message: {}", message);
-
-            RawTestResult raw = mapper.readValue(message, RawTestResult.class);
-            raw.setReceivedAt(Instant.now());
-
-            // Insert into MongoDB
-            RawTestResult saved = rawService.addRawTestResult(raw);
-
-            // Verify data correctness
-            boolean verified = verifier.verify(raw, saved);
-
-            if (verified) {
-                // Log success
-                eventLogService.addEventLog(
-                        sum25.group03.monitoringservice.model.EventLog.builder()
-                                .topic("raw-test-results")
-                                .action("BACKUP_SUCCESS")
-                                .message("Stored raw result " + raw.getTestOrderId())
-                                .operator("system")
-                                .createdAt(Instant.now())
-                                .build()
-                );
-                log.info("Backup successful for testOrderId={}", raw.getTestOrderId());
-            } else {
-                log.warn("Verification failed for testOrderId={}", raw.getTestOrderId());
-            }
-
-        } catch (Exception e) {
-            log.error("Failed to process raw test result message: {}", e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
-    }
+//    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
+//    @KafkaListener(topics = "raw-test-results", groupId = "monitoring-service")
+//    public void onMessage(String message) {
+//        try {
+//            log.info("Captured new raw test message: {}", message);
+//
+//            RawTestResult raw = mapper.readValue(message, RawTestResult.class);
+//            raw.setReceivedAt(Instant.now());
+//
+//            // Insert into MongoDB
+//            RawTestResult saved = rawService.addRawTestResult(raw);
+//
+//            // Verify data correctness
+//            boolean verified = verifier.verify(raw, saved);
+//
+//            if (verified) {
+//                // Log success
+//                eventLogService.addEventLog(
+//                        sum25.group03.monitoringservice.model.EventLog.builder()
+//                                .topic("raw-test-results")
+//                                .action("BACKUP_SUCCESS")
+//                                .message("Stored raw result " + raw.getTestOrderId())
+//                                .operator("system")
+//                                .createdAt(Instant.now())
+//                                .build()
+//                );
+//                log.info("Backup successful for testOrderId={}", raw.getTestOrderId());
+//            } else {
+//                log.warn("Verification failed for testOrderId={}", raw.getTestOrderId());
+//            }
+//
+//        } catch (Exception e) {
+//            log.error("Failed to process raw test result message: {}", e.getMessage(), e);
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
     @KafkaListener(topics = "test-results-hl7", groupId = "monitoring-service-hl7")
@@ -96,10 +97,10 @@ public class TestResultListener {
             if (saved != null) {
                 eventLogService.addEventLog(
                         sum25.group03.monitoringservice.model.EventLog.builder()
-                                .topic("test-results-hl7")
-                                .action("TEST_RESULT_RECEIVED")
-                                .message("Stored HL7 test result for barcode: " + event.getBarcode())
-                                .operator("system")
+                                .topic("raw-test-results")
+                                .action("BACKUP_SUCCESS")
+                                .message("Stored raw result " + saved.getTestOrderId())
+                                .operator(Map.of("operator", "system"))
                                 .createdAt(Instant.now())
                                 .build()
                 );

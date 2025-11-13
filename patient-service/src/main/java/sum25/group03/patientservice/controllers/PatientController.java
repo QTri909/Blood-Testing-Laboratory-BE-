@@ -1,6 +1,7 @@
 package sum25.group03.patientservice.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
@@ -24,7 +25,7 @@ public class PatientController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<List<UserSnapshotResponse>> getAllPatients(
+    public ApiResponse<Page<UserSnapshotResponse>> getAllPatients(
             @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) Integer size,
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) Integer page
     ) {
@@ -40,9 +41,19 @@ public class PatientController {
         return ApiResponse.ok(patientService.getAllIAMPatientsWith(size, page));
     }
 
+    @GetMapping("/{patientId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<UserSnapshotResponse> getPatientByIdIAM(
+            @PathVariable(name = "patientId") Long patientId,
+            @RequestHeader("X-User-Id") Long viewerId
+    ) {
+        return ApiResponse.add("Fetched patient with ID: " + patientId,
+                patientService.getPatientByExternalUserId(patientId, viewerId));
+    }
+
     @GetMapping("/test-orders/{patientId}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<Object> getPatientById(
+    public ApiResponse<Object> getLatestTestOrderOfPatientById(
             @PathVariable(name = "patientId") Long patientId
     ) {
         GrpcTestOrderDTO searchedTestOrder = patientService.getLatestByPatientId(patientId);

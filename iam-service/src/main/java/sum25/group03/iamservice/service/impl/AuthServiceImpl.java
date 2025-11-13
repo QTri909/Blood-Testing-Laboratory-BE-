@@ -1,4 +1,4 @@
-package sum25.group03.iamservice.service;
+package sum25.group03.iamservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,6 +11,10 @@ import sum25.group03.iamservice.event.PasswordChangedEvent;
 import sum25.group03.iamservice.repository.UserRepository;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
+import sum25.group03.iamservice.service.Interface.AuthService;
+import sum25.group03.iamservice.service.KafkaProducerService;
+
+
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -70,10 +74,9 @@ public class AuthServiceImpl implements AuthService {
 
         try {
             // 3. Dùng AdminInitiateAuth thay vì InitiateAuth
-            AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
-                    .userPoolId(config.getUserPoolId())
+            InitiateAuthRequest authRequest = InitiateAuthRequest.builder()
                     .clientId(config.getClientId())
-                    .authFlow(AuthFlowType.ADMIN_USER_PASSWORD_AUTH)
+                    .authFlow(AuthFlowType.USER_PASSWORD_AUTH)
                     .authParameters(Map.of(
                             "USERNAME", request.getEmail(),
                             "PASSWORD", request.getPassword(),
@@ -81,12 +84,17 @@ public class AuthServiceImpl implements AuthService {
                     ))
                     .build();
 
-            AdminInitiateAuthResponse response = cognitoClient.adminInitiateAuth(authRequest);
+            InitiateAuthResponse response = cognitoClient.initiateAuth(authRequest);
 
-            if (response.challengeName() != null) {
-                String challenge = response.challengeNameAsString();
-                String session = response.session();
-                throw new RuntimeException("FIRST_LOGIN: " + challenge + (session != null ? ("; session=" + session) : ""));
+            if (response.challengeName() != null &&
+                    response.challengeName() == ChallengeNameType.NEW_PASSWORD_REQUIRED) {
+
+
+                LoginResponse loginResponse = new LoginResponse();
+                loginResponse.setFirstLogin(true);
+                loginResponse.setSession(response.session());
+                loginResponse.setChallenge(response.challengeNameAsString());
+                return loginResponse;
             }
 
             if (response.authenticationResult() == null) {
@@ -118,6 +126,42 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public LoginResponse firstLoginChangePassword(String username, String session, String newPassword) {
+        CognitoConfig config = getConfig();
+
+        try {
+            RespondToAuthChallengeRequest challengeRequest = RespondToAuthChallengeRequest.builder()
+                    .clientId(config.getClientId())
+                    .challengeName(ChallengeNameType.NEW_PASSWORD_REQUIRED)
+                    .session(session)
+                    .challengeResponses(Map.of(
+                            "USERNAME", username,
+                            "NEW_PASSWORD", newPassword,
+                            "SECRET_HASH", calculateSecretHash(username, config.getClientSecret(), config.getClientId())
+                    ))
+                    .build();
+
+            RespondToAuthChallengeResponse response = cognitoClient.respondToAuthChallenge(challengeRequest);
+
+            if (response.authenticationResult() == null) {
+                throw new RuntimeException("First login password change failed: no authenticationResult returned");
+            }
+
+            LoginResponse loginResponse = new LoginResponse();
+            loginResponse.setAccessToken(response.authenticationResult().accessToken());
+            loginResponse.setIdToken(response.authenticationResult().idToken());
+            loginResponse.setRefreshToken(response.authenticationResult().refreshToken());
+            loginResponse.setExpiresIn(response.authenticationResult().expiresIn());
+
+            return loginResponse;
+        } catch (Exception e) {
+            throw new RuntimeException("First login password change error: " + e.getMessage(), e);
+        }
+    }
+
+
+
+    @Override
     public LoginResponse refreshToken(RefreshTokenRequest request) {
         CognitoConfig config = getConfig();
 
@@ -145,6 +189,9 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid or expired refresh token: " + e.getMessage(), e);
         }
     }
+
+
+
 
     @Override
     public void changePassword(String accessToken, String oldPassword, String newPassword) {

@@ -12,6 +12,7 @@ import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 @Builder
 public class UpdateReagentStatusRequest {
     private Long installedReagentId;
+    private Long instrumentId;
     private InstalledReagentStatus newStatus;
     private Integer changedBy;
     private String reason;

@@ -4,7 +4,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
@@ -12,6 +16,9 @@ import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
 import sum25.group03.patientservice.dtos.response.MedicalRecordResponse;
 import sum25.group03.patientservice.enums.MedicalRecordStatus;
+import sum25.group03.patientservice.grpc.TestOrderGrpcClient;
+import sum25.group03.patientservice.grpc.TestOrderResponse;
+import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderFullFieldDTO;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 
 
@@ -30,7 +37,7 @@ public class MedicalRecordController {
     public ApiResponse<MedicalRecordResponse> registerMedicalRecord(@NotNull @RequestHeader("X-User-Id") Long creatorId) {
         return ApiResponse.add("Created", medicalRecordService.registerMedicalRecord(creatorId));
     }
-
+    //@PreAuthorize("hasAuthority('UPDATE_MEDICAL_RECORD') and hasRole('DOCTOR')")
     @PatchMapping("/assigned-doctor")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<UpdatedAssignedDoctor> updateAssignedDoctor(@Valid @RequestBody UpdatedAssignedDoctor updateInfo) {
@@ -39,13 +46,30 @@ public class MedicalRecordController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<List<MedicalRecordResponse>> getAll(@RequestParam Long viewerId) {
-        return ApiResponse.ok(medicalRecordService.getAll(viewerId));
+    public ApiResponse<Page<MedicalRecordResponse>> getAll(
+            @RequestHeader("X-User-Id") Long viewerId,
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "size", defaultValue = "10") Integer size
+    ) {
+        return ApiResponse.ok(medicalRecordService.getAll(page, size, viewerId));
+    }
+
+    @GetMapping("/patients/{patientId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Page<MedicalRecordResponse>> getByPatientId(
+            @PathVariable(name = "patientId") Long patientId,
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "size", defaultValue = "10") Integer size
+    ) {
+        return ApiResponse.ok(medicalRecordService.getByPatientId(patientId, page, size));
     }
 
     @GetMapping("/{recordId}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<MedicalRecordResponse> getById(@PathVariable Long recordId, @RequestParam Long viewerId) {
+    public ApiResponse<MedicalRecordResponse> getById(
+            @PathVariable Long recordId,
+            @RequestHeader("X-User-Id") Long viewerId
+    ) {
         return ApiResponse.ok(medicalRecordService.getById(recordId, viewerId));
     }
 
@@ -57,6 +81,40 @@ public class MedicalRecordController {
     ) {
         NewRecordStatusRequest requestInfo = new NewRecordStatusRequest(recordId, MedicalRecordStatus.DELETED, deleterId);
         medicalRecordService.deleteById(requestInfo);
+    }
+
+    @PutMapping("/{recordId}/publish")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<MedicalRecordResponse> publishMedicalRecord(
+            @PathVariable Long recordId,
+            @RequestHeader("X-User-Id") Long publisherId
+    ) {
+        MedicalRecordResponse response = medicalRecordService.updateMedicalRecordStatus(
+                MedicalRecordStatus.PUBLISHED, recordId, publisherId
+        );
+        return ApiResponse.add("Published medical record with id=" + recordId + " successfully!", response);
+    }
+
+    @PutMapping("/{recordId}/complete")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<MedicalRecordResponse> completeMedicalRecord(
+            @PathVariable Long recordId,
+            @RequestHeader("X-User-Id") Long updaterId
+    ) {
+        MedicalRecordResponse response = medicalRecordService.updateMedicalRecordStatus(
+                MedicalRecordStatus.COMPLETED, recordId, updaterId
+        );
+        return ApiResponse.add("Completed medical record with id=" + recordId + " successfully!", response);
+    }
+
+    // get all test orders of a medical record by its id: (Grpc call)
+    @GetMapping("/{recordId}/test-orders")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<GrpcTestOrderFullFieldDTO>> getByTestOrderId(
+            @PathVariable Long recordId,
+            @RequestHeader("X-User-Id") Long viewerId
+    ) {
+        return ApiResponse.ok(medicalRecordService.getAllTestOrdersByMedicalRecordId(recordId, viewerId));
     }
 
 }
