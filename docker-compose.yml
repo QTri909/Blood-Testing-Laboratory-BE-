@@ -1,5 +1,5 @@
 services:
-  # --------------------------------- Kafka -----------------------------------#
+  # --------------------------------- Kafka(all services) -----------------------------------#
   kafka:
     image: confluentinc/cp-kafka:latest
     container_name: kafka
@@ -65,7 +65,7 @@ services:
     volumes:
       - patient_volume:/var/lib/postgresql/data
 
-#--------------------------------- # Elastic-search ------------------------------------#
+#--------------------------------- # Elastic-search (patient: 9200) ------------------------------------#
   patient-elasticsearch-service:
     container_name: patient-elasticsearch-container
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
