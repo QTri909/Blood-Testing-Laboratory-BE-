@@ -1,52 +1,9 @@
-//package sum25.group03.payment_service.configs;
-//
-//import com.paypal.base.rest.APIContext;
-//import com.paypal.base.rest.OAuthTokenCredential;
-//import com.paypal.base.rest.PayPalRESTException;
-//import lombok.extern.slf4j.Slf4j;
-//import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.context.annotation.Bean;
-//import org.springframework.context.annotation.Configuration;
-//
-//import java.util.HashMap;
-//import java.util.Map;
-//
-//@Configuration
-//@Slf4j
-//public class PayPalConfig {
-//
-//    @Value("${payment.paypal.client-id}")
-//    private String clientId;
-//
-//    @Value("${payment.paypal.client-secret}")
-//    private String clientSecret;
-//
-//    @Value("${payment.paypal.mode}")
-//    private String mode;
-//
-//    @Bean
-//    public Map<String, String> paypalSdkConfig() {
-//        Map<String, String> configMap = new HashMap<>();
-//        configMap.put("mode", mode);
-//        return configMap;
-//    }
-//
-//    @Bean
-//    public OAuthTokenCredential oAuthTokenCredential() {
-//        return new OAuthTokenCredential(clientId, clientSecret, paypalSdkConfig());
-//    }
-//
-//    @Bean
-//    public APIContext apiContext() throws PayPalRESTException {
-//        APIContext context = new APIContext(oAuthTokenCredential().getAccessToken());
-//        context.setConfigurationMap(paypalSdkConfig());
-//        return context;
-//    }
-//}
 
 package sum25.group03.payment_service.configs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
@@ -97,6 +54,9 @@ public class PayPalConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
     }
 }
