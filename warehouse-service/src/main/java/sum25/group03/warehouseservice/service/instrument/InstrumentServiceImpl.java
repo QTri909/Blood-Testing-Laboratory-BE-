@@ -195,4 +195,34 @@ public class InstrumentServiceImpl implements InstrumentService {
                         "Instrument is not active. Current status: " + instrument.getStatus())
                 .build();
     }
+
+    @Override
+    public InstrumentConfigReagentRes getInstrumentById(Long instrumentId) {
+        Instrument instrument = instrumentRepo.findInstrumentById(instrumentId)
+                .orElseThrow(() -> new NotFoundException("Instrument not found with id: " + instrumentId));
+        List<ReagentForInstrumentRes> reagentForInstrumentRes = instrument.getReagentHistoryUsages().stream()
+                .map(r -> ReagentForInstrumentRes.builder()
+                        .reagentId(r.getReagent().getReagentId())
+                        .reagentName(r.getReagent().getReagentName())
+                        .quantityUsed(r.getQuantityUsed())
+                        .unit(r.getUnit())
+                        .lotNumber(r.getLotNumber())
+                        .usedAt(r.getUsedAt())
+                        .build())
+                .toList();
+        InstrumentConfigReagentRes response = InstrumentConfigReagentRes.builder()
+                .instrumentId(instrument.getInstrumentId())
+                .instrumentName(instrument.getInstrumentName())
+                .model(instrument.getModel())
+                .serialNumber(instrument.getSerialNumber())
+                .location(instrument.getLocation())
+                .notes(instrument.getNotes()!=null? instrument.getNotes() : "")
+                .status(instrument.getStatus())
+                .createdAt(instrument.getCreatedAt())
+                .updatedAt(instrument.getUpdatedAt())
+                .configRes(configMapper.toDto(instrument.getConfiguration()))
+                .reagentForInstrumentRes(reagentForInstrumentRes)
+                .build();
+        return response;
+    }
 }

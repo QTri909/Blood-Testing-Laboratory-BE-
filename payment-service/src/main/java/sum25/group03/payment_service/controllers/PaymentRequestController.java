@@ -17,7 +17,7 @@ import sum25.group03.payment_service.services.interfaces.PaymentCacheService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/payments")
+@RequestMapping("/api/v1/payments")
 @RequiredArgsConstructor
 @Slf4j
 public class PaymentRequestController {

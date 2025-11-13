@@ -15,6 +15,7 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import sum25.group03.common.response.events.UserCreatedEvent;
 import sum25.group03.iamservice.event.*;
 
 import java.util.HashMap;
