@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.testorderservice.dtos.request.ReviewRequestDTO;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entities.Parameter;
@@ -60,6 +61,29 @@ public class TestResultServiceImpl implements TestResultService {
         + "\nAdjusted value: " + adjustedValue
         + "\nTimestamp: " + testResult.getUpdatedAt());
         testResultRepository.save(testResult);
+    }
+
+    @Override
+    public String doctorReview(ReviewRequestDTO reviewRequestDTO, Long reviewId){
+        TestResult testResult;
+        Optional<TestResult> testResultOpt = testResultRepository.findById(reviewRequestDTO.getTestResultId());
+        if (testResultOpt.isPresent()) {
+            testResult = testResultOpt.get();
+        } else {
+            throw new EntityNotFoundException("Test result not found");
+        }
+        if (testResult.getStatus() != TestResultStatus.COMPLETED) {
+            throw new IllegalStateException("Only completed results can be reviewed");
+        }
+        testResult.setReview(reviewRequestDTO.getReview());
+        testResult.setUpdatedAt(LocalDateTime.now());
+        testResult.setStatus(TestResultStatus.REVIEWED);
+        log.info("TestResult id: " + testResult.getId()
+                +"\nReview id: " + reviewId
+                + "\nReview: " + reviewRequestDTO.getReview()
+                + "\nTimestamp: " + testResult.getUpdatedAt());
+        testResultRepository.save(testResult);
+        return testResult.getReview();
     }
 
     // Huy

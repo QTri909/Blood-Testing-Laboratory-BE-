@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
+import sum25.group03.testorderservice.dtos.request.ReviewRequestDTO;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.services.impl.CohereServiceImpl;
@@ -35,6 +36,16 @@ public class TestResultController {
     ) {
         testResultService.reviewTestResult(testResultId, adjustedValue, reviewId);
         return ApiResponse.ok("✅ Test result reviewed successfully by user " + reviewId);
+    }
+
+    @PostMapping("/doctor-review")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<?> doctorReview(
+            @RequestBody @Valid ReviewRequestDTO reviewRequestDTO,
+            @RequestHeader("X-User-Id") @NotNull Long reviewId
+    ){
+        testResultService.doctorReview(reviewRequestDTO, reviewId);
+        return ApiResponse.ok("Review Test result reviewed successfully by user " + reviewId);
     }
 
     @PostMapping
