@@ -63,4 +63,4 @@ spring:
               predicates:
                 - Path=${app.api-version}/warehouses/**,
               filters:
-                - RewritePath=/api/v1/warehouses/(?<segment>(\\d+|instrument|configurations|reagents|supply|usage.*)), /api/v1/${segment}
+                - RewritePath=/api/v1/warehouses/(?<segment>(\\d+|instruments|configurations|reagents|supply|usage.*)), /api/v1/${segment}

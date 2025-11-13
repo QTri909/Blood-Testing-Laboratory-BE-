@@ -40,4 +40,18 @@ public interface InstrumentRepo extends JpaRepository<Instrument,Long> {
     @EntityGraph(attributePaths = {"configuration", "reagentHistoryUsages", "reagentHistoryUsages.reagent"})
     @Query("SELECT i FROM Instrument i WHERE i.instrumentId = :id")
     Optional<Instrument> findInstrumentById(@Param("id") Long id);
+
+    @Query("""
+    SELECT i FROM Instrument i
+    WHERE (:key IS NULL OR :key = '' OR LOWER(i.instrumentName) LIKE LOWER(CONCAT('%', :key, '%')))
+    ORDER BY i.createdAt DESC
+""")
+    Page<Instrument> searchInstrumentsByName(@Param("key") String key, Pageable pageable);
+
+
+    @Query("""
+        SELECT i FROM Instrument i
+        WHERE i.status = 'ACTIVE'
+    """)
+    List<Instrument> findAllByStatusActive();
 }

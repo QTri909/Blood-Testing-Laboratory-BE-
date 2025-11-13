@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import sum25.group03.warehouseservice.dto.response.ReagentRes;
 import sum25.group03.warehouseservice.dto.response.ReagentResponseForInstrument;
 import sum25.group03.warehouseservice.dto.response.ReagentValidationResponse;
 import sum25.group03.warehouseservice.entity.ReagentInventory;
@@ -140,6 +141,19 @@ public class ReagentServiceImpl implements ReagentService {
             response.setUsageMin(reagent.getUsageMin());
             response.setUsageMax(reagent.getUsageMax());
             return response;
+        }).toList();
+    }
+
+    @Override
+    public List<ReagentRes> getAllReagents() {
+        List<Reagents> reagents = reagentRepo.findAllByStatus(ReagentStatus.ACTIVE);
+        return reagents.stream().map(reagent -> {;
+            ReagentRes res = new ReagentRes();
+            res.setReagentId(reagent.getReagentId());
+            res.setReagentName(reagent.getReagentName());
+            res.setCatalogNumber(reagent.getCatalogNumber());
+            res.setCasNumber(reagent.getCasNumber());
+            return  res;
         }).toList();
     }
 }

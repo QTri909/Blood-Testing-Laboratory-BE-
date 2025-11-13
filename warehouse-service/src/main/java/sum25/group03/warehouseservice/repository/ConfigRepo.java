@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import sum25.group03.warehouseservice.entity.Configuration;
 
+import java.util.List;
+
 
 @Repository
 public interface ConfigRepo extends JpaRepository<Configuration, Long> {
@@ -17,7 +19,7 @@ public interface ConfigRepo extends JpaRepository<Configuration, Long> {
         FROM Configuration c
         WHERE c.active = true
     """)
-    Page<Configuration> findAllByActiveTrue(Pageable pageable);
+    List<Configuration> findAllByActiveTrue();
 
     @Query("""
     SELECT i.configuration
