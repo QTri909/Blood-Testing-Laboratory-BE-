@@ -4,7 +4,6 @@ import org.mapstruct.*;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entities.TestResult;
-import sum25.group03.testorderservice.grpc.TestResultResponse;
 
 import java.util.List;
 

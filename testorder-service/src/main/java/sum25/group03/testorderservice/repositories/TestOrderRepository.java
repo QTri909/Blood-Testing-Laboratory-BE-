@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Optional;
 
 import sum25.group03.testorderservice.entities.TestOrder;
-import sum25.group03.testorderservice.grpc.TestOrdersByMedicalRecordResponse;
 
 
 @Repository
