@@ -1,9 +1,16 @@
 
 spring:
   datasource:
+#    KHANH:
+#    url: ${PATIENT_DB_URL:jdbc:postgresql://localhost:5432/testorder_db}
+#    username: ${PATIENT_DB_USERNAME:postgres}
+#    password: ${PATIENT_DB_PASSWORD:123456}
+
+#    ORIGIN:
     url: ${PATIENT_DB_URL:jdbc:postgresql://localhost:5434/testorder_db}
     username: ${PATIENT_DB_USERNAME:postgres}
     password: ${PATIENT_DB_PASSWORD:12345}
+
     driver-class-name: "org.postgresql.Driver"
     hikari:
       pool-name: PatientHikariCP

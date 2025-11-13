@@ -43,4 +43,7 @@ public interface ReagentRepo extends JpaRepository<Reagents, Long> {
     Page<Reagents> filterReagents(@Param("reagentName") String reagentName, Pageable pageable);
 
     List<Reagents> findAllByStatus(ReagentStatus status);
+
+    @Query("SELECT DISTINCT r FROM Reagents r")
+    List<Reagents> findAllDistinct();
 }

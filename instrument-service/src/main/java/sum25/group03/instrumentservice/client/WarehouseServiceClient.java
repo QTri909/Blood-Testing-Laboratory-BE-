@@ -2,86 +2,85 @@ package sum25.group03.instrumentservice.client;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
 import sum25.group03.instrumentservice.client.response.ReagentResponse;
 import sum25.group03.instrumentservice.client.response.ReagentValidationResponse;
 import sum25.group03.instrumentservice.exception.WarehouseServiceException;
+import sum25.group03.warehouse.grpc.WarehouseServiceGrpc;
+import sum25.group03.warehouse.grpc.CheckInstrumentStatusRequest;
+import sum25.group03.warehouse.grpc.CheckInstrumentStatusResponse;
+import sum25.group03.warehouse.grpc.ValidateReagentRequest;
+import sum25.group03.warehouse.grpc.ValidateReagentResponse;
+import sum25.group03.warehouse.grpc.ListReagentsResponse;
+import io.grpc.StatusRuntimeException;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class WarehouseServiceClient {
-    private final RestTemplate restTemplate;
-
-    @Value("${warehouse.service.url:http://localhost:8082}")
-    private String warehouseServiceUrl;
-
+    private final WarehouseServiceGrpc.WarehouseServiceBlockingStub warehouseServiceStub;
 
     public boolean checkInstrumentStatus(Long instrumentId) {
         try {
-            String url = warehouseServiceUrl + "/api/v1/instruments/status/" + instrumentId;
-            log.info("Checking instrument status from Warehouse Service: {}", url);
+            log.info("Checking instrument status via gRPC: {}", instrumentId);
 
-            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+            CheckInstrumentStatusRequest request = CheckInstrumentStatusRequest.newBuilder()
+                    .setInstrumentId(instrumentId)
+                    .build();
 
-            if (response == null) {
-                log.warn("Warehouse Service returned null response for instrument ID: {}", instrumentId);
-                throw new WarehouseServiceException("Warehouse Service returned null response");
-            }
+            CheckInstrumentStatusResponse response = warehouseServiceStub.checkInstrumentStatus(request);
 
-            Object statusObj = response.get("status");
-            if (statusObj == null) {
-                log.warn("No status field in Warehouse Service response for instrument ID: {}", instrumentId);
-                throw new WarehouseServiceException("Invalid response format from Warehouse Service");
-            }
-
-            String status = statusObj.toString().toUpperCase();
-            boolean isActive = "ACTIVE".equals(status);
-
-            log.info("Instrument {} status from Warehouse: {} (Active: {})", instrumentId, status, isActive);
+            boolean isActive = response.getIsActive();
+            log.info("Instrument {} status: {} (Active: {})", instrumentId, response.getStatus(), isActive);
             return isActive;
 
-        } catch (RestClientException e) {
+        } catch (StatusRuntimeException e) {
+            log.error("gRPC error checking instrument status for ID: {}", instrumentId, e);
+            throw new WarehouseServiceException(
+                    "Failed to check instrument status from Warehouse Service: " + e.getMessage(), e);
+        } catch (Exception e) {
             log.error("Error communicating with Warehouse Service for instrument ID: {}", instrumentId, e);
             throw new WarehouseServiceException(
                     "Failed to check instrument status from Warehouse Service: " + e.getMessage(), e);
         }
     }
 
-
     public ReagentValidationResponse validateReagent(String lotNumber, Double requiredVolume) {
-
-
-        String urlTemplate = warehouseServiceUrl + "/api/v1/reagents/validate/{lotNumber}";
-
-        String url = UriComponentsBuilder.fromUriString(urlTemplate)
-                .queryParam("requiredVolume", requiredVolume)
-                .buildAndExpand(lotNumber)
-                .toUriString();
-
         try {
-            log.info("Validating reagent from Warehouse Service: {}", url);
+            log.info("Validating reagent via gRPC: lotNumber={}, requiredVolume={}", lotNumber, requiredVolume);
 
-            ReagentValidationResponse response = restTemplate.getForObject(url, ReagentValidationResponse.class);
+            ValidateReagentRequest request = ValidateReagentRequest.newBuilder()
+                    .setLotNumber(lotNumber)
+                    .setRequiredVolume(requiredVolume)
+                    .build();
 
-            if (response == null) {
-                log.warn("Warehouse Service returned null response for reagent batch: {}", lotNumber);
-                throw new WarehouseServiceException("Warehouse Service returned null response");
+            ValidateReagentResponse response = warehouseServiceStub.validateReagent(request);
+
+            ReagentValidationResponse result = new ReagentValidationResponse();
+            result.setReagentId(response.getReagentId());
+            result.setReagentName(response.getReagentName());
+            result.setLotNumber(response.getLotNumber());
+            result.setUnit(response.getUnit());
+            result.setCatalogNumber(response.getCatalogNumber());
+            result.setValid(response.getIsValid());
+            result.setInInventory(response.getIsInInventory());
+            result.setNotExpired(response.getIsNotExpired());
+            result.setMessage(response.getMessage());
+            if (response.getExpirationDate() != null && !response.getExpirationDate().isEmpty()) {
+                result.setExpirationDate(java.time.LocalDate.parse(response.getExpirationDate()));
             }
 
-            log.info("Reagent validation result - Valid: {}, Message: {}", response.isValid(), response.getMessage());
-            return response;
+            log.info("Reagent validation result - Valid: {}, Message: {}", result.isValid(), result.getMessage());
+            return result;
 
-        } catch (RestClientException e) {
+        } catch (StatusRuntimeException e) {
+            log.error("gRPC error validating reagent batch: {}", lotNumber, e);
+            throw new WarehouseServiceException(
+                    "Failed to validate reagent from Warehouse Service: " + e.getMessage(), e);
+        } catch (Exception e) {
             log.error("Error validating reagent from Warehouse Service for batch: {}", lotNumber, e);
             throw new WarehouseServiceException(
                     "Failed to validate reagent from Warehouse Service: " + e.getMessage(), e);
@@ -89,24 +88,33 @@ public class WarehouseServiceClient {
     }
 
     public List<ReagentResponse> reagentResponseReagentList() {
-        String url = warehouseServiceUrl + "/api/v1/reagents/list";
-
         try {
-            log.info("Listing reagents for instrument from Warehouse Service: {}", url);
+            log.info("Listing reagents via gRPC");
 
-            ReagentResponse[] responseArray = restTemplate.getForObject(url, ReagentResponse[].class);
+            ListReagentsResponse response = warehouseServiceStub.listReagents(
+                    com.google.protobuf.Empty.getDefaultInstance()
+            );
 
-            if (responseArray == null) {
-                log.warn("Warehouse Service returned null response for reagent list");
-                throw new WarehouseServiceException("Warehouse Service returned null response");
-            }
+            List<ReagentResponse> responseList = response.getReagentsList().stream()
+                    .map(item -> {
+                        ReagentResponse reagent = new ReagentResponse();
+                        reagent.setReagentId(item.getReagentId());
+                        reagent.setUnit(item.getUnit());
+                        reagent.setReagentName(item.getReagentName());
+                        reagent.setUsageMax(item.getUsageMax());
+                        reagent.setUsageMin(item.getUsageMin());
+                        return reagent;
+                    })
+                    .collect(Collectors.toList());
 
-            List<ReagentResponse> responseList = List.of(responseArray);
-
-            log.info("Retrieved {} reagents for instrument from Warehouse Service", responseList.size());
+            log.info("Retrieved {} reagents from Warehouse Service", responseList.size());
             return responseList;
 
-        } catch (RestClientException e) {
+        } catch (StatusRuntimeException e) {
+            log.error("gRPC error listing reagents", e);
+            throw new WarehouseServiceException(
+                    "Failed to list reagents from Warehouse Service: " + e.getMessage(), e);
+        } catch (Exception e) {
             log.error("Error listing reagents from Warehouse Service", e);
             throw new WarehouseServiceException(
                     "Failed to list reagents from Warehouse Service: " + e.getMessage(), e);

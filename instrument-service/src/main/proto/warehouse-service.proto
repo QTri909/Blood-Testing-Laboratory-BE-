@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+
+import "google/protobuf/empty.proto";
+
+package sum25.group03.warehouse;
+
+option java_package = "sum25.group03.warehouse.grpc";
+option java_multiple_files = true;
+
+service WarehouseService {
+  rpc CheckInstrumentStatus(CheckInstrumentStatusRequest) returns (CheckInstrumentStatusResponse);
+  rpc ValidateReagent(ValidateReagentRequest) returns (ValidateReagentResponse);
+  rpc ListReagents(google.protobuf.Empty) returns (ListReagentsResponse);
+}
+
+message CheckInstrumentStatusRequest {
+  int64 instrument_id = 1;
+}
+
+message CheckInstrumentStatusResponse {
+  bool is_active = 1;
+  string status = 2;
+  string message = 3;
+}
+
+message ValidateReagentRequest {
+  string lotNumber = 1;
+  double requiredVolume = 2;
+}
+
+
+message ValidateReagentResponse {
+  int64 reagent_id = 1;
+  string reagent_name = 2;
+  string lot_number = 3;
+  string unit = 4;
+  string catalog_number = 5;
+  string expiration_date = 6;
+  bool is_valid = 7;
+  bool is_in_inventory = 8;
+  bool is_not_expired = 9;
+  string message = 10;
+}
+
+  message ReagentInfo {
+    int64 reagent_id = 1;
+    string unit = 2;
+    string reagent_name = 3;
+    double usage_max = 4;
+    double usage_min = 5;
+  }
+
+
+  message ListReagentsResponse {
+    repeated ReagentInfo reagents = 1;
+  }

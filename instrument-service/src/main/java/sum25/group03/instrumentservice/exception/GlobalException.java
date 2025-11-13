@@ -139,7 +139,7 @@ public class GlobalException {
         return errorResponse;
     }
 
-    @ExceptionHandler( InstrumentNotReadyException.class)
+    @ExceptionHandler( {InstrumentNotReadyException.class, InsufficientReagentException.class, BarcodeAlreadyTestedException.class})
     @ResponseStatus(CONFLICT)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "409", description = "Conflict",
@@ -231,12 +231,13 @@ public class GlobalException {
                             ))})
     })
     public ErrorResponse handleException(Exception e, WebRequest request) {
+        log.error("Unhandled Internal Server Error:", e);
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setTimestamp(new Date());
         errorResponse.setPath(request.getDescription(false).replace("uri=", ""));
         errorResponse.setStatus(INTERNAL_SERVER_ERROR.value());
         errorResponse.setError(INTERNAL_SERVER_ERROR.getReasonPhrase());
-        errorResponse.setMessage(e.getMessage());
+        errorResponse.setMessage("An unexpected error occurred. Please try again later.");
 
         return errorResponse;
     }

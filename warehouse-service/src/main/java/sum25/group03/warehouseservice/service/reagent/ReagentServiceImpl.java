@@ -17,6 +17,7 @@ import sum25.group03.warehouseservice.repository.ReagentRepo;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -132,11 +133,17 @@ public class ReagentServiceImpl implements ReagentService {
 
     @Override
     public List<ReagentResponseForInstrument> listReagentsForInstrument() {
-        List<Reagents> reagents = reagentRepo.findAll();
+        List<Reagents> reagents = reagentRepo.findAllDistinct();
+        List<String> reagentNames = reagents.stream()
+                .map(Reagents::getReagentName) // Lấy tên của từng thuốc thử
+                .collect(Collectors.toList());
 
+        // 2. In ra số lượng (sẽ là 10) và danh sách 10 cái tên đó
+        log.info("Tìm thấy {} reagents: {}", reagents.size(), reagentNames.toString());
         return reagents.stream().map(reagent -> {
             ReagentResponseForInstrument response = new ReagentResponseForInstrument();
             response.setReagentId(reagent.getReagentId());
+            response.setUnit(reagent.getUnit());
             response.setReagentName(reagent.getReagentName());
             response.setUsageMin(reagent.getUsageMin());
             response.setUsageMax(reagent.getUsageMax());

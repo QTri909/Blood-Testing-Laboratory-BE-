@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sum25.group03.common.response.events.UserCreatedEvent;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.enums.TestOrderType;
 
@@ -27,5 +28,5 @@ public class TestOrderRequestDTO {
     @NotNull(message = "Type cannot be null")
     private TestOrderType type;
 
-    private TestOrderPatientInfo patientInfo;
+    private UserCreatedEvent patientInfo;
 }

@@ -1,9 +1,6 @@
 package sum25.group03.instrumentservice.service;
 
-import sum25.group03.instrumentservice.event.InstrumentModeChangedEvent;
-import sum25.group03.instrumentservice.event.ReagentInstalledEvent;
-import sum25.group03.instrumentservice.event.TestResultPublishedEvent;
-import sum25.group03.instrumentservice.event.UpdateExpiryReagent;
+import sum25.group03.instrumentservice.event.*;
 
 
 public interface KafkaEventPublisher {
@@ -11,4 +8,5 @@ public interface KafkaEventPublisher {
     void publishInstrumentModeChangedEvent(InstrumentModeChangedEvent event);
     void publicExpiredReagentEvent(UpdateExpiryReagent event);
     void publishTestResultEvent(TestResultPublishedEvent event);
+    void publishReagentUsageHistoryEvent(ReagentUsageHistoryEvent event);
 }

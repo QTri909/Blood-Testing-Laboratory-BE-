@@ -24,7 +24,11 @@ public class ReagentEventListener {
     private final ReagentRepo reagentRepo;
     private final ReagentInventoryRepo reagentInventoryRepo;
 
-    @KafkaListener(topics = "reagent-installed-events", groupId = "warehouse-service-group")
+    @KafkaListener(
+            topics = "reagent-installed-events",
+            groupId = "warehouse-service-group",
+            containerFactory = "kafkaListenerContainerFactory"
+    )
     public void handleReagentInstalledEvent(@Payload ReagentInstalledEvent event) {
         try {
             log.info("Received reagent installed event for reagent ID: {} (Batch: {})",
@@ -49,7 +53,6 @@ public class ReagentEventListener {
             reagentInventory.setQuantityAvailable(newQuantity);
             ReagentInventory updatedReagentInventory = reagentInventoryRepo.save(reagentInventory);
 
-
             log.info("Reagent quantity updated successfully - Reagent ID: {}, New quantity: {}, " +
                             "Installed on instrument: {} (ID: {})",
                     event.getReagentId(), updatedReagentInventory.getQuantityAvailable(),
@@ -62,7 +65,11 @@ public class ReagentEventListener {
     }
 
 
-    @KafkaListener(topics = "update-expiry-reagent", groupId = "warehouse-service-group")
+    @KafkaListener(
+            topics = "update-expiry-reagent",
+            groupId = "warehouse-service-group",
+            containerFactory = "updateExpiryReagentContainerFactory"
+    )
     public void handleUpdateExpiryReagent(@Payload UpdateExpiryReagent event) {
         try {
             ReagentInventory reagentInventory = reagentInventoryRepo.findByLotNumber(event.getLotNumber())
@@ -74,7 +81,6 @@ public class ReagentEventListener {
 
             log.info("Marking reagent as EXPIRED - Lot: {}, Expiration Date: {}",
                     reagentInventory.getLotNumber(), reagentInventory.getExpiryDate());
-
 
         } catch (Exception e) {
             log.error("Error processing update expiry reagent: {}", e.getMessage(), e);
