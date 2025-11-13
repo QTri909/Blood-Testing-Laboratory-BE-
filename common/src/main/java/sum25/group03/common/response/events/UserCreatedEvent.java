@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.dtos.request;
+package sum25.group03.common.response.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,21 +7,24 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Data
-public class TestOrderPatientInfo implements Serializable {
+public class UserCreatedEvent implements Serializable {
     private String id; // null if not registered
-    private String identityNumber;
+    private String email;
     private String fullName;
+    private String phoneNumber;
+    private String identityNumber;
+    private String gender;
     private LocalDate dateOfBirth;
     private Integer age;
-    private String gender;
     private String address;
-    private String phoneNumber;
-    private String email;
+    private Set<String> roles;
+    private Set<String> privileges;
 
     @Override
     public String toString() {

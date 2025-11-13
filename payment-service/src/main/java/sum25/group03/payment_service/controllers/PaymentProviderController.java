@@ -12,7 +12,7 @@ import sum25.group03.payment_service.services.interfaces.PaymentProviderService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/payment-providers")
+@RequestMapping("/api/v1/payment-providers")
 @RequiredArgsConstructor
 public class PaymentProviderController {
 

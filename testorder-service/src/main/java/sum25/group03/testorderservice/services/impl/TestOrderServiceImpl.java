@@ -9,7 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sum25.group03.testorderservice.dtos.request.TestOrderPatientInfo;
+import sum25.group03.common.response.events.UserCreatedEvent;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.*;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
@@ -22,12 +22,10 @@ import sum25.group03.testorderservice.helpers.ParameterHelpers;
 import sum25.group03.testorderservice.mapper.TestOrderMapper;
 import sum25.group03.testorderservice.mapper.TestResultMapper;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
-import sum25.group03.testorderservice.repositories.TestResultRepository;
 import sum25.group03.testorderservice.services.interfaces.TestOrderKafkaProducer;
 import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 import sum25.group03.testorderservice.specification.TestOrderSpecification;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -132,7 +130,7 @@ public class TestOrderServiceImpl implements TestOrderService {
     public TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO, Long createdBy) {
 
         // get patientInfo from requestDTO
-        TestOrderPatientInfo patientInfo = requestDTO.getPatientInfo();
+        UserCreatedEvent patientInfo = requestDTO.getPatientInfo();
 
         // map requestDTO to entity
         TestOrder testOrder = testOrderMapper.toEntity(requestDTO);

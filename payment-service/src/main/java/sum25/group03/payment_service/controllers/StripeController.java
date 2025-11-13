@@ -12,10 +12,13 @@ import sum25.group03.payment_service.services.impl.StripeServiceImpl;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/payments/stripe")
+@RequestMapping("/api/v1/payments/stripe")
 @Slf4j
 public class StripeController {
-
+    @GetMapping("")
+    public ResponseEntity<String> hello() {
+        return ResponseEntity.ok("Hello from StripeController");
+    }
     private final StripeServiceImpl stripeService;
 
     public StripeController(StripeServiceImpl stripeService) {

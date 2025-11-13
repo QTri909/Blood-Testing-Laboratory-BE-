@@ -13,7 +13,7 @@ import sum25.group03.payment_service.services.interfaces.PayPalService;
 import sum25.group03.payment_service.services.interfaces.PaymentTransactionService;
 
 @RestController
-@RequestMapping("/api/paypal")
+@RequestMapping("/api/v1/paypal")
 @RequiredArgsConstructor
 @Slf4j
 public class PayPalController {
