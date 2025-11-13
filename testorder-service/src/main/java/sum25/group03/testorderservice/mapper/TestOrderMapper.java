@@ -3,6 +3,9 @@ package sum25.group03.testorderservice.mapper;
 import org.mapstruct.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import sum25.group03.testorder.grpc.CommentResponse;
+import sum25.group03.testorder.grpc.TestOrdersByMedicalRecordResponse;
+import sum25.group03.testorder.grpc.TestResultResponse;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequest;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.CommentResponseDTO;
@@ -10,9 +13,7 @@ import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entities.TestOrder;
-import sum25.group03.testorderservice.grpc.CommentResponse;
-import sum25.group03.testorderservice.grpc.TestOrdersByMedicalRecordResponse;
-import sum25.group03.testorderservice.grpc.TestResultResponse;
+
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -86,7 +87,7 @@ public interface TestOrderMapper {
         builder.setBarcode(dto.getBarcode() != null ? dto.getBarcode() : "");
         builder.setTotalPrice(dto.getTotalPrice() != null ? dto.getTotalPrice() : 0L);
 
-        // map nested TestResultResponse list safely
+
         if (dto.getTestResults() != null) {
             builder.addAllTestResults(dto.getTestResults().stream()
                     .map(this::toGrpcTestResult)

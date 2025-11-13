@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface ReagentHistoryUsageRepository extends JpaRepository<ReagentHistoryUsage, Integer> {
-    List<ReagentHistoryUsage> findByReagentBatchId(Integer reagentBatchId);
+    List<ReagentHistoryUsage> findByLotReagentId(Integer reagentBatchId);
     List<ReagentHistoryUsage> findByInstrumentId(Integer instrumentId);
     List<ReagentHistoryUsage> findByUsedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
 }

@@ -15,7 +15,9 @@ import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.common.InstrumentStatus;
 import sum25.group03.instrumentservice.controller.request.BloodTestingRequest;
 import sum25.group03.instrumentservice.controller.response.RawTestResultResponse;
+import sum25.group03.instrumentservice.event.ReagentUsageHistoryEvent;
 import sum25.group03.instrumentservice.event.TestResultPublishedEvent;
+import sum25.group03.instrumentservice.exception.BarcodeAlreadyTestedException;
 import sum25.group03.instrumentservice.exception.InstrumentNotReadyException;
 import sum25.group03.instrumentservice.exception.InsufficientReagentException;
 import sum25.group03.instrumentservice.model.Instrument;
@@ -28,6 +30,7 @@ import sum25.group03.instrumentservice.service.KafkaEventPublisher;
 import sum25.group03.instrumentservice.service.SimulatorService;
 import sum25.group03.instrumentservice.service.util.ReagentValidator;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -74,12 +77,19 @@ public class SimulatorServiceImpl implements SimulatorService {
             }
 
 
-
             List<ReagentResponse> listReagentResponses = warehouseServiceClient.reagentResponseReagentList();
             if (!ReagentValidator.validateReagentVolume(installedReagents,listReagentResponses)) {
                 throw new InsufficientReagentException(
                         "Insufficient reagent volume for barcode: " + request.getBarcode());
             }
+
+            validateBarcode(request.getBarcode());
+
+            if(rawTestResultRepository.existsByBarcode(request.getBarcode())){
+                log.error("BARCODE ALREADY TESTED");
+                throw new BarcodeAlreadyTestedException("Barcode has been tested: " +request.getBarcode());
+            }
+
             testOrderResponse =
                     testOrderServiceClient.getTestOrderByBarcode(request.getBarcode());
             if(testOrderResponse==null){
@@ -95,35 +105,34 @@ public class SimulatorServiceImpl implements SimulatorService {
 
             }
 
-            final String BARCODE_REGEX = "^BC-\\d{6}$";
-
-            if (request.getBarcode() == null || request.getBarcode().isEmpty() ) {
-                String errorMessage = "Barcode is null or empty";
-                publishFailureEvent(request, "NULL_OR_EMPTY_BARCODE",testOrderResponse.getId());
-                throw new RuntimeException(errorMessage);
-
-            }
-
-            if(!Pattern.matches(BARCODE_REGEX, request.getBarcode())){
-                String errorMessage = "Invalid barcode format: " + request.getBarcode();
-                log.warn(errorMessage);
-                publishFailureEvent(request, "INVALID_BARCODE_FORMAT",testOrderResponse.getId());
-                throw new RuntimeException(errorMessage);
-            }
-
-
-
-            long simulationTime = 15_000 + (long) (Math.random() * 5_000);
+            long simulationTime = 10_000 + (long) (Math.random() * 5_000);
             Thread.sleep(simulationTime);
 
-
             for(ReagentResponse reagentResponse: listReagentResponses){
-                Double usageVolume = reagentResponse.getUsageMax()+ reagentResponse.getUsageMin()*rand.nextDouble();
-                InstalledReagent installedReagent = installedReagentRepository.findByReagentId(reagentResponse.getReagentId())
+                Double usageVolume = reagentResponse.getUsageMin()+ (reagentResponse.getUsageMax()-reagentResponse.getUsageMin())*rand.nextDouble();
+                InstalledReagent installedReagent = installedReagentRepository.findByReagentIdAndInstrumentIdAndStatusNot(reagentResponse.getReagentId(), request.getInstrumentId(), InstalledReagentStatus.REMOVED)
                         .orElseThrow(() -> new RuntimeException("Installed reagent not found for reagent ID: " + reagentResponse.getReagentId()));
                 Double currentVolume = installedReagent.getCurrentVolume();
                 installedReagentRepository.updateCurrentVolumeById(currentVolume-usageVolume,installedReagent.getId());
-                log.info("🧪 REAGENT: {} | Initial Volume: {} {} | Used: {} {} | Final Volume: {} {}",
+                ReagentUsageHistoryEvent usageEvent = ReagentUsageHistoryEvent.builder()
+                        .instrumentId(request.getInstrumentId())
+                        .reagentId(installedReagent.getReagentId())
+                        .testOrderId(testOrderResponse.getId())
+                        .usageType("TEST_USAGE")
+                        .lotReagentId(installedReagent.getLotReagentId())
+                        .reagentName(installedReagent.getReagentName())
+                        .lotNumber(installedReagent.getLotNumber())
+                        .quantityUsed(usageVolume)
+                        .unit(installedReagent.getUnit())
+                        .usedAt(LocalDate.now())
+                        .usedBy(2)
+                        .notes("Reagent name: " + installedReagent.getReagentName() +
+                                " used for test order ID: " + testOrderResponse.getId() + " | Barcode: " + request.getBarcode()+"Usage volume: "+usageVolume+installedReagent.getUnit())
+                        .build();
+                kafkaEventPublisher.publishReagentUsageHistoryEvent(usageEvent);
+                log.info("Publish reagent usage event for reagent: {} | Barcode: {}",
+                        installedReagent.getReagentName(), request.getBarcode());
+                log.info("REAGENT: {} | Initial Volume: {} {} | Used: {} {} | Final Volume: {} {}",
                         installedReagent.getReagentName(),
                         currentVolume, installedReagent.getUnit(),
                         usageVolume, installedReagent.getUnit(),
@@ -142,6 +151,7 @@ public class SimulatorServiceImpl implements SimulatorService {
             RawTestResult newResult = RawTestResult.builder()
                     .testOrderId(testOrderResponse.getId())
                     .instrument(instrument)
+                    .barcode(request.getBarcode())
                     .rawData(rawDataJson)
                     .hl7Message(finalHl7Message)
                     .isSentToMonitoring(false)
@@ -156,6 +166,7 @@ public class SimulatorServiceImpl implements SimulatorService {
                     .testOrderId(testOrderResponse.getId())
                     .instrumentId(request.getInstrumentId())
                     .barcode(request.getBarcode())
+                    .rawData(rawDataJson)
                     .hl7Message(finalHl7Message)
                     .timestamp(LocalDateTime.now())
                     .status("SUCCESS")
@@ -188,11 +199,32 @@ public class SimulatorServiceImpl implements SimulatorService {
         } catch (InsufficientReagentException e) {
             log.error("Insufficient reagent for barcode: {}", request.getBarcode());
             return CompletableFuture.failedFuture(e);
+        }catch (BarcodeAlreadyTestedException e){
+            log.error("Barcode already tested: {}", request.getBarcode());
+            return CompletableFuture.failedFuture(e);
+        }catch (InstrumentNotReadyException e){
+            log.error("Instrument is not ready: {}", request.getBarcode());
+            return CompletableFuture.failedFuture(e);
         } catch (Exception e) {
             log.error("Critical error during simulation for barcode: {} | Error: {}",
                     request.getBarcode(), e.getMessage(), e);
             publishFailureEvent(request, "ERROR",testOrderResponse.getId());
             return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    private void validateBarcode(String barcode) {
+        final String BARCODE_REGEX = "^BC-\\d{6}$";
+        if (barcode == null || barcode.isEmpty()) {
+            String errorMessage = "Barcode is null or empty";
+            log.warn(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
+        }
+
+        if (!Pattern.matches(BARCODE_REGEX, barcode)) {
+            String errorMessage = "Invalid barcode format: " + barcode;
+            log.warn(errorMessage);
+            throw new IllegalArgumentException(errorMessage);
         }
     }
 
@@ -216,15 +248,122 @@ public class SimulatorServiceImpl implements SimulatorService {
 
     public static Map<String, Double> generateRawCbcResults() {
         Map<String, Double> rawResults = new HashMap<>();
-        rawResults.put("WBC", 4_000 + (10_000 - 4_000) * rand.nextDouble());
-        rawResults.put("RBC", 4.2 + (6.1 - 4.2) * rand.nextDouble());
-        rawResults.put("HGB", 12.0 + (18.0 - 12.0) * rand.nextDouble());
-        rawResults.put("HCT", 37.0 + (52.0 - 37.0) * rand.nextDouble());
-        rawResults.put("MCV", 80.0 + (100.0 - 80.0) * rand.nextDouble());
-        rawResults.put("MCH", 27.0 + (33.0 - 27.0) * rand.nextDouble());
-        rawResults.put("MCHC", 32.0 + (36.0 - 32.0) * rand.nextDouble());
-        rawResults.put("PLT", 150_000 + (350_000 - 150_000) * rand.nextDouble());
+
+        final int PROB_NORMAL = 80;
+        final int PROB_LOW = 10;
+
+        // --- WBC (White Blood Cell) ---
+        double wbcNormalMin = 4_000, wbcNormalMax = 10_000;
+        double wbcAbnormalLow = 1_000, wbcAbnormalHigh = 30_000;
+        int wbcProb = rand.nextInt(100);
+
+        if (wbcProb < PROB_NORMAL) {
+            rawResults.put("WBC", randomInRange(wbcNormalMin, wbcNormalMax));
+        } else if (wbcProb < (PROB_NORMAL + PROB_LOW)) {
+            rawResults.put("WBC", randomInRange(wbcAbnormalLow, wbcNormalMin));
+        } else {
+            rawResults.put("WBC", randomInRange(wbcNormalMax, wbcAbnormalHigh));
+        }
+
+        // --- RBC (Red Blood Cell) ---
+        double rbcNormalMin = 4.2, rbcNormalMax = 6.1;
+        double rbcAbnormalLow = 2.0, rbcAbnormalHigh = 8.0;
+        int rbcProb = rand.nextInt(100);
+
+        if (rbcProb < PROB_NORMAL) {
+            rawResults.put("RBC", randomInRange(rbcNormalMin, rbcNormalMax));
+        } else if (rbcProb < (PROB_NORMAL + PROB_LOW)) {
+            rawResults.put("RBC", randomInRange(rbcAbnormalLow, rbcNormalMin));
+        } else {
+            rawResults.put("RBC", randomInRange(rbcNormalMax, rbcAbnormalHigh));
+        }
+
+        // --- Hb/HGB (Hemoglobin) ---
+        double hgbNormalMin = 12.0, hgbNormalMax = 18.0;
+        double hgbAbnormalLow = 7.0, hgbAbnormalHigh = 22.0;
+        int hgbProb = rand.nextInt(100);
+
+        if (hgbProb < PROB_NORMAL) {
+            rawResults.put("Hb/HGB", randomInRange(hgbNormalMin, hgbNormalMax));
+        } else if (hgbProb < (PROB_NORMAL + PROB_LOW)) {
+            rawResults.put("Hb/HGB", randomInRange(hgbAbnormalLow, hgbNormalMin));
+        } else {
+            rawResults.put("Hb/HGB", randomInRange(hgbNormalMax, hgbAbnormalHigh));
+        }
+
+        // --- HCT (Hematocrit) ---
+        double hctNormalMin = 37.0, hctNormalMax = 52.0;
+        double hctAbnormalLow = 20.0, hctAbnormalHigh = 65.0;
+        int hctProb = rand.nextInt(100);
+
+        if (hctProb < PROB_NORMAL) {
+            rawResults.put("HCT", randomInRange(hctNormalMin, hctNormalMax));
+        } else if (hctProb < (PROB_NORMAL + PROB_LOW)) {
+            rawResults.put("HCT", randomInRange(hctAbnormalLow, hctNormalMin));
+        } else {
+            rawResults.put("HCT", randomInRange(hctNormalMax, hctAbnormalHigh));
+        }
+
+        // --- MCV (Mean Corpuscular Volume) ---
+        double mcvNormalMin = 80.0, mcvNormalMax = 100.0;
+        double mcvAbnormalLow = 60.0, mcvAbnormalHigh = 115.0;
+        int mcvProb = rand.nextInt(100);
+
+        if (mcvProb < PROB_NORMAL) {
+            rawResults.put("MCV", randomInRange(mcvNormalMin, mcvNormalMax));
+        } else if (mcvProb < (PROB_NORMAL + PROB_LOW)) {
+            rawResults.put("MCV", randomInRange(mcvAbnormalLow, mcvNormalMin));
+        } else {
+            rawResults.put("MCV", randomInRange(mcvNormalMax, mcvAbnormalHigh));
+        }
+
+        // --- MCH (Mean Corpuscular Hemoglobin) ---
+        double mchNormalMin = 27.0, mchNormalMax = 33.0;
+        double mchAbnormalLow = 20.0, mchAbnormalHigh = 40.0;
+        int mchProb = rand.nextInt(100);
+
+        if (mchProb < PROB_NORMAL) {
+            rawResults.put("MCH", randomInRange(mchNormalMin, mchNormalMax));
+        } else if (mchProb < (PROB_NORMAL + PROB_LOW)) {
+            rawResults.put("MCH", randomInRange(mchAbnormalLow, mchNormalMin));
+        } else {
+            rawResults.put("MCH", randomInRange(mchNormalMax, mchAbnormalHigh));
+        }
+
+        // --- MCHC (Mean Corpuscular Hemoglobin Concentration) ---
+        double mchcNormalMin = 32.0, mchcNormalMax = 36.0;
+        double mchcAbnormalLow = 28.0, mchcAbnormalHigh = 40.0;
+        int mchcProb = rand.nextInt(100);
+
+        if (mchcProb < PROB_NORMAL) {
+            rawResults.put("MCHC", randomInRange(mchcNormalMin, mchcNormalMax));
+        } else if (mchcProb < (PROB_NORMAL + PROB_LOW)) {
+            rawResults.put("MCHC", randomInRange(mchcAbnormalLow, mchcNormalMin));
+        } else {
+            rawResults.put("MCHC", randomInRange(mchcNormalMax, mchcAbnormalHigh));
+        }
+
+        // --- PLT (Platelet) ---
+        double pltNormalMin = 150_000, pltNormalMax = 350_000;
+        double pltAbnormalLow = 20_000, pltAbnormalHigh = 750_000;
+        int pltProb = rand.nextInt(100);
+
+        if (pltProb < PROB_NORMAL) {
+            rawResults.put("PLT", randomInRange(pltNormalMin, pltNormalMax));
+        } else if (pltProb < (PROB_NORMAL + PROB_LOW)) {
+            rawResults.put("PLT", randomInRange(pltAbnormalLow, pltNormalMin));
+        } else {
+            rawResults.put("PLT", randomInRange(pltNormalMax, pltAbnormalHigh));
+        }
+
         return rawResults;
+    }
+
+    private static double randomInRange(double min, double max) {
+        if (min >= max) {
+            return min;
+        }
+        return min + (max - min) * rand.nextDouble();
     }
 
 
@@ -232,7 +371,7 @@ public class SimulatorServiceImpl implements SimulatorService {
         List<String> obxSegments = new ArrayList<>();
         obxSegments.add(String.format("OBX||NM|WBC||%.1f|cells/µL|4000-10000||||F", rawResults.get("WBC")));
         obxSegments.add(String.format("OBX||NM|RBC||%.2f|million/µL|4.2-6.1||||F", rawResults.get("RBC")));
-        obxSegments.add(String.format("OBX||NM|HGB||%.1f|g/dL|12.0-18.0||||F", rawResults.get("HGB")));
+        obxSegments.add(String.format("OBX||NM|Hb/HGB||%.1f|g/dL|12.0-18.0||||F", rawResults.get("Hb/HGB")));
         obxSegments.add(String.format("OBX||NM|HCT||%.1f|%%|37-52||||F", rawResults.get("HCT")));
         obxSegments.add(String.format("OBX||NM|MCV||%.1f|fL|80-100||||F", rawResults.get("MCV")));
         obxSegments.add(String.format("OBX||NM|MCH||%.1f|pg|27-33||||F", rawResults.get("MCH")));

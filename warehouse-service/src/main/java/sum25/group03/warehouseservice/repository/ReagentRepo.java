@@ -40,4 +40,7 @@ public interface ReagentRepo extends JpaRepository<Reagents, Long> {
     WHERE (:reagentName IS NULL OR :reagentName = '' OR LOWER(r.reagentName) LIKE LOWER(CONCAT('%', :reagentName, '%')))
 """)
     Page<Reagents> filterReagents(@Param("reagentName") String reagentName, Pageable pageable);
+
+    @Query("SELECT DISTINCT r FROM Reagents r")
+    List<Reagents> findAllDistinct();
 }

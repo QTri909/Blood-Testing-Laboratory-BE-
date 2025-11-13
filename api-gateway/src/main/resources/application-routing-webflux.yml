@@ -27,6 +27,7 @@ spring:
               filters:
                 - RewritePath=/api/v1/patients/(?<segment>(\\d+|blood-testing|reagents|instruments.*)), /api/v1/${segment}
 
+
             # for monitoring service
             - id: monitoring-service
               uri: http://localhost:8083

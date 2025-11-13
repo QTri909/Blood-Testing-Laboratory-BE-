@@ -1,5 +1,7 @@
 package sum25.group03.monitoringservice.service;
 
+// 1. IMPORT ObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -19,7 +21,10 @@ public class SyncUpService {
     private RawTestResultRepository repository;
 
     @Autowired
-    private KafkaTemplate<String, Object> kafkaTemplate;
+    private KafkaTemplate<String, String> kafkaTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private static final String INSTRUMENT_REQUEST_TOPIC = "instrument.raw.request";
     private static final String TEST_ORDER_REPUBLISH_TOPIC = "testorder.sync.republish";
@@ -33,25 +38,38 @@ public class SyncUpService {
         List<RawTestResult> existingResults = repository.findByTestOrderId(event.getOrderId());
         if (existingResults.isEmpty()) {
             log.warn("[SyncUp] Missing results for order {}, requesting from Instrument Service", event.getOrderId());
+
             kafkaTemplate.send(INSTRUMENT_REQUEST_TOPIC, event.getOrderId());
             return;
         }
 
         event.setRawResults(existingResults);
-        kafkaTemplate.send(TEST_ORDER_REPUBLISH_TOPIC, event);
-        log.info("[SyncUp] Republished updated sync-up for order {}", event.getOrderId());
+
+        try {
+            String eventAsJsonString = objectMapper.writeValueAsString(event);
+            kafkaTemplate.send(TEST_ORDER_REPUBLISH_TOPIC, eventAsJsonString);
+            log.info("[SyncUp] Republished updated sync-up for order {}", event.getOrderId());
+
+        } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+            log.error("[SyncUp] Failed to serialize SyncUpEvent to JSON for order {}", event.getOrderId(), e);
+        }
     }
 
-    /**
-     * Re-sync thủ công theo yêu cầu admin
-     */
     public boolean manualResync(String orderId) {
         Optional<RawTestResult> result = repository.findFirstByTestOrderId(orderId);
         if (result.isPresent()) {
             SyncUpEvent event = new SyncUpEvent(orderId, List.of(result.get()));
-            kafkaTemplate.send(TEST_ORDER_REPUBLISH_TOPIC, event);
-            log.info("[SyncUp] Manual re-sync triggered for {}", orderId);
-            return true;
+
+            try {
+                String eventAsJsonString = objectMapper.writeValueAsString(event);
+                kafkaTemplate.send(TEST_ORDER_REPUBLISH_TOPIC, eventAsJsonString);
+                log.info("[SyncUp] Manual re-sync triggered for {}", orderId);
+                return true;
+
+            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                log.error("[SyncUp] Failed to serialize manual SyncUpEvent to JSON for order {}", orderId, e);
+                return false;
+            }
         }
         log.warn("[SyncUp] No result found for manual re-sync: {}", orderId);
         return false;
