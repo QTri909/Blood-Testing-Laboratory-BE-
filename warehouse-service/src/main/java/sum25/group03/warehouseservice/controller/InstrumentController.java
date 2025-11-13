@@ -7,6 +7,7 @@ import sum25.group03.common.response.ApiResponse;
 import sum25.group03.warehouseservice.dto.request.AssignConfigAndReagentReq;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
 import sum25.group03.warehouseservice.dto.response.MessageResponse;
+import sum25.group03.warehouseservice.repository.InstrumentRepo;
 import sum25.group03.warehouseservice.service.instrument.InstrumentService;
 
 @RestController
@@ -37,6 +38,12 @@ public class InstrumentController {
     @GetMapping("/status/{instrumentId}")
     public ResponseEntity<?> getInstrumentStatus(@PathVariable Long instrumentId) {
         return ResponseEntity.ok(instrumentService.getInstrumentStatus(instrumentId));
+    }
+
+    @GetMapping("/{instrumentId}")
+    public ApiResponse<?> getInstrumentById(@PathVariable Long instrumentId) {
+        return ApiResponse.ok(instrumentService.getInstrumentById(instrumentId));
+        //return ApiResponse.add("get instrument by id",instrumentService.getInstrumentById(instrumentId));
     }
 
 

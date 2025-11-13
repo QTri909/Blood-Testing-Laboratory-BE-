@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
@@ -36,7 +37,7 @@ public class MedicalRecordController {
     public ApiResponse<MedicalRecordResponse> registerMedicalRecord(@NotNull @RequestHeader("X-User-Id") Long creatorId) {
         return ApiResponse.add("Created", medicalRecordService.registerMedicalRecord(creatorId));
     }
-
+    //@PreAuthorize("hasAuthority('UPDATE_MEDICAL_RECORD') and hasRole('DOCTOR')")
     @PatchMapping("/assigned-doctor")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<UpdatedAssignedDoctor> updateAssignedDoctor(@Valid @RequestBody UpdatedAssignedDoctor updateInfo) {
