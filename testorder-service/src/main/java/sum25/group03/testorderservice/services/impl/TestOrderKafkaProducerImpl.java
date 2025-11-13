@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.response.events.UserCreatedEvent;
 import sum25.group03.testorderservice.constants.KafkaVariables;
-import sum25.group03.testorderservice.dtos.request.TestOrderPatientInfo;
 import sum25.group03.testorderservice.services.interfaces.TestOrderKafkaProducer;
 
 @Service
@@ -13,10 +13,10 @@ import sum25.group03.testorderservice.services.interfaces.TestOrderKafkaProducer
 @Slf4j
 public class TestOrderKafkaProducerImpl implements TestOrderKafkaProducer {
 
-    private final KafkaTemplate<String, TestOrderPatientInfo> patientInfoTemplate;
+    private final KafkaTemplate<String, UserCreatedEvent> patientInfoTemplate;
 
     @Override
-    public void sendPatientInfoMessage(String key, TestOrderPatientInfo patientInfo) {
+    public void sendPatientInfoMessage(String key, UserCreatedEvent patientInfo) {
         patientInfoTemplate.send(
                 KafkaVariables.TEST_ORDER_TOPIC,
                 key,

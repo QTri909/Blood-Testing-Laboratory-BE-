@@ -4,11 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.response.events.UserCreatedEvent;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
-import sum25.group03.iamservice.event.UserCreatedEvent;
 import sum25.group03.iamservice.service.Interface.UserService;
 
-import java.time.LocalDate;
 import java.util.Set;
 
 @Slf4j

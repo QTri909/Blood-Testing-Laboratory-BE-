@@ -9,7 +9,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import sum25.group03.testorderservice.dtos.request.TestOrderPatientInfo;
+import sum25.group03.common.response.events.UserCreatedEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,7 +17,7 @@ import java.util.Map;
 @Configuration
 public class KafkaProducerConfig {
     @Bean
-    public ProducerFactory<String, TestOrderPatientInfo> patientInfoProducerFactory(
+    public ProducerFactory<String, UserCreatedEvent> patientInfoProducerFactory(
             KafkaProperties kafkaProperties) {
 
         Map<String, Object> props = new HashMap<>(kafkaProperties.buildProducerProperties(null));
@@ -28,8 +28,8 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, TestOrderPatientInfo> patientInfoKafkaTemplate(
-            ProducerFactory<String, TestOrderPatientInfo> factory) {
+    public KafkaTemplate<String, UserCreatedEvent> patientInfoKafkaTemplate(
+            ProducerFactory<String, UserCreatedEvent> factory) {
         return new KafkaTemplate<>(factory);
     }
 }

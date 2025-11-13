@@ -7,13 +7,13 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.common.response.events.UserCreatedEvent;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.dto.request.UserUpdateRequest;
 import sum25.group03.iamservice.dto.response.UserResponse;
 import sum25.group03.iamservice.entity.Role;
 import sum25.group03.iamservice.entity.User;
 import sum25.group03.iamservice.entity.UserRole;
-import sum25.group03.iamservice.event.UserCreatedEvent;
 import sum25.group03.iamservice.event.UserDeletedEvent;
 import sum25.group03.iamservice.event.UserUpdatedEvent;
 import sum25.group03.iamservice.repository.RoleRepository;
@@ -97,7 +97,7 @@ public class UserServiceImpl implements UserService {
         );
         try {
             UserCreatedEvent event = UserCreatedEvent.builder()
-                    .id(user.getId())
+                    .id(user.getId() + "")
                     .email(user.getEmail())
                     .fullName(user.getFullName())
                     .phoneNumber(user.getPhoneNumber())
