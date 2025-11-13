@@ -8,6 +8,7 @@ import sum25.group03.instrumentservice.model.RawTestResult;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RawTestResultRepository extends JpaRepository<RawTestResult, Long> {
@@ -20,4 +21,9 @@ public interface RawTestResultRepository extends JpaRepository<RawTestResult, Lo
             "(r.isSentToMonitoring = true OR r.isSynced = true) AND " +
             "r.createdAt < :cutoffDate")
     List<RawTestResult> findOldBackedUpResults(@Param("cutoffDate") LocalDateTime cutoffDate);
+
+    RawTestResult findByBarcodeAndInstrumentIdAndTestOrderId(String barcode, Long instrumentId, Long testOrderId);
+
+    Optional<RawTestResult> findByBarcode(String barcode);
+    boolean existsByBarcode(String barcode);
 }

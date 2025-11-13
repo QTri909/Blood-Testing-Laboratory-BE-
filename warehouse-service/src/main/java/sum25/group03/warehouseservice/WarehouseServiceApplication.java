@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "sum25.group03.warehouseservice",
         "sum25.group03.common"
 })
+
 @EnableScheduling
 public class WarehouseServiceApplication {
 

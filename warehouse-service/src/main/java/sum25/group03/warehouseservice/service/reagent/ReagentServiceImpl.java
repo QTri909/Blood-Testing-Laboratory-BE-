@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import sum25.group03.warehouseservice.dto.response.ReagentRes;
 import sum25.group03.warehouseservice.dto.response.ReagentResponseForInstrument;
 import sum25.group03.warehouseservice.dto.response.ReagentValidationResponse;
 import sum25.group03.warehouseservice.entity.ReagentInventory;
@@ -16,6 +17,7 @@ import sum25.group03.warehouseservice.repository.ReagentRepo;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -131,15 +133,34 @@ public class ReagentServiceImpl implements ReagentService {
 
     @Override
     public List<ReagentResponseForInstrument> listReagentsForInstrument() {
-        List<Reagents> reagents = reagentRepo.findAll();
+        List<Reagents> reagents = reagentRepo.findAllDistinct();
+        List<String> reagentNames = reagents.stream()
+                .map(Reagents::getReagentName) // Lấy tên của từng thuốc thử
+                .collect(Collectors.toList());
 
+        // 2. In ra số lượng (sẽ là 10) và danh sách 10 cái tên đó
+        log.info("Tìm thấy {} reagents: {}", reagents.size(), reagentNames.toString());
         return reagents.stream().map(reagent -> {
             ReagentResponseForInstrument response = new ReagentResponseForInstrument();
             response.setReagentId(reagent.getReagentId());
+            response.setUnit(reagent.getUnit());
             response.setReagentName(reagent.getReagentName());
             response.setUsageMin(reagent.getUsageMin());
             response.setUsageMax(reagent.getUsageMax());
             return response;
+        }).toList();
+    }
+
+    @Override
+    public List<ReagentRes> getAllReagents() {
+        List<Reagents> reagents = reagentRepo.findAllByStatus(ReagentStatus.ACTIVE);
+        return reagents.stream().map(reagent -> {;
+            ReagentRes res = new ReagentRes();
+            res.setReagentId(reagent.getReagentId());
+            res.setReagentName(reagent.getReagentName());
+            res.setCatalogNumber(reagent.getCatalogNumber());
+            res.setCasNumber(reagent.getCasNumber());
+            return  res;
         }).toList();
     }
 }

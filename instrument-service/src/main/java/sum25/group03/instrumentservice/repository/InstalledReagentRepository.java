@@ -80,5 +80,11 @@ public interface InstalledReagentRepository extends JpaRepository<InstalledReage
             @Param("id") Long id
     );
 
+    Optional<InstalledReagent> findByReagentIdAndInstrumentIdAndStatusNot(
+            Long reagentId,
+            Long instrumentId,
+            InstalledReagentStatus status
+    );
+
 }
 

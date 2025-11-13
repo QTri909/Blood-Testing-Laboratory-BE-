@@ -44,6 +44,13 @@ public class InstrumentEventListener {
                 log.info("Instrument deactivated successfully - Instrument ID: {}, Reason: {}, " +
                                 "Deactivated at: {}",
                         event.getInstrumentId(), event.getReason(), updatedInstrument.getDeactivatedAt());
+            }else {
+                instrument.setStatus(InstrumentStatus.ACTIVE);
+                instrument.setDeactivatedAt(LocalDate.now());
+                Instrument updatedInstrument = instrumentRepo.save(instrument);
+                log.info("Instrument active successfully - Instrument ID: {}, Reason: {}, " +
+                                "Active at: {}",
+                        event.getInstrumentId(), event.getReason(), updatedInstrument.getDeactivatedAt());
             }
 
         } catch (Exception e) {

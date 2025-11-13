@@ -18,10 +18,13 @@ public class ReagentValidator {
             REAGENT_CONSUMPTION.put(reagentResponse.getReagentName(), reagentResponse.getUsageMax());
         }
 
-
-
         if (installedReagents == null || installedReagents.isEmpty()) {
             return false;
+        }
+        for(InstalledReagent   installedReagent: installedReagents){
+            if(installedReagent.getStatus().equals(InstalledReagentStatus.EXPIRED)||installedReagent.getStatus().equals(InstalledReagentStatus.QUARANTINED)||installedReagent.getStatus().equals(InstalledReagentStatus.EMPTY)){
+                return false;
+            }
         }
 
         Map<String, InstalledReagent> reagentMap = new HashMap<>();

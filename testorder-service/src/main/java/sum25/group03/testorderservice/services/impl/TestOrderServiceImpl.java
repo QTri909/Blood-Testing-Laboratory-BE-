@@ -259,9 +259,12 @@ public class TestOrderServiceImpl implements TestOrderService {
     public TestOrderResponseForInstrument findLatestByBarcode(String barcode) {
         TestOrder testOrder = testOrderRepository
                 .findFirstByBarcodeOrderByCreatedAtDesc(barcode)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Không tìm thấy TestOrder nào cho barcode: " + barcode
-                ));
+                .orElse(null);
+
+        if (testOrder == null) {
+            return null;
+        }
+
         return TestOrderResponseForInstrument.builder()
                 .id(testOrder.getId())
                 .code(testOrder.getCode())
@@ -281,6 +284,7 @@ public class TestOrderServiceImpl implements TestOrderService {
     public CreationTestOrderResponse createTestOrderForExternalSystem(String barcode) {
         TestOrder newOrder = TestOrder.builder()
                 .barcode(barcode)
+                .status(TestOrderStatus.UNMATCHED)
                 .build();
         TestOrder savedOrder = testOrderRepository.save(newOrder);
         return CreationTestOrderResponse.builder()

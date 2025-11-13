@@ -16,7 +16,7 @@ import sum25.group03.instrumentservice.service.InstalledReagentService;
 import sum25.group03.instrumentservice.service.InstrumentService;
 
 @RestController
-@RequestMapping("/api/v1/reagents")
+@RequestMapping("/api/v1/instruments/reagents")
 @RequiredArgsConstructor
 @Tag(name = "Installed Reagent Management", description = "APIs for managing installed reagents on instruments")
 public class InstalledReagentController {

@@ -1,5 +1,6 @@
 package sum25.group03.warehouseservice.service.reagent;
 
+import sum25.group03.warehouseservice.dto.response.ReagentRes;
 import sum25.group03.warehouseservice.dto.response.ReagentResponseForInstrument;
 import sum25.group03.warehouseservice.dto.response.ReagentValidationResponse;
 import sum25.group03.warehouseservice.entity.Reagents;
@@ -14,4 +15,6 @@ public interface ReagentService {
     ReagentValidationResponse validateReagent(String batchNumber, Double requiredVolume);
 
     List<ReagentResponseForInstrument> listReagentsForInstrument();
+
+    List<ReagentRes> getAllReagents();
 }

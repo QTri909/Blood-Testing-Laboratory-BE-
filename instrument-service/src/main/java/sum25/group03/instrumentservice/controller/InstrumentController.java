@@ -39,7 +39,7 @@ public class InstrumentController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping
+    @GetMapping("/list")
     @Operation(
             summary = "Get all instruments with search and pagination",
             description = "Retrieves all instruments with optional keyword search, status filter, sorting, and pagination. " +
