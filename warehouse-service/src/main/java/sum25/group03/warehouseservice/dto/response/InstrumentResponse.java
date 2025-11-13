@@ -1,5 +1,6 @@
 package sum25.group03.warehouseservice.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class InstrumentResponse {
     private Long instrumentId;
     private String instrumentName;
@@ -19,4 +21,5 @@ public class InstrumentResponse {
     private InstrumentStatus status;
     private LocalDate createdAt;
     private LocalDate updatedAt;
+    private LocalDate deactivatedAt;
 }

@@ -42,8 +42,8 @@ public class ConfigurationController {
     }
 
     @GetMapping("")
-    public ApiResponse<?> getAllConfigs(@RequestParam int page, @RequestParam int size) {
-        return ApiResponse.ok(configService.getAllConfig(page, size));
+    public ApiResponse<?> getAllConfigs() {
+        return ApiResponse.ok(configService.getAllConfig());
     }
     @GetMapping("search")
     public ApiResponse<PageRes<ConfigRes>> searchConfigs(

@@ -1,0 +1,15 @@
+groups:
+  - name: KafkaAlerts
+    rules:
+      - alert: KafkaBrokerDown
+
+        expr: kafka_brokers < 1
+
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Kafka broker is DOWN"
+          description: "Kafka exporter unreachable for more than 1 minute."
+
+

@@ -4,13 +4,14 @@ package sum25.group03.warehouseservice.service.instrument;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.annotation.Configurations;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.request.AssignConfigAndReagentReq;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
-import sum25.group03.warehouseservice.dto.response.InstrumentConfigReagentRes;
-import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
-import sum25.group03.warehouseservice.dto.response.ReagentForInstrumentRes;
+import sum25.group03.warehouseservice.dto.response.*;
 import sum25.group03.warehouseservice.entity.*;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 import sum25.group03.warehouseservice.event.ConfigEvent;
@@ -49,6 +50,7 @@ public class InstrumentServiceImpl implements InstrumentService {
     }
     public ConfigEvent buildConfigEventFromConfiguration(Configuration configuration) {
         return ConfigEvent.builder()
+                .configurationName(configuration.getConfigurationName())
                 .supportedTests(configuration.getSupportedTests())
                 .dataOutputFormat(configuration.getDataOutputFormat())
                 .communicationProtocol(configuration.getCommunicationProtocol())
@@ -73,7 +75,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .toList();
     }
     @Override
-    public void addInstrumentToWarehouse(InstrumentReq instrument) {
+    public InstrumentResponse addInstrumentToWarehouse(InstrumentReq instrument) {
         Instrument newInstrument = instrumentMapper.toEntity(instrument);
         // Check an instrument serial number duplication
         if(isDuplicateSerialNumber(newInstrument.getSerialNumber())) {
@@ -88,6 +90,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 log.info("No configuration found to clone for instrument id: {}", instrument.getCloneFromInstrumentId());
             }else{
                 Configuration newConfig = Configuration.builder()
+                        .configurationName(configuration.getConfigurationName())
                         .supportedTests(configuration.getSupportedTests())
                         .dataOutputFormat(configuration.getDataOutputFormat())
                         .communicationProtocol(configuration.getCommunicationProtocol())
@@ -119,6 +122,15 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .build();
         kafkaTemplate.send("new-instrument-events", event);
         log.info("Published Kafka event (new-instrument-events): {}", event);
+        return InstrumentResponse.builder()
+                .instrumentId(saveInstrument.getInstrumentId())
+                .instrumentName(saveInstrument.getInstrumentName())
+                .model(saveInstrument.getModel())
+                .serialNumber(saveInstrument.getSerialNumber())
+                .status(saveInstrument.getStatus())
+                .createdAt(saveInstrument.getCreatedAt())
+                .deactivatedAt(saveInstrument.getDeactivatedAt())
+                .build();
     }
 
     @Override
@@ -135,7 +147,16 @@ public class InstrumentServiceImpl implements InstrumentService {
         List<NewReagentEvent> reagentEvents = null;
         List<ReagentForInstrumentRes> reagentForInstrumentResList = null;
         if(config != null){
-            instrument.setConfiguration(config);
+            Configuration newConfig = Configuration.builder()
+                    .configurationName(config.getConfigurationName())
+                    .supportedTests(config.getSupportedTests())
+                    .dataOutputFormat(config.getDataOutputFormat())
+                    .communicationProtocol(config.getCommunicationProtocol())
+                    .mixingSpeed(config.getMixingSpeed())
+                    .firmwareVersion(config.getFirmwareVersion())
+                    .active(true)
+                    .build();
+            instrument.setConfiguration(newConfig);
             configEvent = buildConfigEventFromConfiguration(config);
         }
 
@@ -144,7 +165,14 @@ public class InstrumentServiceImpl implements InstrumentService {
             List<ReagentHistoryUsage> reagentHistoryUsages = buildReagentHistoryUsagesFromReagents(instrument, reagents);
             instrument.setReagentHistoryUsages(reagentHistoryUsages);
             reagentEvents = buildNewReagentEventsFromReagents(reagents);
-            reagentForInstrumentResList = reagentMapper.toDto(reagents);
+            reagentForInstrumentResList = reagents.stream()
+                    .map(r -> ReagentForInstrumentRes.builder()
+                            .reagentId(r.getReagentId())
+                            .reagentName(r.getReagentName())
+                            .catalogNumber(r.getCatalogNumber())
+                            .casNumber(r.getCasNumber())
+                            .build())
+                    .toList();
         }
         Instrument savedInstrument = instrumentRepo.save(instrument);
         log.info("Assigned configuration and reagents to instrument id: {}", instrument.getInstrumentId());
@@ -163,7 +191,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .instrumentName(savedInstrument.getInstrumentName())
                 .model(savedInstrument.getModel())
                 .serialNumber(savedInstrument.getSerialNumber())
-                .location(savedInstrument.getLocation())
+                //.location(savedInstrument.getLocation())
                 .notes(savedInstrument.getNotes()!=null? savedInstrument.getNotes() : "")
                 .status(savedInstrument.getStatus())
                 .createdAt(savedInstrument.getCreatedAt())
@@ -194,5 +222,78 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .message(isActive ? "Instrument is active and ready for mode change" :
                         "Instrument is not active. Current status: " + instrument.getStatus())
                 .build();
+    }
+
+    @Override
+    public InstrumentConfigReagentRes getInstrumentById(Long instrumentId) {
+        Instrument instrument = instrumentRepo.findInstrumentById(instrumentId)
+                .orElseThrow(() -> new NotFoundException("Instrument not found with id: " + instrumentId));
+        List<ReagentForInstrumentRes> reagentForInstrumentRes = instrument.getReagentHistoryUsages().stream()
+                .map(r -> ReagentForInstrumentRes.builder()
+                        .reagentId(r.getReagent().getReagentId())
+                        .reagentName(r.getReagent().getReagentName())
+                        .quantityUsed(r.getQuantityUsed())
+                        .unit(r.getUnit())
+                        .lotNumber(r.getLotNumber())
+                        .usedAt(r.getUsedAt())
+                        .build())
+                .toList();
+        InstrumentConfigReagentRes response = InstrumentConfigReagentRes.builder()
+                .instrumentId(instrument.getInstrumentId())
+                .instrumentName(instrument.getInstrumentName())
+                .model(instrument.getModel())
+                .serialNumber(instrument.getSerialNumber())
+                //.location(instrument.getLocation())
+                .notes(instrument.getNotes()!=null? instrument.getNotes() : "")
+                .status(instrument.getStatus())
+                .createdAt(instrument.getCreatedAt())
+                .updatedAt(instrument.getUpdatedAt())
+                .configRes(configMapper.toDto(instrument.getConfiguration()))
+                .reagentForInstrumentRes(reagentForInstrumentRes)
+                .build();
+        return response;
+    }
+
+    @Override
+    public PageRes<InstrumentResponse> getAllInstruments(int page, int size, String key) {
+        Page<Instrument> pageInstrument = instrumentRepo.searchInstrumentsByName(key, PageRequest.of(page, size));
+        List<Instrument> instruments = pageInstrument.getContent();
+        Long totalElements = null;
+        if(key!=null ){
+             totalElements = instruments.stream().count();
+        } else
+             totalElements = instrumentRepo.count();
+        List<InstrumentResponse> instrumentResponses = instruments.stream()
+                .map(i -> InstrumentResponse.builder()
+                        .instrumentId(i.getInstrumentId())
+                        .instrumentName(i.getInstrumentName())
+                        .model(i.getModel())
+                        .serialNumber(i.getSerialNumber())
+                        .status(i.getStatus())
+                        .createdAt(i.getCreatedAt())
+                        .deactivatedAt(i.getDeactivatedAt())
+                        .build())
+                .toList();
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        return PageRes.<InstrumentResponse>builder()
+                .content(instrumentResponses)
+                .pageNumber(page)
+                .pageSize(size)
+                .totalElements(totalElements)
+                .totalPages(totalPages)
+                .build();
+    }
+
+    @Override
+    public List<InstrumentResponse> getList() {
+        List<Instrument> instruments = instrumentRepo.findAllByStatusActive();
+        return instruments.stream()
+                .map(i -> InstrumentResponse.builder()
+                        .instrumentId(i.getInstrumentId())
+                        .instrumentName(i.getInstrumentName())
+                        .model(i.getModel())
+                        .serialNumber(i.getSerialNumber())
+                        .build())
+                .toList();
     }
 }

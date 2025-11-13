@@ -14,11 +14,12 @@ import java.util.Properties;
 
 @Component
 public class KafkaHealthChecker {
+
     private final HealthCheckLogRepository healthCheckLogRepository;
     private final MeterRegistry meterRegistry;
     private final String bootstrapServers;
 
-    private boolean lastStatusHealthy = true;
+    private boolean lastHealthy = true;
 
     public KafkaHealthChecker(
             HealthCheckLogRepository healthCheckLogRepository,
@@ -32,59 +33,40 @@ public class KafkaHealthChecker {
 
     @Scheduled(fixedDelay = 60000)
     public void checkKafkaHealth() {
-        int retryCount = 0;
         boolean healthy = false;
+        int maxRetries = 3;
 
-        while (retryCount < 3) {
+        for (int i = 0; i < maxRetries; i++) {
             if (isKafkaHealthy()) {
                 healthy = true;
                 break;
-            } else {
-                retryCount++;
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
+            }
+            try {
+                Thread.sleep(2000); // chờ 2 giây giữa các lần thử
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
             }
         }
 
+
         meterRegistry.gauge("kafka_health_status", healthy ? 1 : 0);
 
-        if (!healthy) {
-            if (lastStatusHealthy) {
-                // Ghi log lỗi lần đầu Kafka down
-                healthCheckLogRepository.save(
-                        HealthCheckLog.builder()
-                                .timestamp(Instant.now())
-                                .status("ERROR")
-                                .errorCode("BROKER_UNAVAILABLE")
-                                .retryCount(retryCount)
-                                .recoveryEvent(false)
-                                .build()
-                );
-            }
-            lastStatusHealthy = false;
-        } else {
-            if (!lastStatusHealthy) {
-                // Ghi log phục hồi
-                healthCheckLogRepository.save(
-                        HealthCheckLog.builder()
-                                .timestamp(Instant.now())
-                                .status("RECOVERED")
-                                .retryCount(0)
-                                .recoveryEvent(true)
-                                .build()
-                );
-            }
-            lastStatusHealthy = true;
+        // Chỉ ghi log khi trạng thái thay đổi
+        if (healthy != lastHealthy) {
+            healthCheckLogRepository.save(
+                    HealthCheckLog.builder()
+                            .timestamp(Instant.now())
+                            .status(healthy ? "HEALTHY" : "UNHEALTHY")
+                            .build()
+            );
+            lastHealthy = healthy;
         }
     }
 
     private boolean isKafkaHealthy() {
         try (AdminClient adminClient = createAdminClient()) {
             DescribeClusterResult cluster = adminClient.describeCluster();
-            cluster.nodes().get(); // nếu lỗi, sẽ throw exception
+            cluster.nodes().get();
             return true;
         } catch (Exception e) {
             return false;

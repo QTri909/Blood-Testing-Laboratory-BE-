@@ -4,7 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+        "sum25.group03.patientservice",
+        "sum25.group03.common"
+})
 @EnableFeignClients
 public class PatientServiceApplication {
 

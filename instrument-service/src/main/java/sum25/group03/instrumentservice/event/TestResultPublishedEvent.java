@@ -16,6 +16,7 @@ public class TestResultPublishedEvent implements Serializable {
     private Long testOrderId;
     private Long instrumentId;
     private String barcode;
+    private String rawData;
     private String hl7Message;
     private LocalDateTime timestamp;
     private String status;

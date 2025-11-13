@@ -154,7 +154,7 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
     public UpdateReagentStatusResponse updateReagentStatus(UpdateReagentStatusRequest request) {
         log.info("Starting reagent status update process for installed reagent ID: {}", request.getInstalledReagentId());
 
-        InstalledReagent installedReagent = installedReagentRepository.findById(request.getInstalledReagentId())
+        InstalledReagent installedReagent = installedReagentRepository.findByReagentIdAndInstrumentIdAndStatusNot(request.getInstalledReagentId(),request.getInstrumentId(), InstalledReagentStatus.REMOVED)
                 .orElseThrow(() -> {
                     log.error("Installed reagent not found with ID: {}", request.getInstalledReagentId());
                     return new ResourceNotFoundException(
@@ -163,11 +163,6 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
 
         log.info("Installed reagent found - current status: {}", installedReagent.getStatus());
 
-        if (installedReagent.getStatus() == InstalledReagentStatus.REMOVED) {
-            log.warn("Cannot update status of removed reagent");
-            throw new InstrumentModeChangeException(
-                    "Cannot update status: Reagent has been removed from the system");
-        }
 
         if (installedReagent.getStatus() == request.getNewStatus()) {
             log.warn("Attempted to update reagent to same status: {}", request.getNewStatus());

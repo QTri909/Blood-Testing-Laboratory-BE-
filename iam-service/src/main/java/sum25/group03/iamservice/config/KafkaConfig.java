@@ -15,6 +15,7 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import sum25.group03.common.response.events.UserCreatedEvent;
 import sum25.group03.iamservice.event.*;
 
 import java.util.HashMap;
@@ -107,7 +108,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaAdmin kafkaAdmin(@Value("${spring.kafka.admin.properties.bootstrap.servers}") String bootstrapServers) {
+    public KafkaAdmin kafkaAdmin(@Value("${spring.kafka.bootstrap-servers}") String bootstrapServers) {
         Map<String, Object> configs = new HashMap<>();
         configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         return new KafkaAdmin(configs);

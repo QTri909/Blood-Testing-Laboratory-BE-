@@ -87,16 +87,14 @@ public class ConfigServiceImpl implements ConfigService {
 
 
     @Override
-    public PageRes<ConfigRes> getAllConfig(int page, int size) {
-        Page<Configuration> config = configRepo.findAllByActiveTrue(PageRequest.of(page, size));
-        List<ConfigRes> configRes = configMapper.toDto(config.getContent());
-        return PageRes.<ConfigRes>builder()
-                .content(configRes)
-                .pageNumber(config.getNumber())
-                .pageSize(config.getSize())
-                .totalElements(config.getTotalElements())
-                .totalPages(config.getTotalPages())
-                .build();
+    public List<ConfigRes> getAllConfig() {
+        List<Configuration> config = configRepo.findAllByActiveTrue();
+        return config.stream()
+                .map(c -> ConfigRes.builder()
+                .configurationId(c.getConfigurationId())
+                .configurationName(c.getConfigurationName())
+                .build())
+                .toList();
     }
 
     @Override
