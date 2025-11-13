@@ -118,12 +118,27 @@ services:
     networks:
       - payment-network
 
+  #------------------------------------------- Mongodb (instrument: 27017) --------------#
+  monitoring-service-db:
+    image: mongo:7.0.5
+    container_name: monitoring-service-db
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root123
+      - MONGO_INITDB_DATABASE=monitoring_db
+    ports:
+      - "27017:27017"
+    networks:
+      - internal
+
 networks:
   app-network:
     driver: bridge
   medical_audit_mongo_network:
   patient-elasticsearch-net:
   payment-network:
+  internal:
 
 volumes:
   test_order_volume:
