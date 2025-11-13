@@ -8,7 +8,6 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
        "sum25.group03.payment_service",
        "sum25.group03.common"
 })
-@SpringBootApplication
 @ConfigurationPropertiesScan
 public class PaymentServiceApplication {
 

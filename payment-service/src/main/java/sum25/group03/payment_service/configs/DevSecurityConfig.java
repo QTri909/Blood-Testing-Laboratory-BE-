@@ -11,7 +11,7 @@ import org.springframework.security.web.SecurityFilterChain;
  * - Cho phép tất cả request (không còn 401)
  * - Chỉ dùng cho môi trường dev / test
  */
-@Configuration
+//@Configuration
 public class DevSecurityConfig {
 
     @Bean
