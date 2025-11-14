@@ -1,5 +1,7 @@
 package sum25.group03.iamservice.service.Interface;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import sum25.group03.iamservice.dto.request.RoleCreateRequest;
 import sum25.group03.iamservice.dto.response.RoleResponse;
 
@@ -10,5 +12,5 @@ public interface RoleService {
     RoleResponse updateRolePermissions(Long roleId, List<Long> privilegeIds);
     void cascadeRolePermissionChanges(Long roleId);
     void deleteRoleIfUnused(Long roleId);
-    List<RoleResponse> getAllRoles();
+    Page<RoleResponse> getAllRoles(Pageable pageable);
 }
