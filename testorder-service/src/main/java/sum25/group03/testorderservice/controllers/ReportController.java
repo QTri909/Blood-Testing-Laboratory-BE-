@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
 import sum25.group03.testorderservice.services.interfaces.ReportService;
 
 @RestController
@@ -13,19 +14,27 @@ public class ReportController {
 
     private final ReportService reportService;
 
-    //  PDF Export
+    //  Export PDF
     @GetMapping("/test-orders/pdf/{testOrderId}")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void exportPdf(@PathVariable Long testOrderId,
-                          HttpServletResponse response) throws Exception {
-        reportService.exportPdf(testOrderId, response);
+    public ApiResponse<String> exportPdf(@PathVariable Long testOrderId,
+                                         HttpServletResponse response) {
+        try {
+            reportService.exportPdf(testOrderId, response);
+            return ApiResponse.ok("PDF exported successfully", null);
+        } catch (Exception e) {
+            return ApiResponse.internalServerError("Failed to export PDF: " + e.getMessage(), "/api/reports/test-orders/pdf/" + testOrderId);
+        }
     }
 
-    //  Excel Export
+    //  Export Excel
     @GetMapping("/test-orders/excel/{patientId}")
-    @ResponseStatus(HttpStatus.CREATED)
-    public void exportExcel(@PathVariable Long patientId,
-                            HttpServletResponse response) throws Exception {
-        reportService.exportExcel(patientId, response);
+    public ApiResponse<String> exportExcel(@PathVariable Long patientId,
+                                           HttpServletResponse response) {
+        try {
+            reportService.exportExcel(patientId, response);
+            return ApiResponse.ok("Excel exported successfully", null);
+        } catch (Exception e) {
+            return ApiResponse.internalServerError("Failed to export Excel: " + e.getMessage(), "/api/reports/test-orders/excel/" + patientId);
+        }
     }
 }
