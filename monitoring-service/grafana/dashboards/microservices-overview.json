@@ -1,0 +1,140 @@
+{
+  "title": "Microservices Overview Dashboard",
+  "editable": true,
+  "refresh": "5s",
+  "panels": [
+
+    {
+      "type": "stat",
+      "title": "Total Requests per Second",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count[1m]))"
+        }
+      ]
+    },
+
+    {
+      "type": "stat",
+      "title": "Total Error Rate (4xx + 5xx)",
+      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{status=~\"4..|5..\"}[1m]))"
+        }
+      ]
+    },
+
+    {
+      "type": "graph",
+      "title": "Requests per Second (RPS) by Service",
+      "gridPos": { "x": 0, "y": 4, "w": 16, "h": 7 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count[1m])) by (application)",
+          "legendFormat": "{{application}}"
+        }
+      ]
+    },
+
+    {
+      "type": "graph",
+      "title": "Error Rate per Service (4xx/5xx)",
+      "gridPos": { "x": 0, "y": 11, "w": 16, "h": 7 },
+      "targets": [
+        {
+          "expr": "sum(rate(http_server_requests_seconds_count{status=~\"4..|5..\"}[2m])) by (application)",
+          "legendFormat": "{{application}}"
+        }
+      ]
+    },
+
+    {
+      "type": "heatmap",
+      "title": "HTTP Latency Heatmap",
+      "gridPos": { "x": 0, "y": 18, "w": 16, "h": 9 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, application))",
+          "legendFormat": "Latency p95 - {{application}}"
+        }
+      ]
+    },
+
+    {
+      "type": "graph",
+      "title": "Latency p95 by Service",
+      "gridPos": { "x": 0, "y": 27, "w": 16, "h": 7 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[1m])) by (le, application))",
+          "legendFormat": "{{application}}"
+        }
+      ]
+    },
+
+    {
+      "type": "graph",
+      "title": "JVM Memory Usage (Heap)",
+      "gridPos": { "x": 0, "y": 34, "w": 16, "h": 7 },
+      "targets": [
+        {
+          "expr": "sum(jvm_memory_used_bytes{area=\"heap\"}) by (application)",
+          "legendFormat": "{{application}}"
+        }
+      ]
+    },
+
+    {
+      "type": "graph",
+      "title": "JVM Memory Usage (Non-Heap)",
+      "gridPos": { "x": 0, "y": 41, "w": 16, "h": 7 },
+      "targets": [
+        {
+          "expr": "sum(jvm_memory_used_bytes{area=\"nonheap\"}) by (application)",
+          "legendFormat": "{{application}}"
+        }
+      ]
+    },
+
+    {
+      "type": "graph",
+      "title": "GC Activity",
+      "gridPos": { "x": 0, "y": 48, "w": 16, "h": 7 },
+      "targets": [
+        {
+          "expr": "sum(rate(jvm_gc_pause_seconds_count[5m])) by (application)",
+          "legendFormat": "{{application}}"
+        }
+      ]
+    },
+
+    {
+      "type": "graph",
+      "title": "CPU Usage (per Service)",
+      "gridPos": { "x": 0, "y": 55, "w": 16, "h": 7 },
+      "targets": [
+        {
+          "expr": "sum(rate(process_cpu_seconds_total[1m])) by (application)",
+          "legendFormat": "{{application}}"
+        }
+      ]
+    },
+
+    {
+      "type": "graph",
+      "title": "Kafka Consumer Lag by Group",
+      "gridPos": { "x": 0, "y": 62, "w": 16, "h": 7 },
+      "targets": [
+        {
+          "expr": "kafka_consumergroup_lag",
+          "legendFormat": "Group: {{consumergroup}} Topic: {{topic}} Partition: {{partition}}"
+        }
+      ]
+    }
+
+  ],
+  "schemaVersion": 36,
+  "version": 1
+}
