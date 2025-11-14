@@ -111,6 +111,15 @@ public class UserController {
                 .build();
     }
 
+    @PreAuthorize("hasAuthority('USER_VIEW')")
+    @GetMapping("/identity/{identityNumber}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<UserResponse> getUserByIdentityNumber(@PathVariable String identityNumber) {
+        UserResponse response = userService.getUserByIdentityNumber(identityNumber);
+        return ApiResponse.data(response)
+                .message("User retrieved successfully")
+                .build();
+    }
 
     @PreAuthorize("hasAuthority('USER_VIEW')")
     @GetMapping("/pending")

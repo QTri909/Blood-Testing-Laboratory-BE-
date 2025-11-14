@@ -8,7 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entities.Parameter;
+import sum25.group03.testorderservice.entities.TestOrder;
 import sum25.group03.testorderservice.entities.TestResult;
+import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.enums.TestResultStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.TestResultMapper;
@@ -61,8 +63,20 @@ public class TestResultServiceImpl implements TestResultService {
     // Huy
     @Override
     public TestResultResponseDTO createTestResult(TestResultRequestDTO requestDTO) {
+        // search for the existing test order:
+        Long testOrderID = requestDTO.getTestOrderId();
+
+        TestOrder testOrder = testOrderRepository.findById(testOrderID)
+                .orElseThrow(() -> new EntityNotFoundException("Test order not found"));
+
         TestResult testResult = testResultMapper.toEntity(requestDTO);
         TestResult savedResult = testResultRepository.save(testResult);
+
+        if (testOrder.getStatus() == TestOrderStatus.EMPTY) {
+            testOrder.setStatus(TestOrderStatus.UNPUBLISHED);
+            testOrderRepository.save(testOrder);
+        }
+
         return testResultMapper.toResponseDto(savedResult);
     }
 

@@ -22,5 +22,6 @@ public interface UserService {
     Map<String, List<String>> getRolesAndPrivilegesByEmail(String email);
 
     UserResponse getUserById(Long id);
+    UserResponse getUserByIdentityNumber(String identityNumber);
     String approvePendingUser(Long id);
 }
