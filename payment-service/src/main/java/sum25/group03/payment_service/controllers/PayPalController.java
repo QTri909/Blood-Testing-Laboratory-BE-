@@ -45,11 +45,11 @@ public class PayPalController {
         log.info("PayPal RETURN callback received: token={}, payerId={}", token, payerId);
 
         try {
-            // 1️⃣ Capture payment and update DB
+            // 1. capture payment and update DB
             String result = payPalService.capturePayment(token);
             paymentTransactionService.captureAndUpdateStatus(token);
 
-            // 2️⃣ Parse the PayPal response JSON
+            // 2. parse the PayPal response JSON
             JsonObject json = JsonParser.parseString(result).getAsJsonObject();
 
             String status = json.has("status") ? json.get("status").getAsString() : "UNKNOWN";
@@ -63,7 +63,7 @@ public class PayPalController {
                 }
             }
 
-            // 3️⃣ Build redirect URL for frontend
+            // 3. build redirect URL for frontend
             String redirectUrl = String.format(
                     "%s/payment/result?status=%s&order_code=%s&transaction_id=%s",
                     frontEndUrl,
