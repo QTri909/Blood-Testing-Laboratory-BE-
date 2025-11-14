@@ -43,10 +43,13 @@ grpc:
     port: 9001
 
 aws:
+#  region: ap-southeast-1
+#  access-key-id: ${AWS_ACCESS_KEY_ID}
+#  secret-key-secret: ${AWS_SECRET_ACCESS_KEY}
   region: ap-southeast-1
-  access-key-id: ${AWS_ACCESS_KEY_ID}
-  secret-key-secret: ${AWS_SECRET_ACCESS_KEY}
-
+  access-key-id: AKIA3RDIYFHPZTTDJPN3
+  secret-key-secret: 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
+#  AWS_ACCESS_KEY_ID=AKIA3RDIYFHPZTTDJPN3;AWS_SECRET_ACCESS_KEY=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
 audit:
   cloudwatch:
     log-group: Instrument-service
