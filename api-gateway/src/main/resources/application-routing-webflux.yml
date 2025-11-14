@@ -56,10 +56,9 @@ spring:
             - id: testorder-service
               uri: http://localhost:8085
               predicates:
-                - Path=/api/v1/test-orders/**,/api/reports/**       # everything under test-orders
+                - Path=/api/v1/test-orders/**       # everything under test-orders
               filters:
-                - RewritePath=/api/v1/test-orders/(?<segment>(\\d+|parameters|test-result.*)), /api/v1/${segment}
-                - RewritePath=/api/reports/(?<segment>.*), /api/reports/${segment}   # thêm filter cho reports
+                - RewritePath=/api/v1/test-orders/(?<segment>(\\d+|parameters|test-result|comments||parameters|reports|config.*)), /api/v1/${segment}
 
             # for warehouse service
             - id: warehouse-service
