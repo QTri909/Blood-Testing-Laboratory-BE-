@@ -17,6 +17,7 @@ public interface PaymentRequestMapper {
     @Mapping(target = "paymentProvider", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(source = "standardCurrency", target = "currency")
     PaymentRequest toEntity(PaymentRequestRequest request);
 
     @Mapping(target = "id", ignore = true)
@@ -24,5 +25,6 @@ public interface PaymentRequestMapper {
     @Mapping(target = "paymentProvider", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(source = "standardCurrency", target = "currency")
     void updateEntity(PaymentRequestRequest request, @MappingTarget PaymentRequest entity);
 }

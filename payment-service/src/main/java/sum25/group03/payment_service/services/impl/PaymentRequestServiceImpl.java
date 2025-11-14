@@ -14,6 +14,7 @@ import sum25.group03.payment_service.repositories.PaymentRequestRepository;
 import sum25.group03.payment_service.repositories.PaymentTransactionRepository;
 import sum25.group03.payment_service.services.interfaces.PaymentRequestService;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,14 +37,15 @@ public class PaymentRequestServiceImpl implements PaymentRequestService {
         entity.setStatus(PaymentRequestStatus.PENDING);
         PaymentRequest saved = paymentRequestRepository.save(entity);
         return paymentRequestMapper.toResponse(saved);
-
     }
 
     @Override
     public PaymentRequestResponse getByOrderCode(String orderCode) {
-        PaymentRequest entity = paymentRequestRepository.findByOrderCode(orderCode)
+        List<PaymentRequest> requests = paymentRequestRepository.findAllByOrderCode(orderCode);
+        PaymentRequest latest = requests.stream()
+                .max(Comparator.comparing(PaymentRequest::getCreatedAt))
                 .orElse(null);
-        return entity != null ? paymentRequestMapper.toResponse(entity) : null;
+        return latest != null ? paymentRequestMapper.toResponse(latest) : null;
     }
 
     @Override
@@ -56,20 +58,21 @@ public class PaymentRequestServiceImpl implements PaymentRequestService {
 
     @Override
     public void updateStatus(String orderCode, String status) {
-        PaymentRequest entity = paymentRequestRepository.findByOrderCode(orderCode)
+        List<PaymentRequest> requests = paymentRequestRepository.findAllByOrderCode(orderCode);
+        PaymentRequest latest = requests.stream()
+                .max(Comparator.comparing(PaymentRequest::getCreatedAt))
                 .orElse(null);
-        if (entity != null) {
-            entity.setStatus(PaymentRequestStatus.valueOf(status));
-            paymentRequestRepository.save(entity);
+        if (latest != null) {
+            latest.setStatus(PaymentRequestStatus.valueOf(status));
+            paymentRequestRepository.save(latest);
         }
     }
 
     @Override
     public void deletePendingPayment(String orderCode) {
-        PaymentRequest entity = paymentRequestRepository.findByOrderCode(orderCode)
-                .orElse(null);
-        if (entity != null && entity.getStatus() == PaymentRequestStatus.PENDING) {
-            paymentRequestRepository.delete(entity);
-        }
+        List<PaymentRequest> requests = paymentRequestRepository.findAllByOrderCode(orderCode);
+        requests.stream()
+                .filter(r -> r.getStatus() == PaymentRequestStatus.PENDING)
+                .forEach(paymentRequestRepository::delete);
     }
 }
