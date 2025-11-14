@@ -84,7 +84,7 @@ CREATE TABLE test_order (
                             run_by BIGINT,
                             instrument_id BIGINT,
                             status VARCHAR(255) CHECK (status IN (
-                                                                  'UNASSIGNED','PENDING','ONGOING','WAITING','CANCELED','COMPLETED','REVIEWED','AI_REVIEWED', 'WAITING_PAYMENT'
+                                                                  'EMPTY','UNASSIGNED','PENDING','ONGOING','WAITING','CANCELED','COMPLETED','REVIEWED','AI_REVIEWED', 'WAITING_PAYMENT'
                                 ))
 );
 
