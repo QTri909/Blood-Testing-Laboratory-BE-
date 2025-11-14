@@ -11,7 +11,7 @@ import sum25.group03.testorderservice.dtos.request.SyncedConfigurationDTO;
 import sum25.group03.testorderservice.services.impl.SyncedConfigurationServiceImpl;
 
 @RestController
-@RequestMapping("/api/config")
+@RequestMapping("/api/v1/config")
 @RequiredArgsConstructor
 public class SyncedConfigurationController {
 
