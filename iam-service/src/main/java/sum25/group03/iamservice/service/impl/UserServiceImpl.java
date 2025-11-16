@@ -162,18 +162,12 @@ public class UserServiceImpl implements UserService {
         if (request.getGender() != null) user.setGender(request.getGender());
         if (request.getIdentityNumber() != null) user.setIdentityNumber(request.getIdentityNumber());
 
-        if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()){
-
-            userRoleRepository.deleteByUserId(user.getId());
-
-
+        if (request.getRoleIds() != null) {
+            user.getUserRoles().clear();
             List<Role> roles = roleRepository.findAllById(request.getRoleIds());
-            List<UserRole> userRoles = roles.stream()
-                    .map(role -> new UserRole(null, user, role))
-                    .collect(Collectors.toList());
-
-            userRoleRepository.saveAll(userRoles);
-            user.setUserRoles(new HashSet<>(userRoles));
+            for (Role role : roles) {
+                user.getUserRoles().add(new UserRole(null, user, role));
+            }
         }
 
         userRepository.save(user);
@@ -300,6 +294,11 @@ public class UserServiceImpl implements UserService {
                         .gender(user.getGender())
                         .dateOfBirth(user.getDateOfBirth())
                         .identityNumber(user.getIdentityNumber())
+                        .roles(
+                                user.getUserRoles().stream()
+                                        .map(ur -> ur.getRole().getRoleCode())
+                                        .collect(Collectors.toSet())
+                        )
                         .build())
                 .collect(Collectors.toList());
 
@@ -421,8 +420,13 @@ public class UserServiceImpl implements UserService {
 
         createUser(request);
 
-        pending.setApproved(true);
-        pendingUserRepository.save(pending);
+        List<PendingUser> all = pendingUserRepository.findByEmail(pending.getEmail());
+
+        for (PendingUser p : all) {
+            p.setApproved(true);
+        }
+
+        pendingUserRepository.saveAll(all);
 
         // Ghi nhật ký duyệt user
         auditLogService.record(
@@ -437,6 +441,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public List<PendingUser> getPendingUsers() {
+        return pendingUserRepository.findByApprovedFalse();
+    }
+
+
     public Page<UserResponse> searchFilteredUsers(UserFilterSearchingRequest request) {
         var spec = UserSpecification.buildFromRequest(request);
         var pageable = PageRequest.of(Math.max(0, request.getPage()), Math.max(1, request.getSize()));
@@ -463,6 +472,7 @@ public class UserServiceImpl implements UserService {
         resp.setRoles(roles);
         return resp;
     }
+
 
 
 }
