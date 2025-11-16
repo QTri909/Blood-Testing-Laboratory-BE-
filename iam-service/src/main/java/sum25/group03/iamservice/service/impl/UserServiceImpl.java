@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.common.response.events.UserCreatedEvent;
-import sum25.group03.iamservice.dto.request.PatientFilterSearchingRequest;
+import sum25.group03.iamservice.dto.request.UserFilterSearchingRequest;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.dto.request.UserUpdateRequest;
 import sum25.group03.iamservice.dto.response.UserResponse;
@@ -27,7 +27,7 @@ import sum25.group03.iamservice.service.Interface.AuditLogService;
 import sum25.group03.iamservice.service.Interface.CognitoService;
 import sum25.group03.iamservice.service.Interface.UserService;
 import sum25.group03.iamservice.service.KafkaProducerService;
-import sum25.group03.iamservice.specification.PatientSpecification;
+import sum25.group03.iamservice.specification.UserSpecification;
 
 import java.util.*;
 
@@ -437,8 +437,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserResponse> searchPatients(PatientFilterSearchingRequest request) {
-        var spec = PatientSpecification.buildFromRequest(request);
+    public Page<UserResponse> searchFilteredUsers(UserFilterSearchingRequest request) {
+        var spec = UserSpecification.buildFromRequest(request);
         var pageable = PageRequest.of(Math.max(0, request.getPage()), Math.max(1, request.getSize()));
         Page<User> users = userRepository.findAll(spec, pageable);
 

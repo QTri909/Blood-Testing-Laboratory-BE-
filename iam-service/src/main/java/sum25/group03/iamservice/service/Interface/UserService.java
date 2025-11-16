@@ -3,7 +3,7 @@ package sum25.group03.iamservice.service.Interface;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import sum25.group03.iamservice.dto.request.PatientFilterSearchingRequest;
+import sum25.group03.iamservice.dto.request.UserFilterSearchingRequest;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.dto.request.UserUpdateRequest;
 import sum25.group03.iamservice.dto.response.UserResponse;
@@ -26,5 +26,5 @@ public interface UserService {
     UserResponse getUserByIdentityNumber(String identityNumber);
     String approvePendingUser(Long id);
 
-    Page<UserResponse> searchPatients(PatientFilterSearchingRequest request);
+    Page<UserResponse> searchFilteredUsers(UserFilterSearchingRequest request);
 }
