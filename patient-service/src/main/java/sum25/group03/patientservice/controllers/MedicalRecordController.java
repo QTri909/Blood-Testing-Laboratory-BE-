@@ -127,4 +127,14 @@ public class MedicalRecordController {
         return ApiResponse.ok(medicalRecordService.getByFilteredMedicalRecord(request, viewerId));
     }
 
+    @PostMapping("/assignable-records")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Page<MedicalRecordResponse>> getAssignableMedicalRecord(
+            @Valid @RequestBody FilteredMedicalRecordRequest request,
+            @RequestHeader("X-User-Id") Long viewerId
+    ) {
+        // assignable = [belongs to a specific patient && status = (PUBLISHED, EMPTY)] or [not assigned to any patient && status = EMPTY]
+        return ApiResponse.ok(medicalRecordService.getByAssignableMedicalRecord(request, viewerId));
+    }
+
 }

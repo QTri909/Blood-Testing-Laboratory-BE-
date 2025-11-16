@@ -13,6 +13,8 @@ import java.util.Set;
 @NoArgsConstructor
 @Builder
 public class FilteredMedicalRecordRequest {
+
+    private Long patientId;
     private Set<MedicalRecordStatus> statusList;
 
     private Integer page = 0;

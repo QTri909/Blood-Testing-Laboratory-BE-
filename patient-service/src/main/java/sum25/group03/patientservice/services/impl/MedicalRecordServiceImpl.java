@@ -301,9 +301,6 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         if (newStatus == null)
             throw new IllegalArgumentException("New status must not be null!");
 
-        // logs the update action
-        actionLogService.logAction(updaterId, ActionTypeFeatures.UPDATE_PATIENT_MEDICAL_RECORD_STATUS, recordId);
-
         // query for the old record
         MedicalRecordEntity entity = medicalRecordRepository.findById(recordId)
                 .orElseThrow(() -> new MedicalRecordNotFound("Medical record with id " + recordId + " not found!"));
@@ -313,8 +310,13 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
         if (newStatus == MedicalRecordStatus.PUBLISHED && oldStatus != MedicalRecordStatus.EMPTY)
             throw new IllegalStateException("Medical record status is already published!");
+        if (newStatus == MedicalRecordStatus.PUBLISHED && entity.getPatientId() == null)
+            throw new IllegalStateException("Cannot publish status because medical record is not assigned to any patient!");
         if (newStatus == MedicalRecordStatus.COMPLETED && oldStatus != MedicalRecordStatus.PUBLISHED)
             throw new IllegalStateException("Only published medical records can be completed!");
+
+        // logs the update action
+        actionLogService.logAction(updaterId, ActionTypeFeatures.UPDATE_PATIENT_MEDICAL_RECORD_STATUS, recordId);
 
         AuditEntryDocument auditEntryStatusChange = AuditEntryDocument.builder()
                 .entityId(recordId)
@@ -338,6 +340,15 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         Specification<MedicalRecordEntity> spec = MedicalRecordSpecification.buildFromRequest(request);
         Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
 
+        Page<MedicalRecordEntity> entitiesPage = medicalRecordRepository.findAll(spec, pageable);
+        return medicalRecordMapper.toMedicalRecordResponsePage(entitiesPage);
+    }
+
+    @Override
+    public Page<MedicalRecordResponse> getByAssignableMedicalRecord(FilteredMedicalRecordRequest request, Long viewerId) {
+
+        Specification<MedicalRecordEntity> spec = MedicalRecordSpecification.buildAssignableFromRequest(request);
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<MedicalRecordEntity> entitiesPage = medicalRecordRepository.findAll(spec, pageable);
         return medicalRecordMapper.toMedicalRecordResponsePage(entitiesPage);
     }
