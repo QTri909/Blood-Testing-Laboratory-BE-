@@ -143,7 +143,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasAuthority('USER_VIEW')")
-    @GetMapping("/patients/search")
+    @PostMapping("/patients/search")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<Page<UserResponse>> searchPatients(@RequestBody PatientFilterSearchingRequest request) {
         Page<UserResponse> result = userService.searchPatients(request);
