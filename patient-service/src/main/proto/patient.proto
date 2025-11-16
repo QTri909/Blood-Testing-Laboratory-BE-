@@ -7,13 +7,19 @@ option java_outer_classname = "PatientProto";
 service PatientService {
   rpc GetPatientById (GetPatientByIdRequest) returns (GetPatientByIdResponse);
   rpc autoCreateMedicalRecord (AutoCreateMedicalRecordRequest) returns (CreatedMedicalRecordResponse);
+  rpc assignPatientIdToMedicalRecord (AssignPatientIdToMedicalRecordRequest) returns (EmptyMsg);
 }
 
-message EmptyMsg {
+message EmptyMsg {}
+
+message AssignPatientIdToMedicalRecordRequest {
+  int64 medicalRecordId = 1;
+  int64 patientId = 2;
 }
 
 message AutoCreateMedicalRecordRequest {
   int64 createdBy = 1;
+  int64 patientId = 2;
 }
 
 message GetPatientByIdRequest {

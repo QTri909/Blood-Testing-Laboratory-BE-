@@ -63,12 +63,18 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Transactional
-    public Long autoCreateNewMedicalRecordByTestOrder(Long creatorId) {
+    public Long autoCreateNewMedicalRecordByTestOrder(Long creatorId, Long patientId) {
         // map request to entity
-        MedicalRecordEntity entity = MedicalRecordEntity.builder()
+        MedicalRecordEntity.MedicalRecordEntityBuilder entityBuilder = MedicalRecordEntity.builder()
                 .status(MedicalRecordStatus.FILLED)
-                .createdBy(creatorId)
-                .build();
+                .createdBy(creatorId);
+
+        if (patientId != null) {
+            entityBuilder.patientId(patientId);
+        }
+
+        MedicalRecordEntity entity = entityBuilder.build();
+
         // save to database
         medicalRecordRepository.save(entity);
         // save to mongoDb
@@ -82,6 +88,22 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         );
 
         return entity.getRecordId();
+    }
+
+    @Override
+    @Transactional
+    public void assignPatientIdToMedicalRecord(Long medicalRecordId, Long patientId) {
+        if (medicalRecordId == null || patientId == null) {
+            throw new IllegalArgumentException("Medical record ID and patient ID must not be null");
+        }
+
+        // fetch medical record entity:
+        MedicalRecordEntity entity = medicalRecordRepository.findById(medicalRecordId)
+                .orElseThrow(() -> new MedicalRecordNotFound("Medical record with id " + medicalRecordId + " not found!"));
+
+        // assign patientId
+        entity.setPatientId(patientId);
+        medicalRecordRepository.save(entity);
     }
 
     @Transactional

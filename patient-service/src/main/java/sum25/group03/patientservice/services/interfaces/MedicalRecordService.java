@@ -14,8 +14,9 @@ import java.util.UUID;
 
 
 public interface MedicalRecordService {
+    void assignPatientIdToMedicalRecord(Long medicalRecordId, Long patientId);
     MedicalRecordResponse registerMedicalRecord(Long creatorId);
-    Long autoCreateNewMedicalRecordByTestOrder(Long creatorId);
+    Long autoCreateNewMedicalRecordByTestOrder(Long creatorId, Long patientId);
     UpdatedAssignedDoctor updateAssignedDoctor(UpdatedAssignedDoctor updateInfo);
     MedicalRecordResponse getById(Long recordId, Long viewerId);
     MedicalRecordResponse getByCode(UUID recordCode);

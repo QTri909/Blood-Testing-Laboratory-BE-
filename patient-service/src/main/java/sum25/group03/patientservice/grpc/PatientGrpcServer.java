@@ -42,12 +42,29 @@ public class PatientGrpcServer extends PatientServiceGrpc.PatientServiceImplBase
             AutoCreateMedicalRecordRequest request,
             StreamObserver<CreatedMedicalRecordResponse> createdRecordInfo
     ) {
-        Long createdMedicalRecordId = medicalRecordService.autoCreateNewMedicalRecordByTestOrder(request.getCreatedBy());
+        Long createdMedicalRecordId = medicalRecordService.autoCreateNewMedicalRecordByTestOrder(
+                request.getCreatedBy(),
+                request.getPatientId()
+        );
         CreatedMedicalRecordResponse response = CreatedMedicalRecordResponse.newBuilder()
                 .setRecordId(createdMedicalRecordId)
                 .build();
 
         createdRecordInfo.onNext(response);
         createdRecordInfo.onCompleted();
+    }
+
+    @Override
+    public void assignPatientIdToMedicalRecord(
+            AssignPatientIdToMedicalRecordRequest request,
+            StreamObserver<EmptyMsg> responseObserver
+    ) {
+        medicalRecordService.assignPatientIdToMedicalRecord(
+                request.getMedicalRecordId(),
+                request.getPatientId()
+        );
+
+        responseObserver.onNext(EmptyMsg.newBuilder().build());
+        responseObserver.onCompleted();
     }
 }

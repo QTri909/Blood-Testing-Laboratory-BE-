@@ -132,18 +132,27 @@ public class TestOrderServiceImpl implements TestOrderService {
     @Override
     public TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO, Long createdBy) {
 
-        Long medicalRecordId = requestDTO.getExternalMedicalRecordId();
-        if (medicalRecordId == null) {
-            // create a new medical record via patient service through grpc and set the id
-            Long createdMedicalRecordId = patientGrpcClient.createdMedicalRecordResponse(createdBy).getRecordId();
-            requestDTO.setExternalMedicalRecordId(createdMedicalRecordId);
-        }
+        if (requestDTO.getPatientInfo() == null)
+            throw new IllegalArgumentException("Patient info must be provided in the test order request");
 
         // get patientInfo from requestDTO
         UserCreatedEvent patientInfo = requestDTO.getPatientInfo();
+        Long patientId = Long.parseLong(patientInfo.getId());
+
+
+        Long medicalRecordId = requestDTO.getExternalMedicalRecordId();
+        if (medicalRecordId == null) {
+            // create a new medical record via patient service through grpc and set the id
+            Long createdMedicalRecordId = patientGrpcClient.createdMedicalRecordResponse(createdBy, patientId)
+                    .getRecordId();
+            requestDTO.setExternalMedicalRecordId(createdMedicalRecordId);
+        }
 
         // map requestDTO to entity
         TestOrder testOrder = testOrderMapper.toEntity(requestDTO);
+        if (patientInfo.getId() != null) {
+            testOrder.setPatientId(patientId);
+        }
         testOrder.setCreatedBy(createdBy);
 
         // save to database
