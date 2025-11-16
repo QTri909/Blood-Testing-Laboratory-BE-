@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
+import sum25.group03.iamservice.dto.request.PatientFilterSearchingRequest;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.dto.request.UserUpdateRequest;
 import sum25.group03.iamservice.dto.response.UserResponse;
@@ -138,6 +139,17 @@ public class UserController {
         String message = userService.approvePendingUser(id);
         return ApiResponse.data(message)
                 .message("Pending user approved successfully")
+                .build();
+    }
+
+    @PreAuthorize("hasAuthority('USER_VIEW')")
+    @GetMapping("/patients/search")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Page<UserResponse>> searchPatients(@RequestBody PatientFilterSearchingRequest request) {
+        Page<UserResponse> result = userService.searchPatients(request);
+
+        return ApiResponse.data(result)
+                .message("Patients search completed successfully")
                 .build();
     }
 }
