@@ -10,6 +10,7 @@ import sum25.group03.patientservice.entities.UserSnapshotEntity;
 import sum25.group03.patientservice.feign.dtos.FeignUserDTO;
 import sum25.group03.patientservice.feign.dtos.UserFilterUpdate;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
@@ -31,6 +32,11 @@ public interface UserSnapshotMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "externalUserId", source = "kafkaUserDTO.id")
     UserSnapshotEntity fromUserKafkaDTO(KafkaUserDTO kafkaUserDTO);
+
+    default LocalDate map(List<Integer> value) {
+        if (value == null || value.size() < 3) return null;
+        return LocalDate.of(value.get(0), value.get(1), value.get(2));
+    }
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromKafkaDTO(KafkaUserDTO kafkaUserDTO, @MappingTarget UserSnapshotEntity userSnapshotEntity);

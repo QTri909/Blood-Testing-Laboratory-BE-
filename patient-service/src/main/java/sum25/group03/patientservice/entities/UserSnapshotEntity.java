@@ -7,6 +7,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -31,6 +32,11 @@ public class UserSnapshotEntity implements Serializable {
 
     @Column(name = "email", unique = true)
     private String email;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+    
+    private String gender;
 
     @Column(name = "phone_number", unique = true)
     private String phoneNumber;
