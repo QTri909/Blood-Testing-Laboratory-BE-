@@ -23,6 +23,7 @@ import sum25.group03.patientservice.exception.medical.record.MedicalRecordNotFou
 import sum25.group03.patientservice.exception.user.snapshot.UserNotFoundException;
 import sum25.group03.patientservice.grpc.TestOrderGrpcClient;
 import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderFullFieldDTO;
+import sum25.group03.patientservice.helpers.MedicalRecordHelper;
 import sum25.group03.patientservice.mapper.MedicalRecordMapper;
 import sum25.group03.patientservice.repositories.postgres.MedicalRecordRepository;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
@@ -305,15 +306,13 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         MedicalRecordEntity entity = medicalRecordRepository.findById(recordId)
                 .orElseThrow(() -> new MedicalRecordNotFound("Medical record with id " + recordId + " not found!"));
 
-        // store old status for auditing
         MedicalRecordStatus oldStatus = entity.getStatus();
 
-        if (newStatus == MedicalRecordStatus.PUBLISHED && oldStatus != MedicalRecordStatus.EMPTY)
-            throw new IllegalStateException("Medical record status is already published!");
-        if (newStatus == MedicalRecordStatus.PUBLISHED && entity.getPatientId() == null)
-            throw new IllegalStateException("Cannot publish status because medical record is not assigned to any patient!");
-        if (newStatus == MedicalRecordStatus.COMPLETED && oldStatus != MedicalRecordStatus.PUBLISHED)
-            throw new IllegalStateException("Only published medical records can be completed!");
+        // validate status transition
+        MedicalRecordHelper.validateAssignMedicalRecord(newStatus, oldStatus);
+        MedicalRecordHelper.validateFillMedicalRecord(newStatus, oldStatus);
+        MedicalRecordHelper.validatePublishMedicalRecord(newStatus, oldStatus);
+        MedicalRecordHelper.validateCompleteMedicalRecord(newStatus, oldStatus);
 
         // logs the update action
         actionLogService.logAction(updaterId, ActionTypeFeatures.UPDATE_PATIENT_MEDICAL_RECORD_STATUS, recordId);
