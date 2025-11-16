@@ -63,6 +63,28 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     }
 
     @Transactional
+    public Long autoCreateNewMedicalRecordByTestOrder(Long creatorId) {
+        // map request to entity
+        MedicalRecordEntity entity = MedicalRecordEntity.builder()
+                .status(MedicalRecordStatus.FILLED)
+                .createdBy(creatorId)
+                .build();
+        // save to database
+        medicalRecordRepository.save(entity);
+        // save to mongoDb
+        medicalRecordMongoService.createNewMedicalRecordInMongoDb(entity);
+
+        // logs:
+        actionLogService.logAction(
+                creatorId,
+                ActionTypeFeatures.CREATE_NEW_PATIENT_MEDICAL_RECORD,
+                entity.getRecordId()
+        );
+
+        return entity.getRecordId();
+    }
+
+    @Transactional
     public MedicalRecordResponse registerMedicalRecord(Long creatorId) {
 
         // map request to entity

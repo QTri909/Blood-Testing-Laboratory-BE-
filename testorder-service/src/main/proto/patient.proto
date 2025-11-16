@@ -6,6 +6,14 @@ option java_outer_classname = "PatientProto";
 
 service PatientService {
   rpc GetPatientById (GetPatientByIdRequest) returns (GetPatientByIdResponse);
+  rpc autoCreateMedicalRecord (AutoCreateMedicalRecordRequest) returns (CreatedMedicalRecordResponse);
+}
+
+message EmptyMsg {
+}
+
+message AutoCreateMedicalRecordRequest {
+  int64 createdBy = 1;
 }
 
 message GetPatientByIdRequest {
@@ -19,4 +27,8 @@ message GetPatientByIdResponse {
   string dateOfBirth = 4;
   string phoneNumber = 5;
   string email = 6;
+}
+
+message CreatedMedicalRecordResponse {
+  int64 recordId = 1;
 }

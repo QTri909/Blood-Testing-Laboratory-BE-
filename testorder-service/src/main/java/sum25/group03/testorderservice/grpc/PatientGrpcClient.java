@@ -26,4 +26,15 @@ public class PatientGrpcClient {
             throw new RuntimeException("Failed to fetch patient info from gRPC", e);
         }
     }
+
+    public CreatedMedicalRecordResponse createdMedicalRecordResponse(Long createdBy) {
+        try {
+            AutoCreateMedicalRecordRequest request = AutoCreateMedicalRecordRequest.newBuilder()
+                    .setCreatedBy(createdBy).build();
+
+            return patientStub.autoCreateMedicalRecord(request);
+        } catch (StatusRuntimeException e) {
+            throw new RuntimeException("Failed to create medical record via gRPC", e);
+        }
+    }
 }

@@ -18,6 +18,7 @@ import sum25.group03.testorderservice.entities.TestResult;
 import sum25.group03.testorderservice.enums.ActionTypeFeatures;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
+import sum25.group03.testorderservice.grpc.PatientGrpcClient;
 import sum25.group03.testorderservice.helpers.ParameterHelpers;
 import sum25.group03.testorderservice.mapper.TestOrderMapper;
 import sum25.group03.testorderservice.mapper.TestResultMapper;
@@ -38,6 +39,8 @@ public class TestOrderServiceImpl implements TestOrderService {
 
     private final TestOrderRepository testOrderRepository;
     private final TestOrderKafkaProducer testOrderKafkaProducer;
+
+    private final PatientGrpcClient patientGrpcClient;
 
     private final TestOrderRepository repository;
     private final TestOrderMapper testOrderMapper;
@@ -128,6 +131,13 @@ public class TestOrderServiceImpl implements TestOrderService {
     // ------- HUY -----------
     @Override
     public TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO, Long createdBy) {
+
+        Long medicalRecordId = requestDTO.getExternalMedicalRecordId();
+        if (medicalRecordId == null) {
+            // create a new medical record via patient service through grpc and set the id
+            Long createdMedicalRecordId = patientGrpcClient.createdMedicalRecordResponse(createdBy).getRecordId();
+            requestDTO.setExternalMedicalRecordId(createdMedicalRecordId);
+        }
 
         // get patientInfo from requestDTO
         UserCreatedEvent patientInfo = requestDTO.getPatientInfo();

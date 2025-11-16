@@ -5,12 +5,14 @@ import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
+import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 
 @GrpcService
 @RequiredArgsConstructor
 public class PatientGrpcServer extends PatientServiceGrpc.PatientServiceImplBase {
 
     private final UserSnapshotRepository userSnapshotRepository;
+    private final MedicalRecordService medicalRecordService;
 
     @Override
     public void getPatientById(GetPatientByIdRequest request,
@@ -33,5 +35,19 @@ public class PatientGrpcServer extends PatientServiceGrpc.PatientServiceImplBase
 
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void autoCreateMedicalRecord(
+            AutoCreateMedicalRecordRequest request,
+            StreamObserver<CreatedMedicalRecordResponse> createdRecordInfo
+    ) {
+        Long createdMedicalRecordId = medicalRecordService.autoCreateNewMedicalRecordByTestOrder(request.getCreatedBy());
+        CreatedMedicalRecordResponse response = CreatedMedicalRecordResponse.newBuilder()
+                .setRecordId(createdMedicalRecordId)
+                .build();
+
+        createdRecordInfo.onNext(response);
+        createdRecordInfo.onCompleted();
     }
 }
