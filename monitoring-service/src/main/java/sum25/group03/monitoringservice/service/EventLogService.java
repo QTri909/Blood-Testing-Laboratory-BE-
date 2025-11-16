@@ -1,8 +1,10 @@
 package sum25.group03.monitoringservice.service;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import sum25.group03.monitoringservice.dto.EventLogDTO;
 import sum25.group03.monitoringservice.model.EventLog;
 import sum25.group03.monitoringservice.repository.EventLogRepository;
 
@@ -20,18 +22,34 @@ public class EventLogService {
     }
     // send mock
 
-    public EventLog addEventLog(EventLog eventLog){
-        eventLog.setCreatedAt(Instant.now());
+    public EventLog addEventLog(EventLog eventLog) {
+
         return eventLogRepo.save(eventLog);
     }
-    public Page<EventLog> getAllEventLogs(int page, int size){
-        return eventLogRepo.findAllByOrderByCreatedAtDesc(PageRequest.of(page, size));
+
+    public Page<EventLogDTO> getAllEventLogs(int page, int size) {
+        Page<EventLog> eventLogs = eventLogRepo.findAllByOrderByTimestampDesc(PageRequest.of(page, size));
+        List<EventLogDTO> dtoList = eventLogs.getContent().stream()
+                .map(this::convertToDTO)
+                .toList();
+        return new PageImpl<>(dtoList, eventLogs.getPageable(), eventLogs.getTotalElements());
     }
+
     public Optional<EventLog> getEventLog(String id) {
         return eventLogRepo.findById(id);
     }
+
     public List<EventLog> searchEventLogs(String action, String message, String operator) {
         return eventLogRepo.searchEventLogs(action, message, operator);
     }
 
+    private EventLogDTO convertToDTO(EventLog eventLog) {
+        return EventLogDTO.builder()
+                .id(eventLog.getId())
+                .action(eventLog.getAction())
+                .message(eventLog.getMessage())
+                .sourceService(eventLog.getSourceService())
+                .timestamp(eventLog.getTimestamp())
+                .build();
+    }
 }

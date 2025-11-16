@@ -14,7 +14,7 @@ import sum25.group03.testorderservice.services.interfaces.CommentService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/comments")
+@RequestMapping("/api/v1/comments")
 @RequiredArgsConstructor
 @Slf4j
 public class CommentController {

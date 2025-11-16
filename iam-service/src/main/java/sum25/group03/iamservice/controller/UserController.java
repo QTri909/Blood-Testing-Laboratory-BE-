@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
+import sum25.group03.iamservice.dto.request.UserFilterSearchingRequest;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.dto.request.UserUpdateRequest;
 import sum25.group03.iamservice.dto.response.UserResponse;
@@ -111,6 +112,15 @@ public class UserController {
                 .build();
     }
 
+    @PreAuthorize("hasAuthority('USER_VIEW')")
+    @GetMapping("/identity/{identityNumber}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<UserResponse> getUserByIdentityNumber(@PathVariable String identityNumber) {
+        UserResponse response = userService.getUserByIdentityNumber(identityNumber);
+        return ApiResponse.data(response)
+                .message("User retrieved successfully")
+                .build();
+    }
 
     @PreAuthorize("hasAuthority('USER_VIEW')")
     @GetMapping("/pending")
@@ -129,6 +139,17 @@ public class UserController {
         String message = userService.approvePendingUser(id);
         return ApiResponse.data(message)
                 .message("Pending user approved successfully")
+                .build();
+    }
+
+    @PreAuthorize("hasAuthority('USER_VIEW')")
+    @PostMapping("/advanced-search")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Page<UserResponse>> advanceSearchingUsers(@RequestBody UserFilterSearchingRequest request) {
+        Page<UserResponse> result = userService.searchFilteredUsers(request);
+
+        return ApiResponse.data(result)
+                .message("Patients search completed successfully")
                 .build();
     }
 }

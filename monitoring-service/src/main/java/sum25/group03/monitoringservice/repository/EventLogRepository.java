@@ -8,6 +8,6 @@ import sum25.group03.monitoringservice.model.EventLog;
 import sum25.group03.monitoringservice.repository.custom.EventLogRepositoryCustom;
 
 public interface EventLogRepository extends MongoRepository<EventLog,String>, EventLogRepositoryCustom {
-    Page<EventLog> findAllByOrderByCreatedAtDesc(Pageable pageable);
+    Page<EventLog> findAllByOrderByTimestampDesc(Pageable pageable);
 
 }

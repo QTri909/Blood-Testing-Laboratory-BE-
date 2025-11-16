@@ -97,11 +97,12 @@ public class TestResultListener {
             if (saved != null) {
                 eventLogService.addEventLog(
                         sum25.group03.monitoringservice.model.EventLog.builder()
-                                .topic("raw-test-results")
+
                                 .action("BACKUP_SUCCESS")
                                 .message("Stored raw result " + saved.getTestOrderId())
-                                .operator(Map.of("operator", "system"))
-                                .createdAt(Instant.now())
+                                .operator("System")
+
+                                .timestamp(Instant.now())
                                 .build()
                 );
 

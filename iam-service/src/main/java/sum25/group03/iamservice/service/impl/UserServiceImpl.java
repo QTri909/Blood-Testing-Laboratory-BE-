@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.common.response.events.UserCreatedEvent;
+import sum25.group03.iamservice.dto.request.UserFilterSearchingRequest;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.dto.request.UserUpdateRequest;
 import sum25.group03.iamservice.dto.response.UserResponse;
@@ -25,6 +27,7 @@ import sum25.group03.iamservice.service.Interface.AuditLogService;
 import sum25.group03.iamservice.service.Interface.CognitoService;
 import sum25.group03.iamservice.service.Interface.UserService;
 import sum25.group03.iamservice.service.KafkaProducerService;
+import sum25.group03.iamservice.specification.UserSpecification;
 
 import java.util.*;
 
@@ -375,6 +378,26 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 
+    @Override
+    public UserResponse getUserByIdentityNumber(String identityNumber) {
+        User user = userRepository.findByIdentityNumber(identityNumber)
+                .orElseThrow(() -> new RuntimeException("User not found with identityNumber: " + identityNumber));
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getAddress())
+                .gender(user.getGender())
+                .dateOfBirth(user.getDateOfBirth())
+                .identityNumber(user.getIdentityNumber())
+                .roles(user.getUserRoles().stream()
+                        .map(ur -> ur.getRole().getRoleName())
+                        .collect(Collectors.toSet()))
+                .build();
+    }
+
     @Transactional
     public String approvePendingUser(Long id) {
         PendingUser pending = pendingUserRepository.findById(id)
@@ -421,5 +444,35 @@ public class UserServiceImpl implements UserService {
     public List<PendingUser> getPendingUsers() {
         return pendingUserRepository.findByApprovedFalse();
     }
+
+
+    public Page<UserResponse> searchFilteredUsers(UserFilterSearchingRequest request) {
+        var spec = UserSpecification.buildFromRequest(request);
+        var pageable = PageRequest.of(Math.max(0, request.getPage()), Math.max(1, request.getSize()));
+        Page<User> users = userRepository.findAll(spec, pageable);
+
+        // Map User -> UserResponse. Adjust mapping according to your UserResponse fields.
+        return users.map(this::toUserResponse);
+    }
+
+    private UserResponse toUserResponse(User u) {
+        UserResponse resp = new UserResponse();
+        // adjust field names to match entities and response DTO
+        resp.setId(u.getId());
+        resp.setFullName(u.getFullName());
+        resp.setIdentityNumber(u.getIdentityNumber());
+        resp.setEmail(u.getEmail());
+        resp.setPhoneNumber(u.getPhoneNumber());
+        resp.setGender(u.getGender());
+        resp.setDateOfBirth(u.getDateOfBirth());
+        resp.setAddress(u.getAddress());
+        Set<String> roles = u.getUserRoles().stream()
+                .map(ur -> ur.getRole().getRoleCode())
+                .collect(Collectors.toSet());
+        resp.setRoles(roles);
+        return resp;
+    }
+
+
 
 }
