@@ -116,7 +116,7 @@ public class UserController {
     @GetMapping("/pending")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<List<PendingUser>> getAllPendingUsers() {
-        List<PendingUser> list = pendingUserRepository.findByApprovedFalse();
+        List<PendingUser> list = userService.getPendingUsers();
         return ApiResponse.data(list)
                 .message("Pending users retrieved successfully")
                 .build();

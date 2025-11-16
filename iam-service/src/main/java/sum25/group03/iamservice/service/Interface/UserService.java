@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import sum25.group03.iamservice.dto.request.UserCreateRequest;
 import sum25.group03.iamservice.dto.request.UserUpdateRequest;
 import sum25.group03.iamservice.dto.response.UserResponse;
+import sum25.group03.iamservice.entity.PendingUser;
 
 import java.util.List;
 import java.util.Map;
@@ -23,4 +24,5 @@ public interface UserService {
 
     UserResponse getUserById(Long id);
     String approvePendingUser(Long id);
+    List<PendingUser> getPendingUsers();
 }
