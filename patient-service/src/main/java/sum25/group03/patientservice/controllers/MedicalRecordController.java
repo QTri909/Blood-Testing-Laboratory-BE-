@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
+import sum25.group03.patientservice.dtos.request.FilteredMedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
@@ -115,6 +116,15 @@ public class MedicalRecordController {
             @RequestHeader("X-User-Id") Long viewerId
     ) {
         return ApiResponse.ok(medicalRecordService.getAllTestOrdersByMedicalRecordId(recordId, viewerId));
+    }
+
+    @PostMapping("/advanced-search")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Page<MedicalRecordResponse>> getByMedicalRecordId(
+            @Valid @RequestBody FilteredMedicalRecordRequest request,
+            @RequestHeader("X-User-Id") Long viewerId
+    ) {
+        return ApiResponse.ok(medicalRecordService.getByFilteredMedicalRecord(request, viewerId));
     }
 
 }

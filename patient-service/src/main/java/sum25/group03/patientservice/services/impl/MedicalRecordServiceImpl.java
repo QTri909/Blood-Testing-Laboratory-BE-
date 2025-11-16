@@ -6,10 +6,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import sum25.group03.patientservice.documents.AuditEntryDocument;
+import sum25.group03.patientservice.dtos.request.FilteredMedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
 import sum25.group03.patientservice.dtos.response.MedicalRecordResponse;
@@ -26,6 +28,7 @@ import sum25.group03.patientservice.repositories.postgres.MedicalRecordRepositor
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 import sum25.group03.patientservice.services.interfaces.UserSnapshotService;
+import sum25.group03.patientservice.specification.MedicalRecordSpecification;
 
 
 import java.util.List;
@@ -327,5 +330,15 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         entity.setUpdatedBy(updaterId);
         medicalRecordRepository.save(entity);
         return medicalRecordMapper.toMedicalRecordResponse(entity);
+    }
+
+    @Override
+    public Page<MedicalRecordResponse> getByFilteredMedicalRecord(FilteredMedicalRecordRequest request, Long viewerId) {
+
+        Specification<MedicalRecordEntity> spec = MedicalRecordSpecification.buildFromRequest(request);
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<MedicalRecordEntity> entitiesPage = medicalRecordRepository.findAll(spec, pageable);
+        return medicalRecordMapper.toMedicalRecordResponsePage(entitiesPage);
     }
 }
