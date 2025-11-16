@@ -35,6 +35,9 @@ public class UserSnapshotEntity implements Serializable {
     @Column(name = "phone_number", unique = true)
     private String phoneNumber;
 
+    @Column(name = "identity_number", unique = true)
+    private String identityNumber;
+
     @Column(name = "external_user_id", nullable = false)
     private Long externalUserId;
 

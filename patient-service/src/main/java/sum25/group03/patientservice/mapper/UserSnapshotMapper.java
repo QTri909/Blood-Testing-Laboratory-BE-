@@ -38,7 +38,15 @@ public interface UserSnapshotMapper {
     // convert from 'Page< UserSnapshotEntity >' to 'Page< UserSnapshotResponse >'
     default Page<UserSnapshotResponse> toResponsePage(Page<UserSnapshotEntity> entities) {
         List<UserSnapshotEntity> content = entities.getContent();
+
+        System.out.println("Content: ");
+        content.forEach(System.out::println);
+
         List<UserSnapshotResponse> responseList = this.toResponseList(content);
+
+        System.out.println("Mapped Responses: ");
+        responseList.forEach(System.out::println);
+
         return new PageImpl<>(responseList, entities.getPageable(), entities.getTotalElements());
     }
 }

@@ -10,6 +10,7 @@ CREATE TABLE user_snapshot (
    full_name varchar(255) NOT NULL,
    email VARCHAR(255) NOT NULL,
    phone_number VARCHAR(20),
+   identity_number VARCHAR(50),
    external_user_id BIGINT NOT NULL UNIQUE,
    last_updated TIMESTAMP(6) NOT NULL,
    roles JSONB NOT NULL DEFAULT '[]'
