@@ -5,7 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
-import sum25.group03.warehouseservice.event.InstrumentModeChangedEvent;
+
+import sum25.group03.common.response.events.InstrumentModeChangedEvent;
 import sum25.group03.warehouseservice.entity.Instrument;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;

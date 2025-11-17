@@ -22,7 +22,7 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://root:root123@localhost:27017/monitoring_db?authSource=admin
+      uri: mongodb://localhost:27017/monitoring_db
 
   retry:
     enabled: true

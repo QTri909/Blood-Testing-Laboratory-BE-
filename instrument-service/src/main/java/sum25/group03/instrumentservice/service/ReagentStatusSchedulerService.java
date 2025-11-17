@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.response.events.UpdateExpiryReagent;
 import sum25.group03.instrumentservice.common.InstalledReagentStatus;
-import sum25.group03.instrumentservice.event.ReagentInstalledEvent;
-import sum25.group03.instrumentservice.event.UpdateExpiryReagent;
+
 import sum25.group03.instrumentservice.model.InstalledReagent;
 import sum25.group03.instrumentservice.repository.InstalledReagentRepository;
 

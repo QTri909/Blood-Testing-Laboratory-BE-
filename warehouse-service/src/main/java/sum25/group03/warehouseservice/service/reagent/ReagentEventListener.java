@@ -5,12 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.response.events.ReagentInstalledEvent;
+import sum25.group03.common.response.events.UpdateExpiryReagent;
 import sum25.group03.warehouseservice.entity.ReagentInventory;
 import sum25.group03.warehouseservice.entity.enums.ReagentInventoryStatus;
 import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
-import sum25.group03.warehouseservice.event.ReagentInstalledEvent;
 import sum25.group03.warehouseservice.entity.Reagents;
-import sum25.group03.warehouseservice.event.UpdateExpiryReagent;
 import sum25.group03.warehouseservice.repository.ReagentInventoryRepo;
 import sum25.group03.warehouseservice.repository.ReagentRepo;
 
