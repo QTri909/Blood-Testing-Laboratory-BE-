@@ -15,7 +15,7 @@ services:
     networks:
       - payment-network
 
-  redis-payment-service:
+  redis-payment-service:-
     image: redis:7-alpine
     container_name: redis_payment_cache
     ports:
