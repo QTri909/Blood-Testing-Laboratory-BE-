@@ -39,34 +39,39 @@ public class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
-    public void createConfig(ConfigReq config) {
+    public ConfigRes createConfig(ConfigReq config) {
         Configuration configuration = configMapper.toEntity(config);
-        configRepo.save(configuration);
+        Configuration savedConfig = configRepo.save(configuration);
         log.info("Created new specific configuration with id: {}", configuration.getConfigurationId());
+        return configMapper.toDto(savedConfig);
     }
 
     @Override
-    public void updateConfig(UpdateConfigReq config) {
+    public ConfigRes updateConfig(UpdateConfigReq config) {
         Configuration existingConfig = configRepo.findById(config.getConfigurationId())
                 .orElseThrow(() -> new NotFoundException("Configuration not found with id: " + config.getConfigurationId()));
         configMapper.updateEntityFromDto(config,existingConfig);
-        configRepo.save(existingConfig);
+        Configuration updateConfig = configRepo.save(existingConfig);
         log.info("Updated configuration with id: {}", existingConfig.getConfigurationId());
 
-        // Send update event to Kafka
-        ConfigEvent configEvent = ConfigEvent.builder()
-                .communicationProtocol(existingConfig.getCommunicationProtocol())
-                .dataOutputFormat(existingConfig.getDataOutputFormat())
-                .mixingSpeed(existingConfig.getMixingSpeed())
-                .supportedTests(existingConfig.getSupportedTests())
-                .firmwareVersion(existingConfig.getFirmwareVersion())
-                .build();
-        UpdateConfigEvent updateConfigEvent = UpdateConfigEvent.builder()
-                .instrumentId(existingConfig.getInstrument().getInstrumentId())
-                .configEvent(configEvent)
-                .build();
-        kafkaUpdateTemplate.send("config-updates", updateConfigEvent);
-        log.info("Sent update event for configuration id: {} with instrumentId {}", existingConfig.getConfigurationId(), existingConfig.getInstrument().getInstrumentId());
+        if(updateConfig.getInstrument() != null) {
+            // Send update event to Kafka
+            ConfigEvent configEvent = ConfigEvent.builder()
+                    .communicationProtocol(existingConfig.getCommunicationProtocol())
+                    .dataOutputFormat(existingConfig.getDataOutputFormat())
+                    .mixingSpeed(existingConfig.getMixingSpeed())
+                    .supportedTests(existingConfig.getSupportedTests())
+                    .firmwareVersion(existingConfig.getFirmwareVersion())
+                    .build();
+            UpdateConfigEvent updateConfigEvent = UpdateConfigEvent.builder()
+                    .instrumentId(updateConfig.getInstrument().getInstrumentId())
+                    .configEvent(configEvent)
+                    .build();
+            kafkaUpdateTemplate.send("config-updates", updateConfigEvent);
+            log.info("Sent update event for configuration id: {} with instrumentId {}", existingConfig.getConfigurationId(), existingConfig.getInstrument().getInstrumentId());
+        }
+        return configMapper.toDto(updateConfig);
+
     }
 
     @Override
@@ -78,11 +83,13 @@ public class ConfigServiceImpl implements ConfigService {
         log.info("Configuration with id {} has been deactivated.", id);
 
         // Send delete event to Kafka
-        DeleteConfigEvent deleteConfigEvent = DeleteConfigEvent.builder()
-                .instrumentId(config.getInstrument().getInstrumentId())
-                .build();
-        kafkaDeleteTemplate.send("config-deletes", deleteConfigEvent);
-        log.info("Sent delete event for configuration id: {} with instrumentId {}", config.getConfigurationId(), config.getInstrument().getInstrumentId());
+        if(config.getInstrument()!=null){
+            DeleteConfigEvent deleteConfigEvent = DeleteConfigEvent.builder()
+                    .instrumentId(config.getInstrument().getInstrumentId())
+                    .build();
+            kafkaDeleteTemplate.send("config-deletes", deleteConfigEvent);
+            log.info("Sent delete event for configuration id: {} with instrumentId {}", config.getConfigurationId(), config.getInstrument().getInstrumentId());
+        }
     }
 
 
@@ -93,6 +100,11 @@ public class ConfigServiceImpl implements ConfigService {
                 .map(c -> ConfigRes.builder()
                 .configurationId(c.getConfigurationId())
                 .configurationName(c.getConfigurationName())
+                .supportedTests(c.getSupportedTests())
+                .dataOutputFormat(c.getDataOutputFormat())
+                .communicationProtocol(c.getCommunicationProtocol())
+                .mixingSpeed(c.getMixingSpeed())
+                .firmwareVersion(c.getFirmwareVersion())
                 .build())
                 .toList();
     }
@@ -108,9 +120,9 @@ public class ConfigServiceImpl implements ConfigService {
     }
 
     @Override
-    public PageRes<ConfigRes> searchConfigs(String keyword, String id, int page, int size) {
+    public PageRes<ConfigRes> searchConfigs(String keyword, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Configuration> configs = configRepo.search(keyword, id, pageable);
+        Page<Configuration> configs = configRepo.search(keyword, pageable);
         List<ConfigRes> content = configMapper.toDto(configs.getContent());
 
         return PageRes.<ConfigRes>builder()

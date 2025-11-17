@@ -37,6 +37,64 @@ services:
     networks:
       - app-network
 
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:latest
+    container_name: kafka-exporter
+    depends_on:
+      - kafka
+    command:
+      - '--kafka.server=kafka:29092'
+      - '--web.listen-address=:9308'
+    ports:
+      - "9308:9308"
+    networks:
+      - app-network
+    restart: always
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring-service/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring-service/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+      - ./monitoring-service/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring-service/grafana/dashboards:/etc/grafana/provisioning/dashboards
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: alert-manager
+    volumes:
+      - ./monitoring-service/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+    ports:
+      - "9093:9093"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+
+
   #------------------------------ Postgres (testorder:5434) ---------------------#
   postgres-testorder-service:
     image: postgres:15.5
@@ -147,3 +205,4 @@ volumes:
   patient-elasticsearch-data:
   payment_volume:
   redis_payment_volume:
+  grafana-storage:

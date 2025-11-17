@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -39,15 +40,16 @@ public class ReagentHistorySupply {
     @Column(name = "unit_of_measurement", nullable = false)
     private String unitOfMeasurement;
 
-    @Column(name = "received_date", nullable = true)
-    private LocalDate receivedDate;
+
+//    @Column(name = "received_date", nullable = false)
+//    private LocalDate receivedDate;
 
     @Column(name = "received_by", nullable = true)
     private int receivedBy;
 
-    @Column(name = "status", nullable = false)
-    @Enumerated(EnumType.STRING)
-    private SupplyStatus status;
+//    @Column(name = "status", nullable = false)
+//    @Enumerated(EnumType.STRING)
+//    private SupplyStatus status;
 
     @Column(name = "notes", nullable = true)
     private String notes;
@@ -56,8 +58,8 @@ public class ReagentHistorySupply {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "purchase_order_number", nullable = false)
-    private String purchaseOrderNumber;
+    @Column(name = "batch_code", nullable = false)
+    private UUID batchCode;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reagent_id", nullable = false)

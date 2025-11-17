@@ -15,7 +15,6 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TestOrderRequestDTO {
-    @NotNull(message = "External medical record ID cannot be null")
     private Long externalMedicalRecordId;
 
     private Long runBy;

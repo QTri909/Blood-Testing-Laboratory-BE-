@@ -32,4 +32,5 @@ public class ReagentHistoryUsageController {
         Page<ReagentRes> result = usageService.filterReagentsWithUsage(name, pageable);
         return ResponseEntity.ok(result);
     }
+
 }

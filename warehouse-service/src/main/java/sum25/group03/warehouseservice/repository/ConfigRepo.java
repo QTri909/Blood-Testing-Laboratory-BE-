@@ -39,13 +39,17 @@ public interface ConfigRepo extends JpaRepository<Configuration, Long> {
     SELECT * FROM configurations c
     WHERE
       c.active = true AND
-      (:keyword IS NULL OR LOWER(c.configuration_name) LIKE LOWER(CONCAT('%', CAST(:keyword AS TEXT), '%')))
-      AND (:id IS NULL OR CAST(c.configuration_id AS VARCHAR) LIKE CONCAT('%', CAST(:id AS TEXT), '%'))
+      (
+        :keyword IS NULL OR :keyword = '' OR
+        LOWER(c.configuration_name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR
+        CAST(c.configuration_id AS VARCHAR) LIKE CONCAT('%', :keyword, '%')
+      )
+    ORDER BY c.created_at DESC, c.configuration_id DESC
 """,
             nativeQuery = true)
-    Page<Configuration> search(@Param("keyword") String keyword,
-                                     @Param("id") String id,
-                                     Pageable pageable);
+    Page<Configuration> search(@Param("keyword") String keyword, Pageable pageable);
+
+
 
 
 

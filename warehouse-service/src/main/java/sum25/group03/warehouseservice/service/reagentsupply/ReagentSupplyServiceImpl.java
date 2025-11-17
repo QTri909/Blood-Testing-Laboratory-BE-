@@ -24,8 +24,10 @@ import sum25.group03.warehouseservice.repository.ReagentRepo;
 import sum25.group03.warehouseservice.repository.VendorRepo;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,15 +42,15 @@ public class ReagentSupplyServiceImpl implements  ReagentSupplyService {
 
     @Override
     public PageRes<HistorySupplyRes> getAll(int page, int size) {
-        Page<String> purchaseOrders = historySupplyRepo.findDistinctPurchaseOrderNumbers(PageRequest.of(page, size));
+        Page<UUID> batchCodes = historySupplyRepo.findDistinctBatchCode(PageRequest.of(page, size));
         List<ReagentHistorySupply> historyList =
-                historySupplyRepo.findAllByPurchaseOrderNumberInFetch(purchaseOrders.getContent());
+                historySupplyRepo.findAllByBatchCodeInFetch(batchCodes.getContent());
         //Page<ReagentHistorySupply> historySupplies = historySupplyRepo.findAllWithVendorAndReagent((PageRequest.of(page, size)));
         //List<ReagentHistorySupply> historyList = historySupplies.getContent();
-        Map<String, List<ReagentHistorySupply>> groupedByPO =
-                historyList.stream().collect(Collectors.groupingBy(ReagentHistorySupply::getPurchaseOrderNumber));
+        Map<UUID, List<ReagentHistorySupply>> groupedByBatchCodes =
+                historyList.stream().collect(Collectors.groupingBy(ReagentHistorySupply::getBatchCode));
 
-        List<HistorySupplyRes> historySupplyResList = groupedByPO.entrySet().stream()
+        List<HistorySupplyRes> historySupplyResList = groupedByBatchCodes.entrySet().stream()
                 .sorted((e1, e2) -> {
                     LocalDateTime latest1 = e1.getValue().stream()
                             .map(ReagentHistorySupply::getCreatedAt)
@@ -61,7 +63,7 @@ public class ReagentSupplyServiceImpl implements  ReagentSupplyService {
                     return latest2.compareTo(latest1); // DESC
                 })
                 .map(entry -> {
-            String poNumber = entry.getKey();
+            UUID batchCode = entry.getKey();
             List<ReagentHistorySupply> supplies = entry.getValue();
 
             Vendors vendor = supplies.get(0).getVendor();
@@ -80,30 +82,29 @@ public class ReagentSupplyServiceImpl implements  ReagentSupplyService {
                         .quantityReceived(hs.getQuantityReceived())
                         .lotNumber(hs.getLotNumber())
                         .unitOfMeasurement(hs.getUnitOfMeasurement())
-                        .receivedDate(hs.getReceivedDate())
                         .receivedBy(hs.getReceivedBy())
                         .expiryDate(hs.getExpiryDate())
                         .manufactureDate(hs.getManufactureDate())
-                        .status(hs.getStatus())
                         .notes(hs.getNotes())
                         .createdAt(hs.getCreatedAt())
                         .reagentRes(reagentRes)
                         .build();
             }).toList();
 
-            return new HistorySupplyRes(poNumber,vendorRes, supplyResList);
+            return new HistorySupplyRes(batchCode,vendorRes, supplyResList);
         }).toList();
         return PageRes.<HistorySupplyRes>builder()
                 .content(historySupplyResList)
-                .pageNumber(purchaseOrders.getNumber())
-                .pageSize(purchaseOrders.getSize())
-                .totalElements(purchaseOrders.getTotalElements())
-                .totalPages(purchaseOrders.getTotalPages())
+                .pageNumber(batchCodes.getNumber())
+                .pageSize(batchCodes.getSize())
+                .totalElements(batchCodes.getTotalElements())
+                .totalPages(batchCodes.getTotalPages())
                 .build();
     }
 
+    @Transactional
     @Override
-    public void addReagentSupply(ReagentSupplyReq reagentSupplyReq) {
+    public HistorySupplyRes addReagentSupply(ReagentSupplyReq reagentSupplyReq) {
 
         reagentSupplyReq.getSupplyReq().forEach(r -> {
             if (r.getExpiryDate().isBefore(r.getManufactureDate())) {
@@ -122,6 +123,7 @@ public class ReagentSupplyServiceImpl implements  ReagentSupplyService {
         Map<Long, Reagents> reagentMap = reagentRepo.findAllById(reagentIds).stream()
                 .collect(Collectors.toMap(Reagents::getReagentId, r -> r));
 
+        UUID batchCode = UUID.randomUUID();
         List<ReagentHistorySupply> supplies = reagentSupplyReq.getSupplyReq().stream()
                 .map(supplyReq -> {
                     Reagents reagent = reagentMap.get(supplyReq.getReagentId());
@@ -129,13 +131,12 @@ public class ReagentSupplyServiceImpl implements  ReagentSupplyService {
                         throw new NotFoundException("Reagent not found: " + supplyReq.getReagentId());
                     }
                     return ReagentHistorySupply.builder()
-                            .purchaseOrderNumber(reagentSupplyReq.getPurchaseOrderNumber())
+                            .batchCode(batchCode)
                             .lotNumber(supplyReq.getLotNumber())
                             .manufactureDate(supplyReq.getManufactureDate())
                             .expiryDate(supplyReq.getExpiryDate())
                             .quantityReceived(supplyReq.getQuantityReceived())
                             .unitOfMeasurement(supplyReq.getUnitOfMeasurement())
-                            .status(SupplyStatus.PENDING)
                             .notes(supplyReq.getNotes()!=null? supplyReq.getNotes() : "")
                             .reagent(reagent)
                             .vendor(vendor)
@@ -143,27 +144,65 @@ public class ReagentSupplyServiceImpl implements  ReagentSupplyService {
                 })
                 .toList();
 
-        historySupplyRepo.saveAll(supplies);
-        log.info("Added {} reagent supplies for PO: {}", supplies.size(), reagentSupplyReq.getPurchaseOrderNumber());
+        List<ReagentHistorySupply> saveSupplies = historySupplyRepo.saveAll(supplies);
+
+        List<ReagentInventory> newInventories = saveSupplies.stream().map(s -> {
+            ReagentInventory inventory = new ReagentInventory();
+            inventory.setReagent(s.getReagent());
+            inventory.setLotNumber(s.getLotNumber());
+            inventory.setQuantityAvailable(s.getQuantityReceived());
+            inventory.setExpiryDate(s.getExpiryDate());
+            inventory.setStatus(ReagentInventoryStatus.AVAILABLE);
+            return inventory;
+        }).toList();
+        reagentInventoryRepo.saveAll(newInventories);
+        log.info("Added {} reagent supplies for batchCode: {}", supplies.size(), batchCode);
+        VendorRes vendorRes = vendorMapper.toDto(vendor);
+        List<SupplyRes> supplyResList = saveSupplies.stream().map(hs -> {
+            Reagents r = hs.getReagent();
+            ReagentRes reagentRes = ReagentRes.builder()
+                    .reagentId(r.getReagentId())
+                    .reagentName(r.getReagentName())
+                    .catalogNumber(r.getCatalogNumber())
+                    .casNumber(r.getCasNumber())
+                    .build();
+
+            return SupplyRes.builder()
+                    .quantityReceived(hs.getQuantityReceived())
+                    .lotNumber(hs.getLotNumber())
+                    .unitOfMeasurement(hs.getUnitOfMeasurement())
+                    .receivedBy(hs.getReceivedBy())
+                    .expiryDate(hs.getExpiryDate())
+                    .manufactureDate(hs.getManufactureDate())
+                    .notes(hs.getNotes()!=null? hs.getNotes() : "")
+                    .createdAt(hs.getCreatedAt())
+                    .reagentRes(reagentRes)
+                    .build();
+        }).toList();
+        return HistorySupplyRes.builder()
+                .batchCode(batchCode)
+                .vendor(vendorRes)
+                .supply(supplyResList)
+                .build();
     }
 
-    @Transactional
-    @Override
-    public void updateReagentSupplyStatus(UpdateStatusPOReq req) {
-        List<ReagentHistorySupply> supplies = historySupplyRepo.findAllByPurchaseOrderNumber(req.getPurchaseOrderNumber());
-        supplies.forEach(s -> s.setStatus(req.getSupplyStatus()));
-        if (req.getSupplyStatus() == SupplyStatus.RECEIVED) {
-            List<ReagentInventory> newInventories = supplies.stream().map(s -> {
-                ReagentInventory inventory = new ReagentInventory();
-                inventory.setReagent(s.getReagent());
-                inventory.setLotNumber(s.getLotNumber());
-                inventory.setQuantityAvailable(s.getQuantityReceived());
-                inventory.setExpiryDate(s.getExpiryDate());
-                inventory.setStatus(ReagentInventoryStatus.AVAILABLE);
-                return inventory;
-            }).toList();
-            reagentInventoryRepo.saveAll(newInventories);
-        }
-        historySupplyRepo.saveAll(supplies);
-    }
+//    @Transactional
+//    @Override
+//    public void updateReagentSupplyStatus(UpdateStatusPOReq req) {
+//        List<ReagentHistorySupply> supplies = historySupplyRepo.findAllByPurchaseOrderNumber(req.getPurchaseOrderNumber());
+//        supplies.forEach(s -> s.setStatus(req.getSupplyStatus()));
+//        if (req.getSupplyStatus() == SupplyStatus.RECEIVED) {
+//            List<ReagentInventory> newInventories = supplies.stream().map(s -> {
+//                ReagentInventory inventory = new ReagentInventory();
+//                inventory.setReagent(s.getReagent());
+//                inventory.setLotNumber(s.getLotNumber());
+//                inventory.setQuantityAvailable(s.getQuantityReceived());
+//                inventory.setExpiryDate(s.getExpiryDate());
+//                inventory.setStatus(ReagentInventoryStatus.AVAILABLE);
+//                return inventory;
+//            }).toList();
+//            reagentInventoryRepo.saveAll(newInventories);
+//        }
+//        historySupplyRepo.saveAll(supplies);
+//    }
 }

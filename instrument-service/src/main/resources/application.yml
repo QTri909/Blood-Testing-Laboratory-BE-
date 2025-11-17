@@ -28,6 +28,9 @@ management:
     web:
       exposure:
         include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
 logging:
   level:
     web: info
@@ -43,11 +46,14 @@ grpc:
     port: 9001
 
 aws:
-  region: ap-southeast-1
+  region: ap-southeast-2
   access-key-id: ${AWS_ACCESS_KEY_ID}
   secret-key-secret: ${AWS_SECRET_ACCESS_KEY}
+
 
 audit:
   cloudwatch:
     log-group: Instrument-service
     enabled: true
+
+

@@ -6,6 +6,43 @@ option java_outer_classname = "PatientProto";
 
 service PatientService {
   rpc GetPatientById (GetPatientByIdRequest) returns (GetPatientByIdResponse);
+  rpc autoCreateMedicalRecord (AutoCreateMedicalRecordRequest) returns (CreatedMedicalRecordResponse);
+  rpc assignPatientIdToMedicalRecord (AssignPatientIdToMedicalRecordRequest) returns (EmptyMsg);
+  rpc mappingPatientIdAndCreatorIdToTheirName(MappingPatientIdAndCreatorIdToTheirNameRequest) returns (MappingPatientIdAndCreatorIdToTheirNameResponse);
+}
+
+message EmptyMsg {}
+
+//----------------------------------------------------------------
+
+message PatientIdList {
+  repeated int64 patientIds = 1;
+}
+
+message CreatorIdList {
+  repeated int64 creatorIds = 1;
+}
+
+message MappingPatientIdAndCreatorIdToTheirNameRequest {
+  PatientIdList patientIds = 1;
+  CreatorIdList creatorIds = 2;
+}
+
+message MappingPatientIdAndCreatorIdToTheirNameResponse {
+  map<int64, string> patientIdToName = 1;
+  map<int64, string> creatorIdToName = 2;
+}
+
+//----------------------------------------------------------------
+
+message AssignPatientIdToMedicalRecordRequest {
+  int64 medicalRecordId = 1;
+  int64 patientId = 2;
+}
+
+message AutoCreateMedicalRecordRequest {
+  int64 createdBy = 1;
+  int64 patientId = 2;
 }
 
 message GetPatientByIdRequest {
@@ -19,4 +56,8 @@ message GetPatientByIdResponse {
   string dateOfBirth = 4;
   string phoneNumber = 5;
   string email = 6;
+}
+
+message CreatedMedicalRecordResponse {
+  int64 recordId = 1;
 }

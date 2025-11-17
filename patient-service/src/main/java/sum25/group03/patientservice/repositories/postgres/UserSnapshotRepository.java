@@ -27,5 +27,5 @@ public interface UserSnapshotRepository extends JpaRepository<UserSnapshotEntity
     )
     Page<UserSnapshotEntity> findByRolesContaining(@Param("role") String role, Pageable pageable);
 
-    Collection<UserSnapshotEntity> findByExternalUserIdIn(List<Long> patientIds);
+    Collection<UserSnapshotEntity> findByExternalUserIdIn(List<Long> externalUserIds);
 }

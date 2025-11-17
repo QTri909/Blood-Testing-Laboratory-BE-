@@ -18,6 +18,7 @@ import sum25.group03.testorderservice.entities.TestResult;
 import sum25.group03.testorderservice.enums.ActionTypeFeatures;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
+import sum25.group03.testorderservice.grpc.PatientGrpcClient;
 import sum25.group03.testorderservice.helpers.ParameterHelpers;
 import sum25.group03.testorderservice.mapper.TestOrderMapper;
 import sum25.group03.testorderservice.mapper.TestResultMapper;
@@ -28,6 +29,7 @@ import sum25.group03.testorderservice.specification.TestOrderSpecification;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,6 +40,8 @@ public class TestOrderServiceImpl implements TestOrderService {
 
     private final TestOrderRepository testOrderRepository;
     private final TestOrderKafkaProducer testOrderKafkaProducer;
+
+    private final PatientGrpcClient patientGrpcClient;
 
     private final TestOrderRepository repository;
     private final TestOrderMapper testOrderMapper;
@@ -95,7 +99,42 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         Page<TestOrder> orders = repository.findAll(pageable);
 
-        return testOrderMapper.toResponseDtoPage(orders);
+        // get list of all patientId and list of all createdBy from test orders:
+        List<Long> patientIds = orders.stream().map(TestOrder::getPatientId).filter(Objects::nonNull).toList();
+        List<Long> creatorIds = orders.stream().map(TestOrder::getCreatedBy).filter(Objects::nonNull).toList();
+
+        // call grpc to patient service database to get map of patientId and creatorId
+        // -> Map<patientId, patientName> and Map<creatorId, creatorName>
+        GrpcMappingPatientAndCreatorIdResponse mappingResponse = patientGrpcClient.mappingPatientIdAndCreatorIdToTheirName(patientIds, creatorIds);
+
+        // map to Page<TestOrderResponseDTO>
+        Page<TestOrderResponseDTO> result = testOrderMapper.toResponseDtoPage(orders);
+
+        // traverse and set patientName and creatorName for each TestOrderResponseDTO
+        Map<Long, String> patientMap = mappingResponse.getMappingPatientIdToName();
+        Map<Long, String> creatorMap = mappingResponse.getMappingCreatorIdToName();
+
+        for (TestOrderResponseDTO dto : result) {
+            Long patientId = dto.getPatientId();
+            Long creatorId = dto.getCreatedBy();
+
+            // safe patient name
+            dto.setPatientName(
+                    patientId != null && patientMap != null
+                            ? patientMap.getOrDefault(patientId, "Unknown")
+                            : "Unknown"
+            );
+
+
+            // safe creator name
+            dto.setCreatedByName(
+                    creatorId != null && creatorMap != null
+                            ? creatorMap.getOrDefault(creatorId, "Unknown")
+                            : "Unknown"
+            );
+        }
+
+        return result;
     }
 
     @Override
@@ -129,11 +168,27 @@ public class TestOrderServiceImpl implements TestOrderService {
     @Override
     public TestOrderResponseDTO createTestOrder(TestOrderRequestDTO requestDTO, Long createdBy) {
 
+        if (requestDTO.getPatientInfo() == null)
+            throw new IllegalArgumentException("Patient info must be provided in the test order request");
+
         // get patientInfo from requestDTO
         UserCreatedEvent patientInfo = requestDTO.getPatientInfo();
+        Long patientId = Long.parseLong(patientInfo.getId());
+
+
+        Long medicalRecordId = requestDTO.getExternalMedicalRecordId();
+        if (medicalRecordId == null) {
+            // create a new medical record via patient service through grpc and set the id
+            Long createdMedicalRecordId = patientGrpcClient.createdMedicalRecordResponse(createdBy, patientId)
+                    .getRecordId();
+            requestDTO.setExternalMedicalRecordId(createdMedicalRecordId);
+        }
 
         // map requestDTO to entity
         TestOrder testOrder = testOrderMapper.toEntity(requestDTO);
+        if (patientInfo.getId() != null) {
+            testOrder.setPatientId(patientId);
+        }
         testOrder.setCreatedBy(createdBy);
 
         // save to database

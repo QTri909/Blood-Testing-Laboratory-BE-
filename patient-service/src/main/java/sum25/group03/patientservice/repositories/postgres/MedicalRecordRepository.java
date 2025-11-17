@@ -2,8 +2,10 @@ package sum25.group03.patientservice.repositories.postgres;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 import sum25.group03.patientservice.entities.MedicalRecordEntity;
 import sum25.group03.patientservice.enums.MedicalRecordStatus;
@@ -14,7 +16,7 @@ import java.util.UUID;
 
 
 @Repository
-public interface MedicalRecordRepository extends JpaRepository<MedicalRecordEntity, Long> {
+public interface MedicalRecordRepository extends JpaRepository<MedicalRecordEntity, Long>, JpaSpecificationExecutor<MedicalRecordEntity> {
     Optional<MedicalRecordEntity> findByRecordCode(UUID recordCode);
     Page<MedicalRecordEntity> findByPatientId(Long patientId, Pageable pageable);
     Optional<MedicalRecordEntity> findTopByPatientIdOrderByVisitDateDesc(Long patientId);

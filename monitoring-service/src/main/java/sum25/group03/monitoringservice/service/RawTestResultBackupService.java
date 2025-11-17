@@ -59,13 +59,14 @@ public class RawTestResultBackupService {
                 .testOrderId(testOrderId)
                 .instrumentId(instrumentId)
                 .barcode(barcode)
-                .hl7Payload(hl7Message)
+                .hl7Message(hl7Message)
                 .rawData(rawData)
                 .status(status)
                 .receivedAt(Instant.now())
                 .build();
 
         try {
+            log.info("RawTestResulte={}", result);
             RawTestResult saved = repository.save(result);
 //            backupLogs.add("SUCCESS (Kafka): " + testOrderId + " - " + barcode + " at " + result.getReceivedAt());
             return saved;

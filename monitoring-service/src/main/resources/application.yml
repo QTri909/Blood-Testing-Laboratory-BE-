@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8083
 
 spring:
   application:
@@ -22,7 +22,8 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://root:root123@localhost:27017/monitoring_db?authSource=admin
+      uri: mongodb+srv://admin:12345@monitoring.lop4zd8.mongodb.net/monitoring?retryWrites=true&w=majority
+#      uri: mongodb://root:root123@localhost:27017/monitoring_db?authSource=admin
 
   retry:
     enabled: true
@@ -32,20 +33,19 @@ logging:
     root: info
 
 management:
-  server:
-    port: 4000
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus,metrics
-  endpoint:
-    health:
-      show-details: always
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      tags:
+        application: monitoring-service
+      export:
+        enabled: true
+
 
 monitoring:
   kafka:
     topics:
-      - test.order.created
-      - test.result.published
-      - instrument.activated
-      - instrument.deactivated
+      - monitoring-log
