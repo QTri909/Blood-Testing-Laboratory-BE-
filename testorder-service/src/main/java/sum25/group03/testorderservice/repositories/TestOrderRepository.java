@@ -28,6 +28,9 @@ public interface TestOrderRepository extends JpaRepository<TestOrder,Long>, JpaS
     List<TestOrder> findByCreatedBy(Long createdBy);
     List<TestOrder> findAllByExternalMedicalRecordId(Long externalMedicalRecordId, Sort sort);
 
+    // find all by list of ids:
+    List<TestOrder> findByIdInOrderByCreatedAtDesc(List<Long> ids);
+
     Optional<TestOrder> findFirstByBarcodeOrderByCreatedAtDesc(String barcode);
     Optional<TestOrder> findTopByPatientIdOrderByCreatedAtDesc(Long patientId);
     List<TestOrder> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
