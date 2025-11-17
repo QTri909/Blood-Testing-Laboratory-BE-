@@ -8,7 +8,7 @@ import sum25.group03.warehouseservice.audit.model.AuditLog;
 import sum25.group03.warehouseservice.audit.service.AuditLogService;
 import sum25.group03.warehouseservice.entity.Instrument;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
-import sum25.group03.warehouseservice.event.InstrumentEvent;
+import sum25.group03.common.response.events.InstrumentEvent;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.repository.InstrumentRepo;
 import java.time.LocalDate;
@@ -101,7 +101,7 @@ public class InstrumentStatusServiceImpl implements InstrumentStatusService {
                 .instrumentName(instrument.getInstrumentName())
                 .eventType(eventType)
                 .performedBy(username)
-                .status(instrument.getStatus())
+                .status(instrument.getStatus().toString())
                 .timestamp(LocalDate.now())
                 .details(detail)
                 .build();

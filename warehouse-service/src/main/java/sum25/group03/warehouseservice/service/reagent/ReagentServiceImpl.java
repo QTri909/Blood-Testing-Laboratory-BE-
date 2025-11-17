@@ -9,7 +9,7 @@ import sum25.group03.warehouseservice.dto.response.ReagentValidationResponse;
 import sum25.group03.warehouseservice.entity.ReagentInventory;
 import sum25.group03.warehouseservice.entity.Reagents;
 import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
-import sum25.group03.warehouseservice.event.DeleteReagentEvent;
+import sum25.group03.common.response.events.DeleteReagentEvent;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.repository.ReagentInventoryRepo;
 import sum25.group03.warehouseservice.repository.ReagentRepo;

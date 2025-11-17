@@ -1,4 +1,4 @@
-package sum25.group03.warehouseservice.event;
+package sum25.group03.common.response.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
