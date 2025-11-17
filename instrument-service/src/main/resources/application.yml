@@ -28,6 +28,9 @@ management:
     web:
       exposure:
         include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
 logging:
   level:
     web: info
@@ -51,3 +54,5 @@ audit:
   cloudwatch:
     log-group: Instrument-service
     enabled: true
+
+

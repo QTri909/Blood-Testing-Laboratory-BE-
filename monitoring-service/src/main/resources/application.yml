@@ -38,6 +38,8 @@ management:
         include: health,info,prometheus
   prometheus:
     metrics:
+      tags:
+        application: monitoring-service
       export:
         enabled: true
 

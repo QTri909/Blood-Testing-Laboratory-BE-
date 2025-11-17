@@ -75,6 +75,15 @@ grpc:
     keep-alive-timeout: 5s
     max-concurrent-streams: 100
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+
 server:
   port: 8086
 

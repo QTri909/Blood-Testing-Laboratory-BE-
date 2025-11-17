@@ -1,140 +1,139 @@
 {
-  "title": "Microservices Overview Dashboard",
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
   "editable": true,
-  "refresh": "5s",
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
   "panels": [
-
     {
       "type": "stat",
-      "title": "Total Requests per Second",
-      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 4 },
+      "title": "Requests Per Second",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
       "targets": [
         {
-          "expr": "sum(rate(http_server_requests_seconds_count[1m]))"
+          "expr": "sum(rate(http_server_requests_seconds_count{job=~\"$service\"}[1m]))",
+          "legendFormat": "RPS"
         }
       ]
     },
-
     {
       "type": "stat",
-      "title": "Total Error Rate (4xx + 5xx)",
-      "gridPos": { "x": 8, "y": 0, "w": 8, "h": 4 },
+      "title": "Error Rate (%)",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
       "targets": [
         {
-          "expr": "sum(rate(http_server_requests_seconds_count{status=~\"4..|5..\"}[1m]))"
+          "expr": "100 * sum(rate(http_server_requests_seconds_count{job=~\"$service\", status!~\"2..\"}[5m])) / sum(rate(http_server_requests_seconds_count{job=~\"$service\"}[5m]))",
+          "legendFormat": "Errors"
         }
       ]
     },
-
     {
       "type": "graph",
-      "title": "Requests per Second (RPS) by Service",
-      "gridPos": { "x": 0, "y": 4, "w": 16, "h": 7 },
+      "title": "Latency (95th percentile)",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 4 },
       "targets": [
         {
-          "expr": "sum(rate(http_server_requests_seconds_count[1m])) by (application)",
-          "legendFormat": "{{application}}"
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=~\"$service\"}[5m])) by (le))",
+          "legendFormat": "p95"
         }
       ]
     },
-
     {
       "type": "graph",
-      "title": "Error Rate per Service (4xx/5xx)",
-      "gridPos": { "x": 0, "y": 11, "w": 16, "h": 7 },
+      "title": "CPU Usage",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 6 },
       "targets": [
         {
-          "expr": "sum(rate(http_server_requests_seconds_count{status=~\"4..|5..\"}[2m])) by (application)",
-          "legendFormat": "{{application}}"
+          "expr": "sum(rate(process_cpu_seconds_total{job=~\"$service\"}[1m])) by (job)",
+          "legendFormat": "{{job}}"
         }
       ]
     },
-
-    {
-      "type": "heatmap",
-      "title": "HTTP Latency Heatmap",
-      "gridPos": { "x": 0, "y": 18, "w": 16, "h": 9 },
-      "targets": [
-        {
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, application))",
-          "legendFormat": "Latency p95 - {{application}}"
-        }
-      ]
-    },
-
     {
       "type": "graph",
-      "title": "Latency p95 by Service",
-      "gridPos": { "x": 0, "y": 27, "w": 16, "h": 7 },
+      "title": "Memory Usage (JVM)",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 6 },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[1m])) by (le, application))",
-          "legendFormat": "{{application}}"
+          "expr": "sum(jvm_memory_used_bytes{job=~\"$service\", area=\"heap\"}) by (job)",
+          "legendFormat": "{{job}} heap"
         }
       ]
     },
-
     {
       "type": "graph",
-      "title": "JVM Memory Usage (Heap)",
-      "gridPos": { "x": 0, "y": 34, "w": 16, "h": 7 },
+      "title": "HTTP Status Codes",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 10, "w": 12, "h": 6 },
       "targets": [
         {
-          "expr": "sum(jvm_memory_used_bytes{area=\"heap\"}) by (application)",
-          "legendFormat": "{{application}}"
+          "expr": "sum(rate(http_server_requests_seconds_count{job=~\"$service\"}[1m])) by (status)",
+          "legendFormat": "status {{status}}"
         }
       ]
     },
-
     {
       "type": "graph",
-      "title": "JVM Memory Usage (Non-Heap)",
-      "gridPos": { "x": 0, "y": 41, "w": 16, "h": 7 },
+      "title": "JVM Threads",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 10, "w": 12, "h": 6 },
       "targets": [
         {
-          "expr": "sum(jvm_memory_used_bytes{area=\"nonheap\"}) by (application)",
-          "legendFormat": "{{application}}"
+          "expr": "jvm_threads_live_threads{job=~\"$service\"}",
+          "legendFormat": "{{job}}"
         }
       ]
     },
-
     {
       "type": "graph",
-      "title": "GC Activity",
-      "gridPos": { "x": 0, "y": 48, "w": 16, "h": 7 },
+      "title": "Up/Down Status",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 16, "w": 24, "h": 4 },
       "targets": [
         {
-          "expr": "sum(rate(jvm_gc_pause_seconds_count[5m])) by (application)",
-          "legendFormat": "{{application}}"
-        }
-      ]
-    },
-
-    {
-      "type": "graph",
-      "title": "CPU Usage (per Service)",
-      "gridPos": { "x": 0, "y": 55, "w": 16, "h": 7 },
-      "targets": [
-        {
-          "expr": "sum(rate(process_cpu_seconds_total[1m])) by (application)",
-          "legendFormat": "{{application}}"
-        }
-      ]
-    },
-
-    {
-      "type": "graph",
-      "title": "Kafka Consumer Lag by Group",
-      "gridPos": { "x": 0, "y": 62, "w": 16, "h": 7 },
-      "targets": [
-        {
-          "expr": "kafka_consumergroup_lag",
-          "legendFormat": "Group: {{consumergroup}} Topic: {{topic}} Partition: {{partition}}"
+          "expr": "up{job=~\"$service\"}",
+          "legendFormat": "{{job}}"
         }
       ]
     }
-
   ],
   "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["microservice", "overview"],
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(job)",
+        "refresh": 2,
+        "includeAll": true,
+        "multi": true,
+        "sort": 1
+      }
+    ]
+  },
+  "time": { "from": "now-15m", "to": "now" },
+  "timezone": "browser",
+  "title": "Microservice Basic Overview",
   "version": 1
 }
