@@ -5,22 +5,28 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.testorderservice.dtos.request.TestResultBulkedRequestDTO;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entities.Parameter;
 import sum25.group03.testorderservice.entities.TestOrder;
 import sum25.group03.testorderservice.entities.TestResult;
+import sum25.group03.testorderservice.enums.ActionTypeFeatures;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.enums.TestResultStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
 import sum25.group03.testorderservice.mapper.TestResultMapper;
+import sum25.group03.testorderservice.repositories.ParameterRepository;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
 import sum25.group03.testorderservice.repositories.TestResultRepository;
 import sum25.group03.testorderservice.services.interfaces.TestResultService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +37,8 @@ public class TestResultServiceImpl implements TestResultService {
     private final TestResultRepository testResultRepository;
     private final TestResultMapper testResultMapper;
     private final TestOrderRepository testOrderRepository;
+    private final ParameterRepository parameterRepository;
+    private final ActionLogService actionLogService;
 
     // Tai
     @Override
@@ -67,7 +75,7 @@ public class TestResultServiceImpl implements TestResultService {
         Long testOrderID = requestDTO.getTestOrderId();
 
         TestOrder testOrder = testOrderRepository.findById(testOrderID)
-                .orElseThrow(() -> new EntityNotFoundException("Test order not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Test order with id " + testOrderID + " not found"));
 
         TestResult testResult = testResultMapper.toEntity(requestDTO);
         TestResult savedResult = testResultRepository.save(testResult);
@@ -78,6 +86,52 @@ public class TestResultServiceImpl implements TestResultService {
         }
 
         return testResultMapper.toResponseDto(savedResult);
+    }
+
+    @Override
+    @Transactional
+    public List<TestResultResponseDTO> createTestResultByBulk(TestResultBulkedRequestDTO requestDTO, Long creatorId) {
+
+        // search for the existing test order:
+        Long testOrderID = requestDTO.getTestOrderId();
+        TestOrder testOrder = testOrderRepository.findById(testOrderID)
+                .orElseThrow(() -> new EntityNotFoundException("Test order with id " + testOrderID + " not found"));
+
+        // get a proper list of parameters from the parameters is list:
+        Set<Long> setIds = requestDTO.getParamsId();
+        List<Long> listIds = setIds.stream().toList();
+        List<Parameter> parameters = parameterRepository.findByIdIn(listIds);
+
+        // map parameter with its paramId;
+        Map<Long, Parameter> paramMap = parameters.stream().map(
+                param -> Map.entry(param.getId(), param)
+        ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        List<TestResult> newTestResults = requestDTO.getParamsId().stream()
+                .map(paramId -> {
+                    return TestResult.builder().testOrder(testOrder)
+                            .parameter(paramMap.get(paramId))
+                            .build();
+                }).toList();
+
+        // save all new test results:
+        testResultRepository.saveAll(newTestResults);
+
+        // save globalTestParameterId to current test order if exists and adjust status of test order:
+        Long globalTestParameterId = requestDTO.getGlobalTestParameterId();
+        if (globalTestParameterId != null) {
+            testOrder.setGlobalTestParameterId(globalTestParameterId);
+            testOrder.setStatus(TestOrderStatus.UNPUBLISHED);
+        }
+
+        // logs action:
+        actionLogService.logAction(
+                creatorId, ActionTypeFeatures.CREATE_BULK_TEST_RESULTS, null
+        );
+
+
+        // map to response dto list and return:
+        return testResultMapper.toResponseDtos(newTestResults);
     }
 
     @Override

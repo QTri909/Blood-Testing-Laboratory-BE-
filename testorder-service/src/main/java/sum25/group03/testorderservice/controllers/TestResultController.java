@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
+import sum25.group03.testorderservice.dtos.request.TestResultBulkedRequestDTO;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.services.interfaces.TestResultService;
@@ -37,9 +38,21 @@ public class TestResultController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<TestResultResponseDTO> createTestResult(@Valid @RequestBody TestResultRequestDTO requestDTO) {
+    public ApiResponse<TestResultResponseDTO> createTestResult(
+            @Valid @RequestBody TestResultRequestDTO requestDTO
+    ) {
         TestResultResponseDTO response = testResultService.createTestResult(requestDTO);
         return ApiResponse.add("Create Test Result successfully", response);
+    }
+
+    @PostMapping("/bulk-create")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<List<TestResultResponseDTO>> createBulkTestResults(
+            @Valid @RequestBody TestResultBulkedRequestDTO requestDTO,
+            @RequestHeader("X-User-Id") Long creatorId
+    ) {
+        List<TestResultResponseDTO> createdResults = testResultService.createTestResultByBulk(requestDTO, creatorId);
+        return ApiResponse.add("Bulk Create Test Results successfully", createdResults);
     }
 
 

@@ -143,9 +143,9 @@ public class TestOrderServiceImpl implements TestOrderService {
                             : "Unknown"
             );
 
-            // set type if it's null:
-            String entityType = testOrderIdWithType.get(dto.getId());
-            if (dto.getType() == null)
+             // set type if it's null:
+             String entityType = testOrderIdWithType.get(dto.getId());
+             if (dto.getType() == null)
                 dto.setType(entityType);
         }
 

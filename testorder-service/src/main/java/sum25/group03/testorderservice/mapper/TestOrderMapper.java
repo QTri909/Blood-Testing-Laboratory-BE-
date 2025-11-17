@@ -28,6 +28,12 @@ public interface TestOrderMapper {
     @Mapping(target = "testResults", source = "testResults")
     @Mapping(target = "comments", source = "comments")
     @Mapping(target = "code", source = "code")
+    @Mapping(target = "type", source = "type")
+    @Mapping(target = "status", source = "status")
+    @Mapping(target = "globalTestParameterId", source = "globalTestParameterId")
+    @Mapping(target = "runDate", source = "runDate")
+    @Mapping(target = "barcode", source = "barcode")
+    @Mapping(target = "runBy", source = "runBy")
     TestOrderResponseDTO toResponseDto(TestOrder testOrder);
 
     List<TestOrderResponseDTO> toResponseDtoList(List<TestOrder> testOrders);
