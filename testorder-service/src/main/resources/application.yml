@@ -24,3 +24,15 @@ grpc:
     max-concurrent-streams: 100
     active: testorderdb,kafka
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      tags:
+        application: testorder-service
+      export:
+        enabled: true
+

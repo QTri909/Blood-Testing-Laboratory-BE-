@@ -22,7 +22,8 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://root:root123@localhost:27017/monitoring_db?authSource=admin
+      uri: mongodb+srv://admin:12345@monitoring.lop4zd8.mongodb.net/monitoring?retryWrites=true&w=majority
+#      uri: mongodb://root:root123@localhost:27017/monitoring_db?authSource=admin
 
   retry:
     enabled: true
@@ -38,6 +39,8 @@ management:
         include: health,info,prometheus
   prometheus:
     metrics:
+      tags:
+        application: monitoring-service
       export:
         enabled: true
 
