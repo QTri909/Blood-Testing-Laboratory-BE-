@@ -16,7 +16,7 @@ import sum25.group03.testorderservice.services.interfaces.TestResultService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/test-result")
+@RequestMapping("/api/v1/test-result") //  {{api_gateway}}/api/v1/test-orders/test-result
 @Slf4j
 @RequiredArgsConstructor
 public class TestResultController {

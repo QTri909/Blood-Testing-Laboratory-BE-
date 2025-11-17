@@ -13,7 +13,7 @@ import sum25.group03.testorderservice.services.interfaces.ParameterService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/parameters")
+@RequestMapping("/api/v1/parameters") //  {{api_gateway}}/api/v1/test-orders/parameters
 @RequiredArgsConstructor
 public class ParameterController {
 
