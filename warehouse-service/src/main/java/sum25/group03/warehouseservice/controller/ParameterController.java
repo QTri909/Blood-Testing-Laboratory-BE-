@@ -13,12 +13,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/parameters")
-//@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequiredArgsConstructor
 public class ParameterController {
     private final ParameterService parameterService;
 
-    @GetMapping()
+    @GetMapping
     public ApiResponse<List<ParameterRes>> getParameters() {
         List<ParameterRes> param = parameterService.getAllParameters();
         return ApiResponse.ok("Get all paramters successfully",param);

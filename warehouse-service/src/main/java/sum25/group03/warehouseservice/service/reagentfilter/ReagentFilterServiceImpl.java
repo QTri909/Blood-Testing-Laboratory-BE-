@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.response.*;
 import sum25.group03.warehouseservice.entity.ReagentHistorySupply;
@@ -12,7 +11,6 @@ import sum25.group03.warehouseservice.entity.ReagentHistoryUsage;
 import sum25.group03.warehouseservice.mapper.VendorMapper;
 import sum25.group03.warehouseservice.repository.HistorySupplyRepo;
 import sum25.group03.warehouseservice.repository.ReagentUsageRepo;
-import sum25.group03.warehouseservice.repository.VendorRepo;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,7 +22,6 @@ import java.util.stream.Collectors;
 public class ReagentFilterServiceImpl implements ReagentFilterService {
     private final HistorySupplyRepo historySupplyRepo;
     private final ReagentUsageRepo reagentUsageRepo;
-    private final VendorRepo vendorRepo;
     private final VendorMapper vendorMapper;
 
     @Override

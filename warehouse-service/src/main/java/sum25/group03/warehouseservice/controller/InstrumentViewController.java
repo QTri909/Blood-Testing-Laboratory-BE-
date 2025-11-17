@@ -22,33 +22,6 @@ public class InstrumentViewController {
 
     private final InstrumentViewService instrumentViewService;
 
-//    private InstrumentPageResponse buildPageResponse(Page<InstrumentResponse> page) {
-//        return InstrumentPageResponse.builder()
-//                .content(page.getContent())
-//                .totalElements(page.getTotalElements())
-//                .totalPages(page.getTotalPages())
-//                .message(page.isEmpty() ? "No Data" : "Success")
-//                .build();
-//    }
-//
-//    @GetMapping
-//    public ResponseEntity<InstrumentPageResponse> getAllInstruments(
-//            @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable) {
-//        return ResponseEntity.ok(buildPageResponse(instrumentViewService.getAllInstruments(pageable)));
-//    }
-
-//    @GetMapping("/search")
-//    public ResponseEntity<InstrumentPageResponse> searchInstruments(
-//            @RequestParam(required = false) String name,
-//            @RequestParam(required = false) String model,
-//            @RequestParam(required = false) String status,
-//            @PageableDefault(sort = "updatedAt", direction = Sort.Direction.DESC) Pageable pageable
-//    ) {
-//        return ResponseEntity.ok(buildPageResponse(
-//                instrumentViewService.searchInstruments(name, model, status, pageable)));
-//    }
-
-
     @SkipAuditLog
     @GetMapping("/{id}/status")
     public ApiResponse<InternalInstrumentStatusResponse> getInternalInstrumentStatus(@PathVariable Long id) {
