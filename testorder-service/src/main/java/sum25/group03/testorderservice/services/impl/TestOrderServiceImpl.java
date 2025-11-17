@@ -83,6 +83,8 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         TestOrderResponseDTO result = testOrderMapper.toResponseDto(entity);
         result.setTestResults(testResultDtos);
+        if (result.getType() == null && entity.getType() != null)
+            result.setType(entity.getType().toString());
         result.setTotalPrice(totalPrice);
         return result;
     }

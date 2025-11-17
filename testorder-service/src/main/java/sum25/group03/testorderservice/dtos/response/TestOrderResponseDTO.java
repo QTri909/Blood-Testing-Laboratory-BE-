@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Builder;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
+import sum25.group03.testorderservice.enums.TestOrderType;
 
 
 import java.time.LocalDate;
@@ -25,6 +26,7 @@ public class TestOrderResponseDTO {
     private String patientName;
     private Long createdBy;
     private String createdByName;
+    private String type;
     private Long runBy;
     private String code;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy")
