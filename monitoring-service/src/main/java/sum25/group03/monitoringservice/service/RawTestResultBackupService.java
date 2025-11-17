@@ -59,7 +59,7 @@ public class RawTestResultBackupService {
                 .testOrderId(testOrderId)
                 .instrumentId(instrumentId)
                 .barcode(barcode)
-                .hl7PMessage(hl7Message)
+                .hl7Message(hl7Message)
                 .rawData(rawData)
                 .status(status)
                 .receivedAt(Instant.now())
