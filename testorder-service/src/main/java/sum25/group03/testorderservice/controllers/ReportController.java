@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import sum25.group03.testorderservice.services.interfaces.ReportService;
 
 @RestController
-@RequestMapping("/api/reports")
+@RequestMapping("/api/v1/reports")
 @RequiredArgsConstructor
 public class ReportController {
 

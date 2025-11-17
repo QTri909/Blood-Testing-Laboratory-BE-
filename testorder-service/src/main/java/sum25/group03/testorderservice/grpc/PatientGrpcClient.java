@@ -26,4 +26,30 @@ public class PatientGrpcClient {
             throw new RuntimeException("Failed to fetch patient info from gRPC", e);
         }
     }
+
+    public CreatedMedicalRecordResponse createdMedicalRecordResponse(Long createdBy, Long patientId) {
+        try {
+            AutoCreateMedicalRecordRequest request = AutoCreateMedicalRecordRequest.newBuilder()
+                    .setCreatedBy(createdBy)
+                    .setPatientId(patientId)
+                    .build();
+
+            return patientStub.autoCreateMedicalRecord(request);
+        } catch (StatusRuntimeException e) {
+            throw new RuntimeException("Failed to create medical record via gRPC", e);
+        }
+    }
+
+    public EmptyMsg assignPatientIdToMedicalRecord(Long medicalRecordId, Long patientId) {
+        try {
+            AssignPatientIdToMedicalRecordRequest request = AssignPatientIdToMedicalRecordRequest.newBuilder()
+                    .setMedicalRecordId(medicalRecordId)
+                    .setPatientId(patientId)
+                    .build();
+
+            return patientStub.assignPatientIdToMedicalRecord(request);
+        } catch (StatusRuntimeException e) {
+            throw new RuntimeException("Failed to assign patient ID to medical record via gRPC", e);
+        }
+    }
 }

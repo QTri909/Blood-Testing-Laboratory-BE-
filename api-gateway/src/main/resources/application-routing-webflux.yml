@@ -34,7 +34,7 @@ spring:
               predicates:
                 - Path=${app.api-version}/monitoring/**
               filters:
-                - RewritePath=/api/v1/patients/(?<segment>(\\d+|logs|health-logs|admin/sync.*)), /api/v1/${segment}
+                - RewritePath=/api/v1/monitoring/(?<segment>.*), /api/v1/${segment}
 
             # for patient service
             - id: patient-service

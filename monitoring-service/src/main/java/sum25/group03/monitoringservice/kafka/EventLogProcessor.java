@@ -28,16 +28,14 @@ public class EventLogProcessor {
 
         EventLog logEntry = new EventLog();
         logEntry.setAction(json.optString("action", "UNKNOWN"));
-        logEntry.setOperator(Map.of(
-                "username", json.optString("operator", "system")
-        ));
-        logEntry.setSourceService(extractService(record.topic()));
-        logEntry.setTopic(record.topic());
-        logEntry.setPayload(json.toMap());
-        logEntry.setTimestamp(Instant.now());
-        logEntry.setReceivedAt(Instant.ofEpochMilli(record.timestamp()));
+        logEntry.setOperator(json.optString("operator", "system")
+        );
+        logEntry.setMessage(json.optString("message", ""));
+        logEntry.setSourceService(json.optString("sourceService", "UNKNOWN"));
+        logEntry.setData(json.optJSONObject("data") != null ? json.optJSONObject("data").toMap() : Map.of());
+
+        logEntry.setTimestamp(Instant.ofEpochMilli(record.timestamp()));
         logEntry.setChecksum(calculateChecksum(rawPayload));
-        logEntry.setProcessingStatus("SUCCESS");
 
         repository.save(logEntry);
         log.info("EventLog saved for topic {} action {}", record.topic(), logEntry.getAction());
