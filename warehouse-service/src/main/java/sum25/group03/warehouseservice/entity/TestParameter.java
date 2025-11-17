@@ -6,6 +6,8 @@ import lombok.*;
 import sum25.group03.warehouseservice.entity.enums.Gender;
 import sum25.group03.warehouseservice.entity.enums.ParameterStatus;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -28,10 +30,6 @@ public class TestParameter {
     @Column(name = "abbreviation", nullable = false)
     private String abbreviation;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "gender")
-    private Gender gender;
-
     @Column(name = "price")
     private Double price;
 
@@ -39,17 +37,10 @@ public class TestParameter {
     @Column(name = "status")
     private ParameterStatus status;
 
-    @Column(name = "unit")
-    private  String unit;
-
-    @Column(name = "normal_range", nullable = false, length = 512)
-    private String normalRange;
-    @Column(name= "min_value")
-    private Double minValue;
-    @Column (name= "max_value")
-    private Double maxValue;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "global_config_id", nullable = false)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "testParameter", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private GlobalParameterConfiguration globalParameterConfiguration;
+    private List<GlobalTest> globalTest;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "testParameter", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<NormalRange> normalRanges;
 }
