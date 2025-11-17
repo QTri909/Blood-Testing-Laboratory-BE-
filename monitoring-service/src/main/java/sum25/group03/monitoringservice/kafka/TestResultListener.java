@@ -94,25 +94,6 @@ public class TestResultListener {
                     event.getStatus()
             );
 
-            if (saved != null) {
-                eventLogService.addEventLog(
-                        sum25.group03.monitoringservice.model.EventLog.builder()
-
-                                .action("BACKUP_SUCCESS")
-                                .message("Stored raw result " + saved.getTestOrderId())
-                                .operator("System")
-
-                                .timestamp(Instant.now())
-                                .build()
-                );
-
-                kafkaEventPublisher.publishCompleteSyncTestResultEvent(event);
-                log.info("HL7 test result saved successfully for barcode={}", event.getBarcode());
-
-
-            } else {
-                log.warn("Failed to save HL7 test result for barcode={}", event.getBarcode());
-            }
 
         } catch (Exception e) {
             log.error("Failed to process HL7 test result event: {}", e.getMessage(), e);
