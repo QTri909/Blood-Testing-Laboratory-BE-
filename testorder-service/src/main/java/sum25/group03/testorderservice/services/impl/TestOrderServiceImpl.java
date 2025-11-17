@@ -116,6 +116,14 @@ public class TestOrderServiceImpl implements TestOrderService {
         Map<Long, String> patientMap = mappingResponse.getMappingPatientIdToName();
         Map<Long, String> creatorMap = mappingResponse.getMappingCreatorIdToName();
 
+        // mapping each TestOrder id with its type as tring:
+        Map<Long, String> testOrderIdWithType = orders.stream().map(order -> {
+            Long key = order.getId();
+            String value = order.getType().toString();
+            if (value == null) value = "UNKNOWN";
+            return Map.entry(key, value);
+        }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
         for (TestOrderResponseDTO dto : result) {
             Long patientId = dto.getPatientId();
             Long creatorId = dto.getCreatedBy();
@@ -134,6 +142,11 @@ public class TestOrderServiceImpl implements TestOrderService {
                             ? creatorMap.getOrDefault(creatorId, "Unknown")
                             : "Unknown"
             );
+
+            // set type if it's null:
+            String entityType = testOrderIdWithType.get(dto.getId());
+            if (dto.getType() == null)
+                dto.setType(entityType);
         }
 
         return result;
