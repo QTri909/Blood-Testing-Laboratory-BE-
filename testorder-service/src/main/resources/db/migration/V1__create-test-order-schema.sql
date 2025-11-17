@@ -24,7 +24,7 @@ CREATE TABLE comment (
                          test_order_id BIGINT,
                          test_result_id BIGINT,
                          comment_text TEXT NOT NULL,
-                         status VARCHAR(255) CHECK (status IN ('VISIBLE','HIDDEN','DELETED'))
+                         status VARCHAR(255) CHECK (status IN ('VISIBLE','HIDDEN','DELETED', 'ACTIVE'))
 );
 
 -- =========================================================
