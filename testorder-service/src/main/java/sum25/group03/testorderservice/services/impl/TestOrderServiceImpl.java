@@ -29,6 +29,7 @@ import sum25.group03.testorderservice.specification.TestOrderSpecification;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -98,7 +99,42 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         Page<TestOrder> orders = repository.findAll(pageable);
 
-        return testOrderMapper.toResponseDtoPage(orders);
+        // get list of all patientId and list of all createdBy from test orders:
+        List<Long> patientIds = orders.stream().map(TestOrder::getPatientId).filter(Objects::nonNull).toList();
+        List<Long> creatorIds = orders.stream().map(TestOrder::getCreatedBy).filter(Objects::nonNull).toList();
+
+        // call grpc to patient service database to get map of patientId and creatorId
+        // -> Map<patientId, patientName> and Map<creatorId, creatorName>
+        GrpcMappingPatientAndCreatorIdResponse mappingResponse = patientGrpcClient.mappingPatientIdAndCreatorIdToTheirName(patientIds, creatorIds);
+
+        // map to Page<TestOrderResponseDTO>
+        Page<TestOrderResponseDTO> result = testOrderMapper.toResponseDtoPage(orders);
+
+        // traverse and set patientName and creatorName for each TestOrderResponseDTO
+        Map<Long, String> patientMap = mappingResponse.getMappingPatientIdToName();
+        Map<Long, String> creatorMap = mappingResponse.getMappingCreatorIdToName();
+
+        for (TestOrderResponseDTO dto : result) {
+            Long patientId = dto.getPatientId();
+            Long creatorId = dto.getCreatedBy();
+
+            // safe patient name
+            dto.setPatientName(
+                    patientId != null && patientMap != null
+                            ? patientMap.getOrDefault(patientId, "Unknown")
+                            : "Unknown"
+            );
+
+
+            // safe creator name
+            dto.setCreatedByName(
+                    creatorId != null && creatorMap != null
+                            ? creatorMap.getOrDefault(creatorId, "Unknown")
+                            : "Unknown"
+            );
+        }
+
+        return result;
     }
 
     @Override

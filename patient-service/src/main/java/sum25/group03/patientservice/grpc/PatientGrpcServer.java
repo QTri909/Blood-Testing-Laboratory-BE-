@@ -3,9 +3,13 @@ package sum25.group03.patientservice.grpc;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.server.service.GrpcService;
+import sum25.group03.patientservice.dtos.request.GrpcMappingPatientAndCreatorIdRequest;
+import sum25.group03.patientservice.dtos.response.GrpcMappingPatientAndCreatorIdResponse;
+import sum25.group03.patientservice.mapper.GrpcUserSnapshotMapper;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
+import sum25.group03.patientservice.services.interfaces.UserSnapshotService;
 
 @GrpcService
 @RequiredArgsConstructor
@@ -13,6 +17,8 @@ public class PatientGrpcServer extends PatientServiceGrpc.PatientServiceImplBase
 
     private final UserSnapshotRepository userSnapshotRepository;
     private final MedicalRecordService medicalRecordService;
+    private final UserSnapshotService userSnapshotService;
+    private final GrpcUserSnapshotMapper grpcUserSnapshotMapper;
 
     @Override
     public void getPatientById(GetPatientByIdRequest request,
@@ -65,6 +71,20 @@ public class PatientGrpcServer extends PatientServiceGrpc.PatientServiceImplBase
         );
 
         responseObserver.onNext(EmptyMsg.newBuilder().build());
+        responseObserver.onCompleted();
+    }
+
+    @Override
+    public void mappingPatientIdAndCreatorIdToTheirName(
+            MappingPatientIdAndCreatorIdToTheirNameRequest request,
+            StreamObserver<MappingPatientIdAndCreatorIdToTheirNameResponse> responseObserver
+    ) {
+
+        GrpcMappingPatientAndCreatorIdRequest javaDtoRequest = grpcUserSnapshotMapper.fromGrpcMappingRequest(request);
+        var mapping = userSnapshotService.getGrpcMappingPatientAndCreatorName(javaDtoRequest);
+
+        MappingPatientIdAndCreatorIdToTheirNameResponse grpcResponse = grpcUserSnapshotMapper.toGrpcMappingResponse(mapping);
+        responseObserver.onNext(grpcResponse);
         responseObserver.onCompleted();
     }
 }
