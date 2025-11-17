@@ -35,6 +35,11 @@ public class SecurityConfig {
                                 "/auth/first-login-change-password"
                         ).permitAll()
 
+                        .requestMatchers(
+                                "/api/v1/paypal/return",
+                                "/api/v1/paypal/cancel"
+                        ).permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
