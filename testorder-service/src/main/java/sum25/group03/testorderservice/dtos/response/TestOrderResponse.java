@@ -20,6 +20,7 @@ public class TestOrderResponse{
     private Long patientId;
     private Long createdBy;
     private Long runBy;
+    private Long globalTestParameterId;
     private String barcode;
     private String testType;
     private LocalDate runDate;

@@ -32,6 +32,7 @@ public class TestOrderResponseDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy")
     private LocalDate runDate;
     private TestOrderStatus status;
+    private Long globalTestParameterId;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy")
     private LocalDateTime createdAt;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy")

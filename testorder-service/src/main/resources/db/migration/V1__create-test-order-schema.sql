@@ -76,6 +76,7 @@ CREATE TABLE test_order (
                             )),
                             barcode VARCHAR(255) UNIQUE,
                             run_date DATE,
+                            global_test_parameter_id BIGINT,
                             created_at TIMESTAMP(6) NOT NULL,
                             updated_at TIMESTAMP(6) NOT NULL,
                             created_by BIGINT NOT NULL,

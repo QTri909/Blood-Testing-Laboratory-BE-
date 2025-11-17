@@ -62,6 +62,9 @@ public class TestOrder {
     @Column(name = "instrument_id")
     private Long instrumentId;
 
+    @Column(name = "global_test_parameter_id")
+    private Long globalTestParameterId;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
