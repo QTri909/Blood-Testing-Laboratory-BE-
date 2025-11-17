@@ -8,7 +8,7 @@ import sum25.group03.common.response.ApiResponse;
 import sum25.group03.testorderservice.services.interfaces.ReportService;
 
 @RestController
-@RequestMapping("/api/v1/reports")
+@RequestMapping("/api/v1/reports")//  {{api_gateway}}/api/v1/test-orders/reports
 @RequiredArgsConstructor
 public class ReportController {
 
@@ -28,13 +28,14 @@ public class ReportController {
 
     //  Export Excel
     @GetMapping("/test-orders/excel/{patientId}")
-    public ApiResponse<String> exportExcel(@PathVariable Long patientId,
-                                           HttpServletResponse response) {
+    public void exportExcel(@PathVariable Long patientId,
+                            HttpServletResponse response) {
         try {
             reportService.exportExcel(patientId, response);
-            return ApiResponse.ok("Excel exported successfully", null);
         } catch (Exception e) {
-            return ApiResponse.internalServerError("Failed to export Excel: " + e.getMessage(), "/api/reports/test-orders/excel/" + patientId);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            throw new RuntimeException("Failed to export Excel: " + e.getMessage());
         }
     }
+
 }

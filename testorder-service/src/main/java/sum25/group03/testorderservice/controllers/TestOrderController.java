@@ -20,7 +20,7 @@ import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/test-orders")
+@RequestMapping("/api/v1/test-orders")  // {{api_gateway}}/api/v1/test-orders
 @RequiredArgsConstructor
 @Slf4j
 public class TestOrderController {
