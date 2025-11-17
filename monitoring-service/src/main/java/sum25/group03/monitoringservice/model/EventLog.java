@@ -18,17 +18,11 @@ import java.util.Map;
 public class EventLog {
     @Id
     private String id;
-
-    private String topic;
     private String action;
     private String message;
-    private Map<String, String> operator;
-    private Instant createdAt;
+    private String operator;
     private Instant timestamp;
-    private Instant receivedAt;
     private String sourceService;
-    private Map<String, Object> payload;
     private String checksum;
-    private String processingStatus;
     private Map<String, Object> data;
 }

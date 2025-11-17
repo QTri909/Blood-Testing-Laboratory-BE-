@@ -1,6 +1,7 @@
 package sum25.group03.patientservice.services.interfaces;
 
 import org.springframework.data.domain.Page;
+import sum25.group03.patientservice.dtos.request.FilteredMedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
@@ -13,7 +14,9 @@ import java.util.UUID;
 
 
 public interface MedicalRecordService {
+    void assignPatientIdToMedicalRecord(Long medicalRecordId, Long patientId);
     MedicalRecordResponse registerMedicalRecord(Long creatorId);
+    Long autoCreateNewMedicalRecordByTestOrder(Long creatorId, Long patientId);
     UpdatedAssignedDoctor updateAssignedDoctor(UpdatedAssignedDoctor updateInfo);
     MedicalRecordResponse getById(Long recordId, Long viewerId);
     MedicalRecordResponse getByCode(UUID recordCode);
@@ -23,4 +26,6 @@ public interface MedicalRecordService {
     List<GrpcTestOrderFullFieldDTO> getAllTestOrdersByMedicalRecordId(Long medicalRecordId, Long viewerId);
 
     MedicalRecordResponse updateMedicalRecordStatus(MedicalRecordStatus newStatus, Long recordId, Long updaterId);
+    Page<MedicalRecordResponse> getByFilteredMedicalRecord(FilteredMedicalRecordRequest request, Long viewerId);
+    Page<MedicalRecordResponse> getByAssignableMedicalRecord(FilteredMedicalRecordRequest request, Long viewerId);
 }

@@ -10,6 +10,7 @@ import sum25.group03.patientservice.entities.UserSnapshotEntity;
 import sum25.group03.patientservice.feign.dtos.FeignUserDTO;
 import sum25.group03.patientservice.feign.dtos.UserFilterUpdate;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Mapper(componentModel = "spring")
@@ -32,13 +33,26 @@ public interface UserSnapshotMapper {
     @Mapping(target = "externalUserId", source = "kafkaUserDTO.id")
     UserSnapshotEntity fromUserKafkaDTO(KafkaUserDTO kafkaUserDTO);
 
+    default LocalDate map(List<Integer> value) {
+        if (value == null || value.size() < 3) return null;
+        return LocalDate.of(value.get(0), value.get(1), value.get(2));
+    }
+
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntityFromKafkaDTO(KafkaUserDTO kafkaUserDTO, @MappingTarget UserSnapshotEntity userSnapshotEntity);
 
     // convert from 'Page< UserSnapshotEntity >' to 'Page< UserSnapshotResponse >'
     default Page<UserSnapshotResponse> toResponsePage(Page<UserSnapshotEntity> entities) {
         List<UserSnapshotEntity> content = entities.getContent();
+
+        System.out.println("Content: ");
+        content.forEach(System.out::println);
+
         List<UserSnapshotResponse> responseList = this.toResponseList(content);
+
+        System.out.println("Mapped Responses: ");
+        responseList.forEach(System.out::println);
+
         return new PageImpl<>(responseList, entities.getPageable(), entities.getTotalElements());
     }
 }

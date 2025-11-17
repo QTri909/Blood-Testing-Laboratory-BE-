@@ -22,7 +22,9 @@ public class TestOrderResponseDTO {
     private Long id;
     private Long externalMedicalRecordId;
     private Long patientId;
+    private String patientName;
     private Long createdBy;
+    private String createdByName;
     private Long runBy;
     private String code;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy")

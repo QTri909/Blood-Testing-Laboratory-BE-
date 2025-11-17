@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface PendingUserRepository extends JpaRepository<PendingUser,Long> {
     List<PendingUser> findByApprovedFalse();
+    List<PendingUser> findByEmail(String email);
 }

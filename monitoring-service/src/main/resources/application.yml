@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8083
 
 spring:
   application:
@@ -32,20 +32,17 @@ logging:
     root: info
 
 management:
-  server:
-    port: 4000
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus,metrics
-  endpoint:
-    health:
-      show-details: always
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
 
 monitoring:
   kafka:
     topics:
-      - test.order.created
-      - test.result.published
-      - instrument.activated
-      - instrument.deactivated
+      - monitoring-log

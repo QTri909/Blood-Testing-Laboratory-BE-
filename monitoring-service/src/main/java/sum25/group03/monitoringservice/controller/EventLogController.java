@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
+import sum25.group03.monitoringservice.dto.EventLogDTO;
 import sum25.group03.monitoringservice.dto.PagedResponse;
 import sum25.group03.monitoringservice.model.EventLog;
 import sum25.group03.monitoringservice.service.EventLogService;
@@ -27,7 +28,7 @@ public class EventLogController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        Page<EventLog> pageResult = eventLogService.getAllEventLogs(page, size);
+        Page<EventLogDTO> pageResult = eventLogService.getAllEventLogs(page, size);
         PagedResponse response = PagedResponse.fromPage(pageResult);
         return ApiResponse.add("Fetched event logs successfully", response);
     }

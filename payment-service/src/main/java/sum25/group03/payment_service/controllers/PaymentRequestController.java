@@ -40,6 +40,7 @@ public class PaymentRequestController {
 
             String paypalToken = approvalUrl.split("token=")[1].split("&")[0];
             paymentCacheService.cacheTokenOrderCode(paypalToken, paymentRequest.getOrderCode());
+            paymentCacheService.cacheTokenRequestId(paypalToken, paymentRequest.getId());
             String approveUrl = approvalUrl + "&orderCode=" + paymentRequest.getOrderCode();
 
             log.info("PaymentRequest created: orderCode={}, approveUrl={}", paymentRequest.getOrderCode(), approveUrl);
@@ -63,8 +64,9 @@ public class PaymentRequestController {
             log.info("Mapped token {} -> orderCode {}", token, orderCode);
 
             paymentTransactionService.captureAndUpdateStatus(orderCode);
+//            paymentTransactionService.captureAndUpdateStatus(token);
 
-            paymentCacheService.removeCachedPaymentRequest(orderCode);
+//            paymentCacheService.removeCachedPaymentRequest(orderCode);
             paymentCacheService.removeTokenOrderCode(token);
 
             return ApiResponse.add("Payment captured successfully for " + orderCode,
