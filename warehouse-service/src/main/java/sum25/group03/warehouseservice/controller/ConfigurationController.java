@@ -25,14 +25,12 @@ public class ConfigurationController {
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<?> addConfig(@Valid @RequestBody ConfigReq configDTO) {
-        configService.createConfig(configDTO);
-        return ApiResponse.message("Configuration added successfully.").build();
+        return ApiResponse.ok(configService.createConfig(configDTO));
     }
 
     @PutMapping("")
     public ApiResponse<?> updateConfig(@Valid @RequestBody UpdateConfigReq configDTO) {
-        configService.updateConfig(configDTO);
-        return ApiResponse.message("Specific configuration updated successfully.").build();
+        return ApiResponse.ok(configService.updateConfig(configDTO));
     }
 
     @DeleteMapping("")
@@ -48,10 +46,9 @@ public class ConfigurationController {
     @GetMapping("search")
     public ApiResponse<PageRes<ConfigRes>> searchConfigs(
             @RequestParam(required = false) String key,
-            @RequestParam(required = false) String value,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ApiResponse.add("Search results", configService.searchConfigs(key, value, page, size));
+        return ApiResponse.add("Search results", configService.searchConfigs(key, page, size));
     }
 
 }

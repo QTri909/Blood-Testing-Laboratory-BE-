@@ -15,10 +15,7 @@ import sum25.group03.warehouseservice.service.reagentsupply.ReagentSupplyService
 public class ReagentHistorySupplyController {
     private final ReagentSupplyService reagentSupplyService;
 
-//    @GetMapping("")
-//    public ResponseEntity<?> getAllReagentSupplyHistory(@RequestParam int page, @RequestParam int size) {
-//        return ResponseEntity.ok(reagentSupplyService.getAll(page,size));
-//    }
+
     @GetMapping("")
     public ApiResponse<?> getAllReagentSupplyHistory(@RequestParam int page, @RequestParam int size) {
         return ApiResponse.ok(reagentSupplyService.getAll(page,size));
@@ -31,17 +28,15 @@ public class ReagentHistorySupplyController {
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<?> addReagentSupply(@RequestBody ReagentSupplyReq reagentSupplyReq) {
-        reagentSupplyService.addReagentSupply(reagentSupplyReq);
-        return ApiResponse.message("Reagent supply added successfully.").build();
+        return ApiResponse.ok(reagentSupplyService.addReagentSupply(reagentSupplyReq));
     }
 //    @PatchMapping("")
 //    public ResponseEntity<?> updateReagentSupplyStatus(@RequestBody UpdateStatusPOReq req) {
 //        reagentSupplyService.updateReagentSupplyStatus(req);
 //        return ResponseEntity.ok("Reagent supply status updated successfully.");
 //    }
-    @PatchMapping("")
-    public ApiResponse<?> updateReagentSupplyStatus(@RequestBody UpdateStatusPOReq req) {
-        reagentSupplyService.updateReagentSupplyStatus(req);
-        return ApiResponse.message("Reagent supply status updated successfully.").build();
-    }
+//    @PatchMapping("")
+//    public ApiResponse<?> updateReagentSupplyStatus(@RequestBody UpdateStatusPOReq req) {
+//        return ApiResponse.oke(reagentSupplyService.updateReagentSupplyStatus(req));
+//    }
 }

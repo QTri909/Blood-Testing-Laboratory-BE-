@@ -41,10 +41,11 @@ public interface InstrumentRepo extends JpaRepository<Instrument,Long> {
     @Query("SELECT i FROM Instrument i WHERE i.instrumentId = :id")
     Optional<Instrument> findInstrumentById(@Param("id") Long id);
 
+
     @Query("""
     SELECT i FROM Instrument i
     WHERE (:key IS NULL OR :key = '' OR LOWER(i.instrumentName) LIKE LOWER(CONCAT('%', :key, '%')))
-    ORDER BY i.createdAt DESC
+    ORDER BY i.createdAt DESC, i.instrumentId DESC
 """)
     Page<Instrument> searchInstrumentsByName(@Param("key") String key, Pageable pageable);
 

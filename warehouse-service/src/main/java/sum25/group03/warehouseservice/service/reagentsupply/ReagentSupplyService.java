@@ -7,6 +7,6 @@ import sum25.group03.warehouseservice.dto.response.PageRes;
 
 public interface ReagentSupplyService {
     PageRes<HistorySupplyRes> getAll(int page, int size);
-    void addReagentSupply(ReagentSupplyReq reagentSupplyReq);
-    void updateReagentSupplyStatus(UpdateStatusPOReq req);
+    HistorySupplyRes addReagentSupply(ReagentSupplyReq reagentSupplyReq);
+    //void updateReagentSupplyStatus(UpdateStatusPOReq req);
 }

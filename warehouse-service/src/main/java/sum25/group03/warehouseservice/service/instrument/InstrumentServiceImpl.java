@@ -147,15 +147,19 @@ public class InstrumentServiceImpl implements InstrumentService {
         List<NewReagentEvent> reagentEvents = null;
         List<ReagentForInstrumentRes> reagentForInstrumentResList = null;
         if(config != null){
-            Configuration newConfig = Configuration.builder()
-                    .configurationName(config.getConfigurationName())
-                    .supportedTests(config.getSupportedTests())
-                    .dataOutputFormat(config.getDataOutputFormat())
-                    .communicationProtocol(config.getCommunicationProtocol())
-                    .mixingSpeed(config.getMixingSpeed())
-                    .firmwareVersion(config.getFirmwareVersion())
-                    .active(true)
-                    .build();
+            Configuration newConfig = config;
+            if(config.getInstrument()!=null){
+                newConfig = Configuration.builder()
+                        .configurationName(config.getConfigurationName())
+                        .supportedTests(config.getSupportedTests())
+                        .dataOutputFormat(config.getDataOutputFormat())
+                        .communicationProtocol(config.getCommunicationProtocol())
+                        .mixingSpeed(config.getMixingSpeed())
+                        .firmwareVersion(config.getFirmwareVersion())
+                        .active(true)
+                        .build();
+            }
+
             instrument.setConfiguration(newConfig);
             configEvent = buildConfigEventFromConfiguration(config);
         }
@@ -238,6 +242,12 @@ public class InstrumentServiceImpl implements InstrumentService {
                         .usedAt(r.getUsedAt())
                         .build())
                 .toList();
+        Configuration configuration = instrument.getConfiguration();
+        ConfigRes configRes = null;
+        if(configuration != null) {
+            if (configuration.isActive() == true)
+                configRes = configMapper.toDto(configuration);
+        }
         InstrumentConfigReagentRes response = InstrumentConfigReagentRes.builder()
                 .instrumentId(instrument.getInstrumentId())
                 .instrumentName(instrument.getInstrumentName())
@@ -248,7 +258,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .status(instrument.getStatus())
                 .createdAt(instrument.getCreatedAt())
                 .updatedAt(instrument.getUpdatedAt())
-                .configRes(configMapper.toDto(instrument.getConfiguration()))
+                .configRes(configRes)
                 .reagentForInstrumentRes(reagentForInstrumentRes)
                 .build();
         return response;
