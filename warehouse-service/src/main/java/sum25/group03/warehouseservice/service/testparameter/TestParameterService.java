@@ -1,5 +1,11 @@
 package sum25.group03.warehouseservice.service.testparameter;
 
-public interface TestParameterService {
+import sum25.group03.warehouseservice.dto.response.GlobalTestParameterRes;
+import sum25.group03.warehouseservice.dto.response.TestTemplateRes;
+import sum25.group03.warehouseservice.entity.enums.TestType;
 
+import java.util.List;
+
+public interface TestParameterService {
+    List<GlobalTestParameterRes> getGlobalTestParameters(TestType testType);
 }

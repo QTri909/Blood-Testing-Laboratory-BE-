@@ -11,10 +11,10 @@ import java.util.List;
 @Setter
 @Builder
 public class GlobalTestParameterRes {
+    private Long globalTestParameterId;
     private Long id;
     private String abbreviation;
     private String parameterName;
-    private ParameterStatus status;
     private Double price;
     private String description;
     private List<NormalRangeRes> normalRange;

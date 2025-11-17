@@ -3,6 +3,7 @@ package sum25.group03.warehouseservice.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.warehouseservice.entity.enums.Gender;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,7 +30,7 @@ public class NormalRange {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "gender")
-    private String gender;
+    private Gender gender;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "test_parameter_id", nullable = false)

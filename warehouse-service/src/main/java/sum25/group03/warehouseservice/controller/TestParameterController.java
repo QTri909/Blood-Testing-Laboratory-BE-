@@ -1,19 +1,19 @@
 package sum25.group03.warehouseservice.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.warehouseservice.entity.enums.TestType;
+import sum25.group03.warehouseservice.service.testparameter.TestParameterService;
 
 @RestController
 @RequestMapping("/api/v1/test-parameters")
+@RequiredArgsConstructor
 public class TestParameterController {
-
+    private final TestParameterService testParameterService;
     @GetMapping("")
-    public ApiResponse testParameter(@RequestBody TestType testType) {
-        return ApiResponse.ok("Test parameters endpoint is working");
+    public ApiResponse<?> testParameter(@RequestParam TestType testType) {
+        return ApiResponse.ok(testParameterService.getGlobalTestParameters(testType));
     }
 
 }
