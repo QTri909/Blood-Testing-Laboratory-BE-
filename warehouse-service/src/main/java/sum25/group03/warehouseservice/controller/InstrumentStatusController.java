@@ -9,7 +9,8 @@ import sum25.group03.warehouseservice.service.instrumentstatus.InstrumentStatusS
 @RestController
 @RequestMapping("/api/v1/instruments")
 @RequiredArgsConstructor
-public class InstrumentStatusController {
+public class
+InstrumentStatusController {
     private final InstrumentStatusService instrumentStatusService;
     private final InstrumentCleanupService instrumentCleanupService;
 
