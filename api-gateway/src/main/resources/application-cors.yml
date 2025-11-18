@@ -8,6 +8,7 @@ app:
       - POST
       - PUT
       - DELETE
+      - PATCH
       - OPTIONS
     allowed-headers:
       - "*"

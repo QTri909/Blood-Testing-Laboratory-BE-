@@ -1,4 +1,4 @@
-package com.darkkernel.microservices.gateway.routes.configs;
+package com.darkkernel.microservices.gateway.configs;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
