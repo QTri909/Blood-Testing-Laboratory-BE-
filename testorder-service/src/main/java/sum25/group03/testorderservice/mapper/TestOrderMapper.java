@@ -8,10 +8,7 @@ import sum25.group03.testorder.grpc.TestOrdersByMedicalRecordResponse;
 import sum25.group03.testorder.grpc.TestResultResponse;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequest;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
-import sum25.group03.testorderservice.dtos.response.CommentResponseDTO;
-import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
-import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
-import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
+import sum25.group03.testorderservice.dtos.response.*;
 import sum25.group03.testorderservice.entities.TestOrder;
 
 
@@ -66,6 +63,12 @@ public interface TestOrderMapper {
     @Mapping(target = "testResults", ignore = true)
     @Mapping(target = "comments", ignore = true)
     void updateEntity(TestOrderRequestDTO requestDto, @MappingTarget TestOrder testOrder);
+
+    // to CleanTestOrderResponse
+    @Mapping(target="testOrderId", source="id")
+    @Mapping(target="barcode", source="barcode")
+    @Mapping(target="testResults", source="testResults")
+    CleanTestOrderResponse toCleanResponseDto(TestOrder testOrder);
 
     // manually mappings Page<TestOrder> to Page<TestOrderResponseDTO>
     default Page<TestOrderResponseDTO> toResponseDtoPage(Page<TestOrder> testOrders) {

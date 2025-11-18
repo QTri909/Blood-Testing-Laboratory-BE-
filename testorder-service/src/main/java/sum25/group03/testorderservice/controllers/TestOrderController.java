@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
+import sum25.group03.testorderservice.dtos.response.CleanTestOrderResponse;
 import sum25.group03.testorderservice.dtos.response.CreationTestOrderResponse;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
@@ -58,6 +59,15 @@ public class TestOrderController {
     ) {
         return ApiResponse.add("Get test order by id successfully",
                 testOrderService.getTestOrderById(id, viewerId));
+    }
+
+    @GetMapping("/{id}/clean-data")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<CleanTestOrderResponse> getByIdCleanData(
+            @PathVariable Long id
+    ) {
+        return ApiResponse.add("Get test order with clean data by id successfully",
+                testOrderService.getTestOrderByIdCleanData(id));
     }
 
     @GetMapping("/filter")

@@ -2,11 +2,13 @@ package sum25.group03.testorderservice.mapper;
 
 import org.mapstruct.*;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
+import sum25.group03.testorderservice.dtos.response.CleanTestResultResponse;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entities.TestResult;
 
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, uses = {CommentMapper.class})
 public interface TestResultMapper {
@@ -36,4 +38,13 @@ public interface TestResultMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "comments", ignore = true)
     void updateEntity(TestResultRequestDTO requestDto, @MappingTarget TestResult testResult);
+
+    // to CleanTestResultResponse
+    @Mapping(target="testResultId", source="id")
+    @Mapping(target="parameterId", source="parameter.id")
+    @Mapping(target="parameterCode", source="parameter.paramCode")
+    CleanTestResultResponse toCleanResponseDto(TestResult testResult);
+
+    // List<TestResult> to List<CleanTestResultResponse>
+    List<CleanTestResultResponse> toCleanResponseDtoList(List<TestResult> testResults);
 }

@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
@@ -27,6 +28,10 @@ public interface TestOrderRepository extends JpaRepository<TestOrder,Long>, JpaS
     List<TestOrder> findByStatus(TestOrderStatus status);
     List<TestOrder> findByCreatedBy(Long createdBy);
     List<TestOrder> findAllByExternalMedicalRecordId(Long externalMedicalRecordId, Sort sort);
+
+    @NonNull
+    @EntityGraph(attributePaths = {"testResults", "testResults.parameter"})
+    Optional<TestOrder> findById(@NonNull Long id);
 
     // find all by list of ids:
     List<TestOrder> findByIdInOrderByCreatedAtDesc(List<Long> ids);

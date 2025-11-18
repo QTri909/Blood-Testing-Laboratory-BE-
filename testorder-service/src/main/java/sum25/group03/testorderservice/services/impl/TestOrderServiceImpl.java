@@ -90,6 +90,16 @@ public class TestOrderServiceImpl implements TestOrderService {
     }
 
     @Override
+    public CleanTestOrderResponse getTestOrderByIdCleanData(Long id) {
+
+        TestOrder entity = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("TestOrder not found with id " + id));
+
+        // map to CleanTestOrderResponse
+        return testOrderMapper.toCleanResponseDto(entity);
+    }
+
+    @Override
     public Page<TestOrderResponseDTO> getAllTestOrders(Integer page, Integer size, Long viewerId) {
 
         // TODO 3: Verify viewerId existence in the system using todo_1
