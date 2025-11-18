@@ -3,6 +3,7 @@ package sum25.group03.testorderservice.mapper;
 import org.mapstruct.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
 import sum25.group03.testorder.grpc.CommentResponse;
 import sum25.group03.testorder.grpc.TestOrdersByMedicalRecordResponse;
 import sum25.group03.testorder.grpc.TestResultResponse;

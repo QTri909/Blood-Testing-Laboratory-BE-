@@ -1,4 +1,4 @@
-package sum25.group03.testorderservice.dtos.response;
+package sum25.group03.common.response.dtos.grpc;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
