@@ -94,9 +94,12 @@ public class TestResultServiceImpl implements TestResultService {
         // debug:
         System.out.println("Added Param Ids: " + addedParamIds);
 
-        if (addedParamIds == null || addedParamIds.isEmpty()) {
+        if (addedParamIds == null) {
             throw new IllegalArgumentException("New test result ids cannot be null or empty");
         }
+
+        if (addedParamIds.isEmpty())
+            throw new IllegalArgumentException("There is no new parameter to be added");
 
         List<Long> listIds = addedParamIds.stream().toList();
         List<Parameter> parameters = parameterRepository.findByIdIn(listIds);  // but this helps to reduce the number of db calls
@@ -143,8 +146,19 @@ public class TestResultServiceImpl implements TestResultService {
         if (removedParamIds == null || removedParamIds.isEmpty()) {
             return;
         }
-        List<TestResult> removedTestResults = testResultRepository.findByTestOrderAndParameter_IdInOrderByCreatedAtDesc(testOrder, removedParamIds.stream().toList());
+
+        List<Long> removedIds = removedParamIds.stream().toList();
+        List<TestResult> removedTestResults = testResultRepository.findByTestOrderAndParameter_IdInOrderByCreatedAtDesc(testOrder, removedIds);
+
+        // debug:
+        System.out.println("removedTestResults: ");
+        removedTestResults.forEach(rs -> System.out.println(" - TestResult ID: " + rs.getId() + ", Param ID: " + rs.getParameter().getId()));
+
+        // remove test results has the removed param ids kept by test order entity (on RAM):
+        testOrder.getTestResults().removeIf(removedTestResults::contains);
+
         testResultRepository.deleteAll(removedTestResults);
+        testResultRepository.flush(); // force immediate deletion
     }
 
     @Override
@@ -177,6 +191,12 @@ public class TestResultServiceImpl implements TestResultService {
             Set<Long> newParamIds = requestDTO.getParamsId();
             Set<Long> removedParamIds = SetUtils.difference(existingParamIds, newParamIds);
             Set<Long> addedParamIds = SetUtils.difference(newParamIds, existingParamIds);
+
+            // debug:
+            System.out.println("Existing Param Ids: " + existingParamIds);
+            System.out.println("New Param Ids     : " + newParamIds);
+            System.out.println("Removed Param Ids : " + removedParamIds);
+            System.out.println("Added Param Ids   : " + addedParamIds);
 
             // get test results to be removed:
             handleRemoveTestResultsByListParamIds(removedParamIds, testOrder);
