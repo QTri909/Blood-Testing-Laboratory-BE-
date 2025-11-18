@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: testorderdb
+    active: testorderdb,grpc,kafka
   kafka:
     listener:
       ack-mode: manual
@@ -14,15 +14,6 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-
-grpc:
-  server:
-    port: 9001
-    enable-keep-alive: true
-    keep-alive-time: 30s
-    keep-alive-timeout: 5s
-    max-concurrent-streams: 100
-    active: testorderdb,kafka
 
 management:
   endpoints:

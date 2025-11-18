@@ -2,18 +2,20 @@ package sum25.group03.instrumentservice.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
+import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
 import sum25.group03.instrumentservice.audit.service.AuditLogService;
 import sum25.group03.instrumentservice.controller.request.BloodTestingRequest;
 import sum25.group03.instrumentservice.controller.response.RawTestResultResponse;
 import sum25.group03.instrumentservice.exception.BarcodeAlreadyTestedException;
 import sum25.group03.instrumentservice.exception.InstrumentNotReadyException;
 import sum25.group03.instrumentservice.exception.InsufficientReagentException;
+import sum25.group03.instrumentservice.service.BloodTestingService;
 import sum25.group03.instrumentservice.service.RawTestResultService;
 import sum25.group03.instrumentservice.service.SimulatorService;
 
@@ -33,6 +35,7 @@ public class BloodTestingController {
 
     private final SimulatorService simulatorService;
     private final RawTestResultService rawTestResultService;
+    private final BloodTestingService bloodTestingService;
 
     @PostMapping("/start-test")
     @Operation(summary = "Bắt đầu chạy một xét nghiệm máu"
@@ -133,5 +136,18 @@ public class BloodTestingController {
             return xRealIp;
         }
         return request.getRemoteAddr();
+    }
+
+    @GetMapping("/test-order/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    // @Operation
+    public ApiResponse<CleanTestOrderResponse> getCleanTestOrderById(
+            @PathVariable Long id
+    ) {
+        CleanTestOrderResponse response = bloodTestingService.getCleanTestOrderById(id);
+        return ApiResponse.add(
+                "Fetch clean test order by ID successful",
+                response
+        );
     }
 }
