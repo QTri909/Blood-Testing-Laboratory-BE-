@@ -29,7 +29,7 @@ public interface TestOrderService{
     void deleteTestOrder(Long id, Long deletedBy);
     Page<TestOrderResponseDTO> getTestOrdersByPatientId(Long patientId, Integer page, Integer size, Long viewerId);
     List<TestOrderResponseDTO> getTestOrdersByStatus(TestOrderStatus status);
-    TestOrderResponseDTO updateTestOrderStatus(Long id, TestOrderStatus status, Long updatedBy);
+    TestOrderStatusUpdateResponse updateTestOrderStatus(Long id, TestOrderStatus status, Long updatedBy);
     List<TestOrderResponseDTO> getTestOrdersByCreatedBy(Long createdBy);
     TestOrderResponseForInstrument findLatestByBarcode(String barcode);
     CreationTestOrderResponse createTestOrderForExternalSystem(String barcode);

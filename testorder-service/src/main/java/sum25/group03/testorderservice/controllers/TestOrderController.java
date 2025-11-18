@@ -10,10 +10,12 @@ import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
+import sum25.group03.testorderservice.dtos.request.TestOrderStatusUpdateRequest;
 import sum25.group03.testorderservice.dtos.response.CreationTestOrderResponse;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseForInstrument;
+import sum25.group03.testorderservice.dtos.response.TestOrderStatusUpdateResponse;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 
@@ -136,12 +138,12 @@ public class TestOrderController {
 
     @PatchMapping("/{id}/status")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<TestOrderResponseDTO> updateTestOrderStatus(
+    public ApiResponse<TestOrderStatusUpdateResponse> updateTestOrderStatus(
             @PathVariable Long id,
-            @RequestParam TestOrderStatus status,
+            @Valid @RequestBody TestOrderStatusUpdateRequest statusUpdateRequest,
             @RequestHeader("X-User-Id") Long updatedBy)
     {
-        TestOrderResponseDTO response = testOrderService.updateTestOrderStatus(id, status, updatedBy);
+        TestOrderStatusUpdateResponse response = testOrderService.updateTestOrderStatus(id, statusUpdateRequest.getNewStatus(), updatedBy);
         return ApiResponse.add("Test order status updated successfully", response);
     }
 

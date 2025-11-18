@@ -308,21 +308,37 @@ public class TestOrderServiceImpl implements TestOrderService {
                 .collect(Collectors.toList());
     }
 
+    private void validatePublishTestOrder(TestOrderStatus newStatus, TestOrderStatus oldStatus) {
+        if (oldStatus == TestOrderStatus.UNPUBLISHED && newStatus != TestOrderStatus.WAITING_PAYMENT ) {
+            throw new IllegalStateException("Cannot publish test order");
+        }
+    }
+
     @Override
-    public TestOrderResponseDTO updateTestOrderStatus(Long id, TestOrderStatus status, Long updatedBy) {
-        log.info("Updating test order status to {} for id: {} by user: {}", status, id, updatedBy);
+    public TestOrderStatusUpdateResponse updateTestOrderStatus(Long id, TestOrderStatus newStatus, Long updatedBy) {
+
+        log.info("Updating test order status to {} for id: {} by user: {}", newStatus, id, updatedBy);
 
         TestOrder testOrder = testOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Test order not found with id: " + id));
 
         TestOrderStatus oldStatus = testOrder.getStatus();
-        testOrder.setStatus(status);
+        // validate status transition
+        validatePublishTestOrder(newStatus, oldStatus);
+        testOrder.setStatus(newStatus);
+
+        // store to response object:
+        TestOrderStatusUpdateResponse response = TestOrderStatusUpdateResponse.builder()
+                .testOrderId(testOrder.getId())
+                .oldStatus(oldStatus)
+                .newStatus(newStatus)
+                .build();
 
         TestOrder updatedTestOrder = testOrderRepository.save(testOrder);
         log.info("Test order status updated successfully. ID: {}, Status changed: {} -> {}, UpdatedBy: {}",
-                id, oldStatus, status, updatedBy);
+                id, oldStatus, newStatus, updatedBy);
 
-        return testOrderMapper.toResponseDto(updatedTestOrder);
+        return response;
     }
 
     @Override
