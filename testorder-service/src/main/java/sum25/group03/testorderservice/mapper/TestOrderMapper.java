@@ -1,15 +1,17 @@
 package sum25.group03.testorderservice.mapper;
 
+import lombok.RequiredArgsConstructor;
 import org.mapstruct.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
-import sum25.group03.testorder.grpc.CommentResponse;
-import sum25.group03.testorder.grpc.TestOrdersByMedicalRecordResponse;
+import sum25.group03.common.response.dtos.grpc.CleanTestResultResponse;
+import sum25.group03.testorder.grpc.*;
 import sum25.group03.testorder.grpc.TestResultResponse;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequest;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.*;
+import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
 import sum25.group03.testorderservice.entities.TestOrder;
 
 
@@ -78,7 +80,31 @@ public interface TestOrderMapper {
         return new PageImpl<>(dtoList, testOrders.getPageable(), testOrders.getTotalElements());
     }
 
-    // GRPC Mappings
+    //--------------------------------------------------------------
+    // Grpc CleanTestResultResponse to GrpcCleanTestResultResponse
+    default GrpcCleanTestResultResponse toGrpcCleanTestResultResponseDto(CleanTestResultResponse dtoResponse) {
+        return GrpcCleanTestResultResponse.newBuilder()
+                .setTestResultId(dtoResponse.getTestResultId())
+                .setParameterId(dtoResponse.getParameterId())
+                .setParameterCode(dtoResponse.getParameterCode())
+                .build();
+    }
+
+    // Map functions for gRPC methods get clean test order by test order id:
+    default GrpcCleanTestOrderResponse toGrpcCleanTestOrderResponse(CleanTestOrderResponse response) {
+        /*
+         private List<CleanTestResultResponse> testResults;
+         */
+        return GrpcCleanTestOrderResponse.newBuilder()
+                .setTestOrderId(response.getTestOrderId())
+                .setBarcode(response.getBarcode())
+                .addAllTestResults(response.getTestResults().stream()
+                        .map(this::toGrpcCleanTestResultResponseDto).collect(Collectors.toList()))
+                .build();
+    }
+
+
+    // ----------------- TestOrdersByMedicalRecordResponse mapper -----------------
     default TestOrdersByMedicalRecordResponse toGrpcMedicalRecordResponse(TestOrderResponseDTO dto) {
         if (dto == null) return null;
 

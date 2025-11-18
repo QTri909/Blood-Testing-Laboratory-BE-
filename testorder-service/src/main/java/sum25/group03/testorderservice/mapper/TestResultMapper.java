@@ -2,6 +2,7 @@ package sum25.group03.testorderservice.mapper;
 
 import org.mapstruct.*;
 import sum25.group03.common.response.dtos.grpc.CleanTestResultResponse;
+import sum25.group03.testorder.grpc.GrpcCleanTestResultResponse;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entities.TestResult;
