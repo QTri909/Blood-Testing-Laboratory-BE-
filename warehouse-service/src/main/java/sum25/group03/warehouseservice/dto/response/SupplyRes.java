@@ -18,12 +18,11 @@ public class SupplyRes {
     private double quantityReceived;
     private String lotNumber;
     private String unitOfMeasurement;
-    private LocalDate receivedDate;
+    private LocalDateTime createdAt;
     private int receivedBy;
     private LocalDate expiryDate;
     private LocalDate manufactureDate;
-    private SupplyStatus status;
+    //private SupplyStatus status;
     private String notes;
-    private LocalDateTime createdAt;
     private ReagentRes reagentRes;
 }

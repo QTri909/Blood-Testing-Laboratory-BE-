@@ -26,4 +26,5 @@ public class ConfigRes {
     private LocalDate updatedAt;
     private int createdBy;
     private int updatedBy;
+    private String instrumentName;
 }

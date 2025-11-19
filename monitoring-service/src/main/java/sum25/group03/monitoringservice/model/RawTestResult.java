@@ -21,7 +21,7 @@ public class RawTestResult {
     private String id;
     private String testOrderId;
     private String instrumentId;
-    private String hl7PMessage;
+    private String hl7Message;
     private Instant receivedAt;
     private String barcode;
     private String rawData;

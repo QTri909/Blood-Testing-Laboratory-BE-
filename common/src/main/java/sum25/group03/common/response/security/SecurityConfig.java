@@ -35,6 +35,11 @@ public class SecurityConfig {
                                 "/api/v1/auth/first-login-change-password"
                         ).permitAll()
 
+                        .requestMatchers(
+                                "/api/v1/paypal/return",
+                                "/api/v1/paypal/cancel"
+                        ).permitAll()
+                        .requestMatchers("/actuator/prometheus").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

@@ -7,6 +7,7 @@ import sum25.group03.warehouseservice.entity.enums.SupplyStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,7 +16,7 @@ import java.util.List;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class HistorySupplyRes {
-    private String purchaseOrderNumber;
+    private UUID batchCode;
     private VendorRes vendor;
     private List<SupplyRes> supply;
 }

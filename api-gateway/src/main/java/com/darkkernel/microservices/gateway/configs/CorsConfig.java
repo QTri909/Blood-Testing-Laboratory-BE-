@@ -1,4 +1,4 @@
-package com.darkkernel.microservices.gateway.routes.configs;
+package com.darkkernel.microservices.gateway.configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

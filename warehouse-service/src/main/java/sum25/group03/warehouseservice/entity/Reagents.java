@@ -40,7 +40,7 @@ public class Reagents {
     @Column(name = "storage_conditions", nullable = false)
     private String storageConditions;
 
-    @Column(name = "max_stock_level", nullable = false, columnDefinition = "integer default 0")
+    @Column(name = "max_stock_level", nullable = false, columnDefinition = "integer default 2000")
     private Integer maxStockLevel;
 
     @Column(name = "min_stock_level", nullable = false, columnDefinition = "integer default 0")

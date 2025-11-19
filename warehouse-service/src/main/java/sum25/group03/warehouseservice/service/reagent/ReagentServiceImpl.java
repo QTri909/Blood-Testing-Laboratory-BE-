@@ -2,21 +2,25 @@ package sum25.group03.warehouseservice.service.reagent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import sum25.group03.warehouseservice.dto.response.ReagentRes;
-import sum25.group03.warehouseservice.dto.response.ReagentResponseForInstrument;
-import sum25.group03.warehouseservice.dto.response.ReagentValidationResponse;
+import sum25.group03.warehouseservice.dto.response.*;
+import sum25.group03.warehouseservice.entity.ReagentHistoryUsage;
 import sum25.group03.warehouseservice.entity.ReagentInventory;
 import sum25.group03.warehouseservice.entity.Reagents;
+import sum25.group03.warehouseservice.entity.enums.ReagentInventoryStatus;
 import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
 import sum25.group03.warehouseservice.event.DeleteReagentEvent;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.repository.ReagentInventoryRepo;
 import sum25.group03.warehouseservice.repository.ReagentRepo;
+import sum25.group03.warehouseservice.repository.ReagentUsageRepo;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +29,7 @@ import java.util.stream.Collectors;
 public class ReagentServiceImpl implements ReagentService {
     private final ReagentRepo reagentRepo;
     private final ReagentInventoryRepo reagentInventoryRepo;
+    private final ReagentUsageRepo reagentUsageRepo;
     private final KafkaTemplate<String, DeleteReagentEvent> kafkaDeleteTemplate;
 
     @Override
@@ -154,13 +159,98 @@ public class ReagentServiceImpl implements ReagentService {
     @Override
     public List<ReagentRes> getAllReagents() {
         List<Reagents> reagents = reagentRepo.findAllByStatus(ReagentStatus.ACTIVE);
-        return reagents.stream().map(reagent -> {;
+        return reagents.stream().map(reagent -> {
             ReagentRes res = new ReagentRes();
             res.setReagentId(reagent.getReagentId());
             res.setReagentName(reagent.getReagentName());
             res.setCatalogNumber(reagent.getCatalogNumber());
             res.setCasNumber(reagent.getCasNumber());
-            return  res;
+            return res;
         }).toList();
     }
+    @Override
+    public PageRes<ReagentListItemRes> getReagentListItems(int page, int size) {
+
+        Page<Reagents> reagentsPage = reagentRepo.findAllByStatus(ReagentStatus.ACTIVE, PageRequest.of(page, size));
+
+        List<Long> reagentIds = reagentsPage.stream()
+                .map(Reagents::getReagentId)
+                .toList();
+
+        List<ReagentInventory> inventories = reagentIds.isEmpty()
+                ? List.of()
+                : reagentInventoryRepo.findAllByReagentIdIn(reagentIds);
+
+        Map<Long, Double> inventoryMap = inventories.stream()
+                .collect(Collectors.groupingBy(
+                        inv -> inv.getReagent().getReagentId(),
+                        Collectors.summingDouble(ReagentInventory::getQuantityAvailable)
+                ));
+
+        List<ReagentListItemRes> items = reagentsPage.stream().map(reagent -> {
+            double totalQty = inventoryMap.getOrDefault(reagent.getReagentId(), 0.0);
+            Integer maxLevelInt = reagent.getMaxStockLevel();
+            double maxLevel = maxLevelInt == null ? 0.0 : maxLevelInt.doubleValue();
+            double percentage = maxLevel > 0 ? (totalQty * 100.0) / maxLevel : 0.0;
+
+            return ReagentListItemRes.builder()
+                    .reagentId(reagent.getReagentId())
+                    .reagentName(reagent.getReagentName())
+                    .catalogNumber(reagent.getCatalogNumber())
+                    .totalStock(totalQty)
+                    .unit(reagent.getUnit())
+                    .maxStockLevel(maxLevel)
+                    .percentage(percentage)
+                    .build();
+        }).toList();
+
+        // Build PageRes from reagentsPage metadata
+        return PageRes.<ReagentListItemRes>builder()
+                .content(items)
+                .pageNumber(reagentsPage.getNumber())
+                .pageSize(reagentsPage.getSize())
+                .totalElements(reagentsPage.getTotalElements())
+                .totalPages(reagentsPage.getTotalPages())
+                .build();
+    }
+
+    @Override
+    public ReagentDetailRes getReagentDetail(Long reagentId) {
+        // Load reagent, throw if not found
+        Reagents reagent = reagentRepo.findById(reagentId)
+                .orElseThrow(() -> new NotFoundException("Reagent not found with id: " + reagentId));
+
+        // total stock (may return null)
+//        Double totalStockObj = reagentInventoryRepo.getTotalQuantitysByReagentId(reagentId);
+//        double totalStock = totalStockObj == null ? 0.0 : totalStockObj;
+
+        // fetch all inventories (lots) for this reagent
+        List<ReagentInventory> inventories = reagentInventoryRepo.findAllByReagentIdIn(List.of(reagentId));
+
+        List<ReagentInventoryRes> inventoryResList = inventories.stream().map(inv -> {
+            ReagentInventoryStatus status = inv.getStatus();
+            return ReagentInventoryRes.builder()
+                    .reagentInventoryId(inv.getReagentInventoryId())
+                    .lotNumber(inv.getLotNumber())
+                    .quantityAvailable(inv.getQuantityAvailable())
+                    .expiryDate(inv.getExpiryDate())
+                    .status(status)
+                    .build();
+        }).toList();
+
+        // min / max stock level with null-safety
+        Integer maxLevelInt = reagent.getMaxStockLevel();
+        double maxStock = maxLevelInt == null ? 0.0 : maxLevelInt.doubleValue();
+
+        return ReagentDetailRes.builder()
+                .reagentId(reagent.getReagentId())
+//                .reagentName(reagent.getReagentName())
+//                .catalogNumber(reagent.getCatalogNumber())
+                .description(reagent.getStorageConditions())
+//                .maxStockLevel(maxStock)
+//                .totalStock(totalStock)
+                .inventories(inventoryResList)
+                .build();
+    }
+
 }

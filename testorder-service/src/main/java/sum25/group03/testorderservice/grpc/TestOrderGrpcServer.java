@@ -1,5 +1,6 @@
 package sum25.group03.testorderservice.grpc;
 
+import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
 import sum25.group03.testorder.grpc.*;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
@@ -160,6 +161,28 @@ public class TestOrderGrpcServer extends TestOrderServiceGrpc.TestOrderServiceIm
 
         responseObserver.onNext(responseListBuilder.build());
         responseObserver.onCompleted();
+    }
+
+    @Override
+    public void getCleanTestOrderById(GetCleanTestOrderByIdRequest request, StreamObserver<GrpcCleanTestOrderResponse> responseObserver) {
+
+        try {
+            long testOrderId = request.getTestOrderId();
+            if (testOrderId <= 0L)
+                throw new RuntimeException("testOrderId is null or zero or negative");
+
+            CleanTestOrderResponse cleanResponse = testOrderService.getTestOrderByIdCleanData(testOrderId);
+            GrpcCleanTestOrderResponse grpcResponse = testOrderMapper.toGrpcCleanTestOrderResponse(cleanResponse);
+
+            responseObserver.onNext(grpcResponse);
+            responseObserver.onCompleted();
+
+        } catch(Exception e) {
+            log.error("Error in getCleanTestOrderById", e);
+            responseObserver.onError(io.grpc.Status.INTERNAL
+                    .withDescription("Internal server error: " + e.getMessage())
+                    .asException());
+        }
     }
 
 }

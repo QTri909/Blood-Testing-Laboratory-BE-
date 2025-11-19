@@ -1,17 +1,17 @@
 package sum25.group03.testorderservice.mapper;
 
+import lombok.RequiredArgsConstructor;
 import org.mapstruct.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import sum25.group03.testorder.grpc.CommentResponse;
-import sum25.group03.testorder.grpc.TestOrdersByMedicalRecordResponse;
+import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
+import sum25.group03.common.response.dtos.grpc.CleanTestResultResponse;
+import sum25.group03.testorder.grpc.*;
 import sum25.group03.testorder.grpc.TestResultResponse;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequest;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
-import sum25.group03.testorderservice.dtos.response.CommentResponseDTO;
+import sum25.group03.testorderservice.dtos.response.*;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
-import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
-import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entities.TestOrder;
 
 
@@ -28,6 +28,12 @@ public interface TestOrderMapper {
     @Mapping(target = "testResults", source = "testResults")
     @Mapping(target = "comments", source = "comments")
     @Mapping(target = "code", source = "code")
+    @Mapping(target = "type", source = "type")
+    @Mapping(target = "status", source = "status")
+    @Mapping(target = "globalTestParameterId", source = "globalTestParameterId")
+    @Mapping(target = "runDate", source = "runDate")
+    @Mapping(target = "barcode", source = "barcode")
+    @Mapping(target = "runBy", source = "runBy")
     TestOrderResponseDTO toResponseDto(TestOrder testOrder);
 
     List<TestOrderResponseDTO> toResponseDtoList(List<TestOrder> testOrders);
@@ -61,6 +67,12 @@ public interface TestOrderMapper {
     @Mapping(target = "comments", ignore = true)
     void updateEntity(TestOrderRequestDTO requestDto, @MappingTarget TestOrder testOrder);
 
+    // to CleanTestOrderResponse
+    @Mapping(target="testOrderId", source="id")
+    @Mapping(target="barcode", source="barcode")
+    @Mapping(target="testResults", source="testResults")
+    CleanTestOrderResponse toCleanResponseDto(TestOrder testOrder);
+
     // manually mappings Page<TestOrder> to Page<TestOrderResponseDTO>
     default Page<TestOrderResponseDTO> toResponseDtoPage(Page<TestOrder> testOrders) {
         List<TestOrder> entities = testOrders.getContent();
@@ -68,7 +80,31 @@ public interface TestOrderMapper {
         return new PageImpl<>(dtoList, testOrders.getPageable(), testOrders.getTotalElements());
     }
 
-    // GRPC Mappings
+    //--------------------------------------------------------------
+    // Grpc CleanTestResultResponse to GrpcCleanTestResultResponse
+    default GrpcCleanTestResultResponse toGrpcCleanTestResultResponseDto(CleanTestResultResponse dtoResponse) {
+        return GrpcCleanTestResultResponse.newBuilder()
+                .setTestResultId(dtoResponse.getTestResultId())
+                .setParameterId(dtoResponse.getParameterId())
+                .setParameterCode(dtoResponse.getParameterCode())
+                .build();
+    }
+
+    // Map functions for gRPC methods get clean test order by test order id:
+    default GrpcCleanTestOrderResponse toGrpcCleanTestOrderResponse(CleanTestOrderResponse response) {
+        /*
+         private List<CleanTestResultResponse> testResults;
+         */
+        return GrpcCleanTestOrderResponse.newBuilder()
+                .setTestOrderId(response.getTestOrderId())
+                .setBarcode(response.getBarcode())
+                .addAllTestResults(response.getTestResults().stream()
+                        .map(this::toGrpcCleanTestResultResponseDto).collect(Collectors.toList()))
+                .build();
+    }
+
+
+    // ----------------- TestOrdersByMedicalRecordResponse mapper -----------------
     default TestOrdersByMedicalRecordResponse toGrpcMedicalRecordResponse(TestOrderResponseDTO dto) {
         if (dto == null) return null;
 

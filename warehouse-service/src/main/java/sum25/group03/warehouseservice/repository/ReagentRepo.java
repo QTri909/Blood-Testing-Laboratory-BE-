@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import sum25.group03.warehouseservice.dto.response.PageRes;
 import sum25.group03.warehouseservice.entity.Reagents;
 import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
 
@@ -45,4 +44,7 @@ public interface ReagentRepo extends JpaRepository<Reagents, Long> {
 
     @Query("SELECT DISTINCT r FROM Reagents r")
     List<Reagents> findAllDistinct();
+
+    // Support pageable return type so service can request a Page
+    Page<Reagents> findAllByStatus(ReagentStatus reagentStatus, Pageable pageable);
 }

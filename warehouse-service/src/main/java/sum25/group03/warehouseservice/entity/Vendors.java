@@ -24,9 +24,6 @@ public class Vendors {
     @Column(name = "vendor_name", nullable = false)
     private String vendorName;
 
-    @Column(name = "vendor_code", nullable = false)
-    private String vendorCode;
-
     @Column(name = "contact_person", nullable = false)
     private String contactPerson;
 
@@ -39,9 +36,6 @@ public class Vendors {
     @Column(name = "address", nullable = false)
     private String address;
 
-    @Column(name = "deleted", nullable = false)
-    private boolean deleted;
-
     @Column(name = "active", nullable = false)
     private boolean active;
 
@@ -52,9 +46,6 @@ public class Vendors {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDate updatedAt;
-
-    @Column(name = "deactivated_at")
-    private LocalDate deactivatedAt;
 
     @Column(name = "updated_by", nullable = false)
     private int updatedBy;

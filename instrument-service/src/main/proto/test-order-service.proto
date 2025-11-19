@@ -7,6 +7,7 @@ service TestOrderService {
   rpc GetTestOrderByBarcode(GetTestOrderByBarcodeRequest) returns (GetTestOrderByBarcodeResponse);
   rpc CreateUnmatchedOrder(CreateUnmatchedOrderRequest) returns (CreateUnmatchedOrderResponse);
   rpc GetLatestTestOrderByPatientId (GetLatestTestOrderRequest) returns (TestOrderResponse);
+  rpc GetCleanTestOrderById(GetCleanTestOrderByIdRequest) returns (GrpcCleanTestOrderResponse);
 }
 
 message GetLatestTestOrderRequest {
@@ -55,4 +56,21 @@ message CreateUnmatchedOrderResponse {
   string created_at = 11;
   bool success = 13;
   string message = 14;
+}
+
+// ---------------------- Get clean test order by ID -----------------
+message GetCleanTestOrderByIdRequest {
+  int64 testOrderId = 1;
+}
+
+message GrpcCleanTestOrderResponse {
+  int64 testOrderId = 1;
+  string barcode = 2;
+  repeated GrpcCleanTestResultResponse testResults = 3;
+}
+
+message GrpcCleanTestResultResponse {
+  int64 testResultId = 1;
+  int64 parameterId = 2;
+  string parameterCode = 3;
 }

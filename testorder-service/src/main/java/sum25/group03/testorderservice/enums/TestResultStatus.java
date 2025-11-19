@@ -6,5 +6,6 @@ public enum TestResultStatus {
     FAILED,
     CANCELLED,
     WAITING,
-    REVIEWED
+    REVIEWED,
+    AI_REVIEWED
 }

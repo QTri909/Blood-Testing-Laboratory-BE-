@@ -33,6 +33,7 @@
     <parameter name="PATIENT_NAME" class="java.lang.String"/>
     <parameter name="REPORT_DATE" class="java.lang.String"/>
 
+
     <!-- ==================== ROOT DATASET FIELDS ==================== -->
     <field name="id" class="java.lang.Long"/>
     <field name="patientName" class="java.lang.String"/>
@@ -48,6 +49,41 @@
 
     <!-- ==================== TITLE ==================== -->
     <title>
+        <band height="80">
+
+
+            <!-- Logo bên trái -->
+            <image>
+                <reportElement x="0" y="5" width="75" height="75"/>
+                <imageExpression><![CDATA["images/logo.jpg"]]></imageExpression>
+            </image>
+
+
+            <!-- Thông tin bệnh viện bên phải -->
+            <staticText>
+                <reportElement x="70" y="5" width="480" height="20"/>
+                <textElement>
+                    <font size="14" isBold="true"/>
+                </textElement>
+                <text><![CDATA[BỆNH VIỆN ABC]]></text>
+            </staticText>
+
+
+            <staticText>
+                <reportElement x="70" y="25" width="480" height="18" />
+                <text><![CDATA[123 Đường Sức Khỏe, Phường 1, Quận 2]]></text>
+            </staticText>
+
+
+            <staticText>
+                <reportElement x="70" y="42" width="480" height="18"/>
+                <text><![CDATA[Hotline: 0123 456 789 – Website: www.benhvienabc.com]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <!-- ================= HEADER ================ -->
+    <pageHeader>
         <band height="60">
             <textField>
                 <reportElement x="0" y="10" width="555" height="20"/>
@@ -71,23 +107,24 @@
                 <textFieldExpression><![CDATA["Date: " + ($P{REPORT_DATE} != null ? $P{REPORT_DATE} : "")]]></textFieldExpression>
             </textField>
         </band>
-    </title>
+
+    </pageHeader>
 
     <!-- ==================== DETAIL ==================== -->
     <detail>
-        <band height="200">
-            <staticText>
-                <reportElement x="0" y="0" width="555" height="20"/>
-                <text><![CDATA[Order Information]]></text>
-            </staticText>
+        <band height="120">
+<!--            <staticText>-->
+<!--                <reportElement x="0" y="0" width="555" height="20"/>-->
+<!--                <text><![CDATA[Order Information]]></text>-->
+<!--            </staticText>-->
 
             <textField>
-                <reportElement x="0" y="25" width="300" height="18"/>
+                <reportElement x="0" y="5" width="300" height="18"/>
                 <textFieldExpression><![CDATA["Order ID: " + ($F{id} != null ? $F{id} : "")]]></textFieldExpression>
             </textField>
 
             <textField>
-                <reportElement x="0" y="45" width="300" height="18"/>
+                <reportElement x="0" y="25" width="300" height="18"/>
                 <textElement>
                     <font fontName="DejaVu Sans"
                           pdfFontName="fonts/DejaVuSans.ttf"
@@ -98,33 +135,56 @@
             </textField>
 
             <textField>
-                <reportElement x="0" y="65" width="300" height="18"/>
+                <reportElement x="0" y="45" width="300" height="18"/>
                 <textFieldExpression><![CDATA["Phone: " + ($F{phoneNumber} != null ? $F{phoneNumber} : "")]]></textFieldExpression>
             </textField>
 
             <textField>
-                <reportElement x="0" y="85" width="300" height="18"/>
+                <reportElement x="0" y="65" width="300" height="18"/>
                 <textFieldExpression><![CDATA["Status: " + ($F{status} != null ? $F{status}.name() : "")]]></textFieldExpression>
             </textField>
 
+            <textField>
+                <reportElement x="300" y="5" width="300" height="18"/>
+                <textFieldExpression><![CDATA["Created By: " + ($F{createdBy} != null ? $F{createdBy}.toString() : "")]]></textFieldExpression>
+            </textField>
 
             <textField>
-                <reportElement x="0" y="105" width="555" height="18"/>
-                <textFieldExpression><![CDATA["Created By: " + ($F{createdBy} != null ? $F{createdBy}.toString() : "")
-                + " | Created On: " + ($F{createdAt} != null
+                <reportElement x="300" y="25" width="300" height="18"/>
+                <textFieldExpression><![CDATA["Created On: " + ($F{createdAt} != null
                      ? new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
                     .format(java.sql.Timestamp.valueOf($F{createdAt}))
                     : "")]]></textFieldExpression>
             </textField>
 
+
+<!--            <textField>-->
+<!--                <reportElement x="0" y="105" width="555" height="18"/>-->
+<!--                <textFieldExpression><![CDATA["Created By: " + ($F{createdBy} != null ? $F{createdBy}.toString() : "")-->
+<!--                + " | Created On: " + ($F{createdAt} != null-->
+<!--                     ? new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss")-->
+<!--                    .format(java.sql.Timestamp.valueOf($F{createdAt}))-->
+<!--                    : "")]]></textFieldExpression>-->
+<!--            </textField>-->
+
             <textField>
-                <reportElement x="0" y="125" width="555" height="18"/>
-                <textFieldExpression><![CDATA["Run By: " + ($F{runBy} != null ? $F{runBy}.toString() : "")
-                + " | Run On: " + ($F{runOn} != null ? $F{runOn}.toString() : "")]]></textFieldExpression>
+                <reportElement x="300" y="45" width="300" height="18"/>
+                <textFieldExpression><![CDATA["Run By: " + ($F{runBy} != null ? $F{runBy}.toString() : "")]]></textFieldExpression>
             </textField>
 
             <textField>
-                <reportElement x="0" y="145" width="555" height="18"/>
+                <reportElement x="300" y="65" width="300" height="18"/>
+                <textFieldExpression><![CDATA["Run On: " + ($F{runOn} != null ? $F{runOn}.toString() : "")]]></textFieldExpression>
+            </textField>
+
+<!--            <textField>-->
+<!--                <reportElement x="0" y="125" width="555" height="18"/>-->
+<!--                <textFieldExpression><![CDATA["Run By: " + ($F{runBy} != null ? $F{runBy}.toString() : "")-->
+<!--                + " | Run On: " + ($F{runOn} != null ? $F{runOn}.toString() : "")]]></textFieldExpression>-->
+<!--            </textField>-->
+
+            <textField>
+                <reportElement x="0" y="85" width="555" height="18"/>
                 <textElement>
                     <font fontName="DejaVu Sans"
                           pdfFontName="fonts/DejaVuSans.ttf"
@@ -138,9 +198,12 @@
 
     <!-- ==================== SUMMARY (TABLE) ==================== -->
     <summary>
-        <band height="300">
+        <band height="400" splitType="Stretch">
             <staticText>
                 <reportElement x="0" y="0" width="555" height="20"/>
+                <textElement>
+                    <font isBold="true" size="12"/>
+                </textElement>
                 <text><![CDATA[Test Results and Comments]]></text>
             </staticText>
 
@@ -158,7 +221,7 @@
                     <c:column width="100">
                         <c:columnHeader height="20">
                             <staticText>
-                                <reportElement x="0" y="0" width="100" height="20"/>
+                                <reportElement x="0" y="0" width="100" height="20" backcolor="#D6EAF8" mode="Opaque"/>
                                 <text><![CDATA[Parameter]]></text>
                             </staticText>
                         </c:columnHeader>
@@ -174,7 +237,7 @@
                     <c:column width="70">
                         <c:columnHeader height="20">
                             <staticText>
-                                <reportElement x="0" y="0" width="70" height="20"/>
+                                <reportElement x="0" y="0" width="70" height="20" backcolor="#D6EAF8" mode="Opaque"/>
                                 <text><![CDATA[Value]]></text>
                             </staticText>
                         </c:columnHeader>
@@ -190,7 +253,7 @@
                     <c:column width="80">
                         <c:columnHeader height="20">
                             <staticText>
-                                <reportElement x="0" y="0" width="80" height="20"/>
+                                <reportElement x="0" y="0" width="80" height="20" backcolor="#D6EAF8" mode="Opaque"/>
                                 <text><![CDATA[Flag]]></text>
                             </staticText>
                         </c:columnHeader>
@@ -206,7 +269,7 @@
                     <c:column width="80">
                         <c:columnHeader height="20">
                             <staticText>
-                                <reportElement x="0" y="0" width="80" height="20"/>
+                                <reportElement x="0" y="0" width="80" height="20" backcolor="#D6EAF8" mode="Opaque"/>
                                 <text><![CDATA[Status]]></text>
                             </staticText>
                         </c:columnHeader>
@@ -222,7 +285,7 @@
                     <c:column width="225">
                         <c:columnHeader height="20">
                             <staticText>
-                                <reportElement x="0" y="0" width="225" height="20"/>
+                                <reportElement x="0" y="0" width="225" height="20" backcolor="#D6EAF8" mode="Opaque"/>
                                 <text><![CDATA[Comments]]></text>
                             </staticText>
                         </c:columnHeader>
@@ -242,6 +305,42 @@
 
                 </c:table>
             </componentElement>
+
+            <!-- Footer trang cuối -->
+            <image>
+                <reportElement x="0" y="270" width="80" height="80" forecolor="#566573"/>
+                <imageExpression><![CDATA["images/QR-Code.png"]]></imageExpression>
+            </image>
+
+            <staticText>
+                <reportElement x="370" y="270" width="200" height="20"/>
+                <textElement textAlignment="Center">
+                    <font fontName="DejaVu Sans"
+                          pdfFontName="fonts/DejaVuSans.ttf"
+                          pdfEncoding="Identity-H"
+                          isPdfEmbedded="true"
+                    isBold="true"/>
+                </textElement>
+                <text><![CDATA[Bác sĩ phụ trách]]></text>
+            </staticText>
+
+            <image>
+                <reportElement x="390" y="295" width="150" height="40" forecolor="#566573"/>
+                <imageExpression><![CDATA["images/doctor-signature.png"]]></imageExpression>
+            </image>
+
+            <staticText>
+                <reportElement x="0" y="355" width="555" height="15"/>
+                <textElement textAlignment="Center">
+                    <font fontName="DejaVu Sans"
+                          pdfFontName="fonts/DejaVuSans.ttf"
+                          pdfEncoding="Identity-H"
+                          isPdfEmbedded="true"
+                          isBold="true"/>
+                </textElement>
+
+                <text><![CDATA[Đây là tài liệu nội bộ của bệnh viện. Không chỉnh sửa khi chưa được authorized.]]></text>
+            </staticText>
         </band>
     </summary>
 

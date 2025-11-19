@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
 import sum25.group03.common.response.events.UserCreatedEvent;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.*;
@@ -29,6 +30,7 @@ import sum25.group03.testorderservice.specification.TestOrderSpecification;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -82,8 +84,20 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         TestOrderResponseDTO result = testOrderMapper.toResponseDto(entity);
         result.setTestResults(testResultDtos);
+        if (result.getType() == null && entity.getType() != null)
+            result.setType(entity.getType().toString());
         result.setTotalPrice(totalPrice);
         return result;
+    }
+
+    @Override
+    public CleanTestOrderResponse getTestOrderByIdCleanData(Long id) {
+
+        TestOrder entity = repository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("TestOrder not found with id " + id));
+
+        // map to CleanTestOrderResponse
+        return testOrderMapper.toCleanResponseDto(entity);
     }
 
     @Override
@@ -98,7 +112,55 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         Page<TestOrder> orders = repository.findAll(pageable);
 
-        return testOrderMapper.toResponseDtoPage(orders);
+        // get list of all patientId and list of all createdBy from test orders:
+        List<Long> patientIds = orders.stream().map(TestOrder::getPatientId).filter(Objects::nonNull).toList();
+        List<Long> creatorIds = orders.stream().map(TestOrder::getCreatedBy).filter(Objects::nonNull).toList();
+
+        // call grpc to patient service database to get map of patientId and creatorId
+        // -> Map<patientId, patientName> and Map<creatorId, creatorName>
+        GrpcMappingPatientAndCreatorIdResponse mappingResponse = patientGrpcClient.mappingPatientIdAndCreatorIdToTheirName(patientIds, creatorIds);
+
+        // map to Page<TestOrderResponseDTO>
+        Page<TestOrderResponseDTO> result = testOrderMapper.toResponseDtoPage(orders);
+
+        // traverse and set patientName and creatorName for each TestOrderResponseDTO
+        Map<Long, String> patientMap = mappingResponse.getMappingPatientIdToName();
+        Map<Long, String> creatorMap = mappingResponse.getMappingCreatorIdToName();
+
+        // mapping each TestOrder id with its type as tring:
+        Map<Long, String> testOrderIdWithType = orders.stream().map(order -> {
+            Long key = order.getId();
+            String value = order.getType().toString();
+            if (value == null) value = "UNKNOWN";
+            return Map.entry(key, value);
+        }).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+        for (TestOrderResponseDTO dto : result) {
+            Long patientId = dto.getPatientId();
+            Long creatorId = dto.getCreatedBy();
+
+            // safe patient name
+            dto.setPatientName(
+                    patientId != null && patientMap != null
+                            ? patientMap.getOrDefault(patientId, "Unknown")
+                            : "Unknown"
+            );
+
+
+            // safe creator name
+            dto.setCreatedByName(
+                    creatorId != null && creatorMap != null
+                            ? creatorMap.getOrDefault(creatorId, "Unknown")
+                            : "Unknown"
+            );
+
+             // set type if it's null:
+             String entityType = testOrderIdWithType.get(dto.getId());
+             if (dto.getType() == null)
+                dto.setType(entityType);
+        }
+
+        return result;
     }
 
     @Override
@@ -246,21 +308,37 @@ public class TestOrderServiceImpl implements TestOrderService {
                 .collect(Collectors.toList());
     }
 
+    private void validatePublishTestOrder(TestOrderStatus newStatus, TestOrderStatus oldStatus) {
+        if (oldStatus == TestOrderStatus.UNPUBLISHED && newStatus != TestOrderStatus.WAITING_PAYMENT ) {
+            throw new IllegalStateException("Cannot publish test order");
+        }
+    }
+
     @Override
-    public TestOrderResponseDTO updateTestOrderStatus(Long id, TestOrderStatus status, Long updatedBy) {
-        log.info("Updating test order status to {} for id: {} by user: {}", status, id, updatedBy);
+    public TestOrderStatusUpdateResponse updateTestOrderStatus(Long id, TestOrderStatus newStatus, Long updatedBy) {
+
+        log.info("Updating test order status to {} for id: {} by user: {}", newStatus, id, updatedBy);
 
         TestOrder testOrder = testOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Test order not found with id: " + id));
 
         TestOrderStatus oldStatus = testOrder.getStatus();
-        testOrder.setStatus(status);
+        // validate status transition
+        validatePublishTestOrder(newStatus, oldStatus);
+        testOrder.setStatus(newStatus);
+
+        // store to response object:
+        TestOrderStatusUpdateResponse response = TestOrderStatusUpdateResponse.builder()
+                .testOrderId(testOrder.getId())
+                .oldStatus(oldStatus)
+                .newStatus(newStatus)
+                .build();
 
         TestOrder updatedTestOrder = testOrderRepository.save(testOrder);
         log.info("Test order status updated successfully. ID: {}, Status changed: {} -> {}, UpdatedBy: {}",
-                id, oldStatus, status, updatedBy);
+                id, oldStatus, newStatus, updatedBy);
 
-        return testOrderMapper.toResponseDto(updatedTestOrder);
+        return response;
     }
 
     @Override

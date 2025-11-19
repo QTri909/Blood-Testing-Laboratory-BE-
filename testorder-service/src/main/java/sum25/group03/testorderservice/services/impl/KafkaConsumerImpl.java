@@ -10,7 +10,6 @@ import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 import sum25.group03.testorderservice.component.Hl7Parser;
 import sum25.group03.testorderservice.entities.TestResult;
-import sum25.group03.testorderservice.mapper.TestResultMapper;
 import sum25.group03.testorderservice.repositories.TestResultRepository;
 import sum25.group03.testorderservice.services.interfaces.IKafkaConsumer;
 
@@ -19,20 +18,14 @@ import java.io.IOException;
 @Service
 public class KafkaConsumerImpl implements IKafkaConsumer {
     private final KafkaTemplate<String, String> kafkaTemplate;
-
-    private final TestResultMapper testResultMapper;
-
     @Autowired
     private Hl7Parser  hl7Parser;
-
-    private static final String CRASH_FLAG_FILE = "crash-flag.txt";
 
     @Autowired
     private TestResultRepository testResultRepository;
 
-    public KafkaConsumerImpl(KafkaTemplate<String, String> kafkaTemplate,  TestResultMapper testResultMapper) {
+    public KafkaConsumerImpl(KafkaTemplate<String, String> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
-        this.testResultMapper = testResultMapper;
     }
 
     @Override
@@ -42,10 +35,10 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
         try {
             process(message);
         } catch (Exception e) {
-            System.err.println("❌ Error while processing message: " + e.getMessage());
+            System.err.println("Error while processing message: " + e.getMessage());
         } finally {
             ack.acknowledge();
-            System.out.println("📦 Offset acknowledged for message: " + message);
+            System.out.println("Offset acknowledged for message: " + message);
         }
     }
 
@@ -71,11 +64,11 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
             TestResult testResult = hl7Parser.parseHL7(hl7Content);
             testResultRepository.save(testResult);
 
-            System.out.println("✅ Saved test result ID: " + testResult.getId());
-            System.out.println("🧬 Value: " + testResult.getValue());
+            System.out.println("Saved test result ID: " + testResult.getId());
+            System.out.println("Value: " + testResult.getValue());
 
         } catch (Exception e) {
-            System.err.println("❌ Parsing failed: " + e.getMessage());
+            System.err.println("Parsing failed: " + e.getMessage());
             sendToQuarantine(message, e.getMessage());
         }
     }
@@ -87,6 +80,6 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
 
         String wrapped = "❌ INVALID HL7 [" + reason + "] → " + msgStr;
         kafkaTemplate.send("test-order-quaratine", wrapped);
-        System.out.println("🚨 Sent to quarantine queue: " + wrapped);
+        System.out.println("Sent to quarantine queue: " + wrapped);
     }
 }

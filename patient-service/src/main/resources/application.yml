@@ -2,3 +2,12 @@
 spring:
   profiles:
     active: patientdb,auditdb,es,kafka
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    prometheus:
+      enabled: true

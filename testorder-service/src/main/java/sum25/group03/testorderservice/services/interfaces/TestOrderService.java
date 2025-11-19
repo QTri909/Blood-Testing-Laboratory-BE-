@@ -1,12 +1,10 @@
 package sum25.group03.testorderservice.services.interfaces;
 
 import org.springframework.data.domain.Page;
+import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
-import sum25.group03.testorderservice.dtos.response.CreationTestOrderResponse;
-import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
+import sum25.group03.testorderservice.dtos.response.*;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
-import sum25.group03.testorderservice.dtos.response.TestOrderResponse;
-import sum25.group03.testorderservice.dtos.response.TestOrderResponseForInstrument;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 
 import java.util.List;
@@ -15,6 +13,9 @@ public interface TestOrderService{
 
     // -------- THUYEN---------
     TestOrderResponseDTO getTestOrderById(Long id, Long viewerId);
+    CleanTestOrderResponse getTestOrderByIdCleanData(Long id);
+
+
     Page<TestOrderResponseDTO> getAllTestOrders(Integer page, Integer size, Long viewerId);
     List<TestOrderResponseDTO> getAllTestOrdersByMedicalRecordId(Long medicalRecordId, Long viewerId);
     List<TestOrderResponseDTO> filterTestOrders(TestOrderFiltering filterInfo, Long viewerId);
@@ -28,7 +29,7 @@ public interface TestOrderService{
     void deleteTestOrder(Long id, Long deletedBy);
     Page<TestOrderResponseDTO> getTestOrdersByPatientId(Long patientId, Integer page, Integer size, Long viewerId);
     List<TestOrderResponseDTO> getTestOrdersByStatus(TestOrderStatus status);
-    TestOrderResponseDTO updateTestOrderStatus(Long id, TestOrderStatus status, Long updatedBy);
+    TestOrderStatusUpdateResponse updateTestOrderStatus(Long id, TestOrderStatus status, Long updatedBy);
     List<TestOrderResponseDTO> getTestOrdersByCreatedBy(Long createdBy);
     TestOrderResponseForInstrument findLatestByBarcode(String barcode);
     CreationTestOrderResponse createTestOrderForExternalSystem(String barcode);

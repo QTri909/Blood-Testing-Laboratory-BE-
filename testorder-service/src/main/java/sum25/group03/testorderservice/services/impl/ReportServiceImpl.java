@@ -51,7 +51,17 @@ public class ReportServiceImpl implements ReportService {
                 .orElse("")
                 : "";
 
-        //  Lấy thông tin bệnh nhân qua gRPC
+
+        //mook data patientid=1001
+//        long patientId = order.getPatientId();
+//        if(patientId==0){
+//            patientId=1001;
+//            order.setPatientId(patientId);
+//        }
+//        GetPatientByIdResponse patientResponse = patientGrpcClient.getPatientById(patientId);
+
+
+//          Lấy thông tin bệnh nhân qua gRPC
         GetPatientByIdResponse patient = patientGrpcClient.getPatientById(order.getPatientId());
 
         List<TestResultResponseExportPDFDTO> resultsDTO = order.getTestResults().stream().map(r ->

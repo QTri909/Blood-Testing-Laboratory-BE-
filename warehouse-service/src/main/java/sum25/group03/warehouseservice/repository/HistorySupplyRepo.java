@@ -8,9 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import sum25.group03.warehouseservice.entity.ReagentHistorySupply;
-
-import java.time.LocalDate;
+import sum25.group03.warehouseservice.entity.Reagents;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
 public interface HistorySupplyRepo extends JpaRepository<ReagentHistorySupply, Long> {
@@ -22,46 +22,22 @@ public interface HistorySupplyRepo extends JpaRepository<ReagentHistorySupply, L
     """)
     Page<ReagentHistorySupply> findAllWithVendorAndReagent(Pageable pageable);
     @Query("""
-    SELECT r.purchaseOrderNumber
+    SELECT r.batchCode
     FROM ReagentHistorySupply r
-    GROUP BY r.purchaseOrderNumber
+    GROUP BY r.batchCode
     ORDER BY MAX(r.createdAt) DESC
 """)
-    Page<String> findDistinctPurchaseOrderNumbers(Pageable pageable);
+    Page<UUID> findDistinctBatchCode(Pageable pageable);
 
     @Query("""
     SELECT DISTINCT r
     FROM ReagentHistorySupply r
     JOIN FETCH r.vendor v
     JOIN FETCH r.reagent re
-    WHERE r.purchaseOrderNumber IN :poNumbers
+    WHERE r.batchCode IN :batchCode
 """)
-    List<ReagentHistorySupply> findAllByPurchaseOrderNumberInFetch(List<String> poNumbers);
+    List<ReagentHistorySupply> findAllByBatchCodeInFetch(@Param("batchCode")List<UUID> batchCode);
 
-    @EntityGraph(attributePaths = {"reagent"})
-    List<ReagentHistorySupply> findAllByPurchaseOrderNumber(String purchaseOrderNumber);
-
-    @EntityGraph(attributePaths = {"vendor", "reagent"})
-    @Query("""
-    SELECT s FROM ReagentHistorySupply s
-    WHERE 
-        (:vendorName IS NULL 
-         OR :vendorName = '' 
-         OR LOWER(s.vendor.vendorName) LIKE LOWER(CONCAT('%', :vendorName, '%')))
-    AND 
-        (:reagentName IS NULL 
-         OR :reagentName = '' 
-         OR LOWER(s.reagent.reagentName) LIKE LOWER(CONCAT('%', :reagentName, '%')))
-    AND 
-        (CAST(:startDate AS date) IS NULL OR s.receivedDate >= :startDate)
-    AND 
-        (CAST(:endDate AS date) IS NULL OR s.receivedDate <= :endDate)
-""")
-    Page<ReagentHistorySupply> filterSupplyHistory(
-            @Param("vendorName") String vendorName,
-            @Param("reagentName") String reagentName,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
-            Pageable pageable
-    );
+//    @EntityGraph(attributePaths = {"reagent"})
+//    List<ReagentHistorySupply> findAllByPurchaseOrderNumber(String purchaseOrderNumber);
 }

@@ -11,6 +11,7 @@ service TestOrderService {
   rpc CreateUnmatchedOrder(CreateUnmatchedOrderRequest) returns (CreateUnmatchedOrderResponse);
   rpc GetLatestTestOrderByPatientId (GetLatestTestOrderRequest) returns (TestOrderResponse);
   rpc GetAllTestOrdersByMedicalRecordId (MedicalRecordIdRequest) returns (TestOrdersByMedicalRecordResponseList);
+  rpc GetCleanTestOrderById(GetCleanTestOrderByIdRequest) returns (GrpcCleanTestOrderResponse);
 }
 
 //---------------------- Get latest test order by patient ID -----------------
@@ -113,4 +114,21 @@ message TestOrdersByMedicalRecordResponse {
 
 message TestOrdersByMedicalRecordResponseList {
   repeated TestOrdersByMedicalRecordResponse testOrders = 1;
+}
+
+// ---------------------- Get clean test order by ID -----------------
+message GetCleanTestOrderByIdRequest {
+  int64 testOrderId = 1;
+}
+
+message GrpcCleanTestOrderResponse {
+  int64 testOrderId = 1;
+  string barcode = 2;
+  repeated GrpcCleanTestResultResponse testResults = 3;
+}
+
+message GrpcCleanTestResultResponse {
+  int64 testResultId = 1;
+  int64 parameterId = 2;
+  string parameterCode = 3;
 }

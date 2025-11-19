@@ -24,7 +24,7 @@ CREATE TABLE comment (
                          test_order_id BIGINT,
                          test_result_id BIGINT,
                          comment_text TEXT NOT NULL,
-                         status VARCHAR(255) CHECK (status IN ('VISIBLE','HIDDEN','DELETED'))
+                         status VARCHAR(255) CHECK (status IN ('VISIBLE','HIDDEN','DELETED', 'ACTIVE'))
 );
 
 -- =========================================================
@@ -76,6 +76,7 @@ CREATE TABLE test_order (
                             )),
                             barcode VARCHAR(255) UNIQUE,
                             run_date DATE,
+                            global_test_parameter_id BIGINT,
                             created_at TIMESTAMP(6) NOT NULL,
                             updated_at TIMESTAMP(6) NOT NULL,
                             created_by BIGINT NOT NULL,

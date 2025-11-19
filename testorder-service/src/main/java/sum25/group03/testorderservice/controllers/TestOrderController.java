@@ -6,21 +6,23 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
+import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
+import sum25.group03.testorderservice.dtos.request.TestOrderStatusUpdateRequest;
 import sum25.group03.testorderservice.dtos.response.CreationTestOrderResponse;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseForInstrument;
+import sum25.group03.testorderservice.dtos.response.TestOrderStatusUpdateResponse;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/test-orders")
+@RequestMapping("/api/v1/test-orders")  // {{api_gateway}}/api/v1/test-orders
 @RequiredArgsConstructor
 @Slf4j
 public class TestOrderController {
@@ -58,6 +60,15 @@ public class TestOrderController {
     ) {
         return ApiResponse.add("Get test order by id successfully",
                 testOrderService.getTestOrderById(id, viewerId));
+    }
+
+    @GetMapping("/{id}/clean-data")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<CleanTestOrderResponse> getByIdCleanData(
+            @PathVariable Long id
+    ) {
+        return ApiResponse.add("Get test order with clean data by id successfully",
+                testOrderService.getTestOrderByIdCleanData(id));
     }
 
     @GetMapping("/filter")
@@ -127,12 +138,12 @@ public class TestOrderController {
 
     @PatchMapping("/{id}/status")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<TestOrderResponseDTO> updateTestOrderStatus(
+    public ApiResponse<TestOrderStatusUpdateResponse> updateTestOrderStatus(
             @PathVariable Long id,
-            @RequestParam TestOrderStatus status,
+            @Valid @RequestBody TestOrderStatusUpdateRequest statusUpdateRequest,
             @RequestHeader("X-User-Id") Long updatedBy)
     {
-        TestOrderResponseDTO response = testOrderService.updateTestOrderStatus(id, status, updatedBy);
+        TestOrderStatusUpdateResponse response = testOrderService.updateTestOrderStatus(id, statusUpdateRequest.getNewStatus(), updatedBy);
         return ApiResponse.add("Test order status updated successfully", response);
     }
 
