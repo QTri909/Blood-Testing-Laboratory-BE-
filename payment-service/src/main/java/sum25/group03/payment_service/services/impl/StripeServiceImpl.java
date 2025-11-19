@@ -7,6 +7,7 @@ import com.stripe.model.Event;
 import com.stripe.model.PaymentIntent;
 import com.stripe.net.ApiResource;
 import com.stripe.net.Webhook;
+import com.stripe.param.PaymentIntentCreateParams;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -55,27 +56,21 @@ public class StripeServiceImpl implements IStripeService {
     @Transactional
     public Map<String, Object> createPaymentIntent(Long amount, String currency) throws StripeException {
         Stripe.apiKey = stripeSecretKey;
-        PaymentProvider paymentProvider = paymentProviderRepository.findById(String.valueOf(1))
-                .orElseThrow(EntityNotFoundException::new);
-        Map<String, Object> params = new HashMap<>();
-        params.put("amount", amount);
-        params.put("currency", currency);
-        params.put("automatic_payment_methods", Map.of("enabled", true));
-
-        String orderCode = "1"; // TODO: grpc call from test-order service to get 'real' order code, userId
+        PaymentProvider paymentProvider = paymentProviderRepository.findByName("Stripe");
+        String orderCode = "1";
         Long userId = 1L;
         StandardCurrency standardCurrency = StandardCurrency.valueOf(currency.toUpperCase());
         PaymentRequest paymentRequest = new PaymentRequest(orderCode, userId, Double.valueOf(amount), standardCurrency , PaymentRequestStatus.PENDING, LocalDateTime.now(), LocalDateTime.now(), paymentProvider);
         paymentRequestRepository.saveAndFlush(paymentRequest);
-
         Map<String, String> metadata = new HashMap<>();
         metadata.put("payment_request_id", paymentRequest.getId());
-        params.put("metadata", metadata);
-
-        log.info("Creating PaymentIntent with amount: {} {}", amount, currency);
-
-        PaymentIntent intent = PaymentIntent.create(params); // create http request to stripe server
-
+        PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
+                .setAmount(amount)
+                .setCurrency(currency)
+                .addPaymentMethodType("card")
+                .putAllMetadata(metadata)
+                .build();
+        PaymentIntent intent = PaymentIntent.create(params);
         return Map.of("clientSecret", intent.getClientSecret());
     }
 

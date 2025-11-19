@@ -3,11 +3,13 @@ package sum25.group03.iamservice.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.iamservice.dto.request.RoleCreateRequest;
 import sum25.group03.iamservice.dto.response.RoleResponse;
 import sum25.group03.iamservice.entity.*;
+import sum25.group03.iamservice.event.MonitoringLogEvent;
 import sum25.group03.iamservice.event.RoleCreatedEvent;
 import sum25.group03.iamservice.event.RoleDeletedEvent;
 import sum25.group03.iamservice.event.RoleUpdatedEvent;
@@ -18,6 +20,7 @@ import sum25.group03.iamservice.service.KafkaProducerService;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,6 +35,29 @@ public class RoleServiceImpl implements RoleService {
     private final RolePrivilegeRepository rolePrivilegeRepository;
     private final UserPrivilegeRepository userPrivilegeRepository;
     private final KafkaProducerService kafkaProducerService;
+    private final UserRepository userRepository;
+
+
+    private Long getOperatorDatabaseId() {
+        try {
+            var authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null) return null;
+
+            Object principal = authentication.getPrincipal();
+
+            if (principal instanceof org.springframework.security.oauth2.jwt.Jwt jwt) {
+                String cognitoUserId = jwt.getSubject();
+
+                return userRepository.findByCognitoUserId(cognitoUserId)
+                        .map(User::getId)
+                        .orElse(null);
+            }
+
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     @Override
     public RoleResponse createRole(RoleCreateRequest request) {
@@ -94,6 +120,24 @@ public class RoleServiceImpl implements RoleService {
             } catch (Exception ignored) {
             }
 
+            Long operatorId = getOperatorDatabaseId();
+
+            MonitoringLogEvent log = MonitoringLogEvent.builder()
+                    .action("CREATE_ROLE")
+                    .operator(operatorId == null ? "system" : operatorId.toString())
+                    .message("Created role: " + role.getRoleCode())
+                    .sourceService("IAM-Service")
+                    .data(Map.of(
+                            "roleId", role.getId(),
+                            "roleCode", role.getRoleCode(),
+                            "privileges", role.getRolePrivileges().stream()
+                                    .map(rp -> rp.getPrivilege().getPrivilegeName())
+                                    .toList()
+                    ))
+                    .build();
+
+            kafkaProducerService.sendMonitoringLog(log);
+
         }
 
 
@@ -152,6 +196,25 @@ public class RoleServiceImpl implements RoleService {
             kafkaProducerService.sendRoleUpdated(event);
         } catch (Exception ignored) {
         }
+
+        Long operatorId = getOperatorDatabaseId();
+
+        MonitoringLogEvent log = MonitoringLogEvent.builder()
+                .action("UPDATE_ROLE")
+                .operator(operatorId == null ? "system" : operatorId.toString())
+                .message("Updated privileges for role: " + role.getRoleCode())
+                .sourceService("IAM-Service")
+                .data(Map.of(
+                        "roleId", role.getId(),
+                        "roleCode", role.getRoleCode(),
+                        "privileges", rolePrivileges.stream()
+                                .map(rp -> rp.getPrivilege().getPrivilegeName())
+                                .toList()
+                ))
+                .build();
+
+        kafkaProducerService.sendMonitoringLog(log);
+
 
 
 
@@ -233,6 +296,21 @@ public class RoleServiceImpl implements RoleService {
             kafkaProducerService.sendRoleDeleted(event);
         } catch (Exception ignored) {
         }
+
+        Long operatorId = getOperatorDatabaseId();
+
+        MonitoringLogEvent log = MonitoringLogEvent.builder()
+                .action("DELETE_ROLE")
+                .operator(operatorId == null ? "system" : operatorId.toString())
+                .message("Deleted role: " + role.getRoleCode())
+                .sourceService("IAM-Service")
+                .data(Map.of(
+                        "roleId", role.getId(),
+                        "roleCode", role.getRoleCode()
+                ))
+                .build();
+
+        kafkaProducerService.sendMonitoringLog(log);
 
     }
 

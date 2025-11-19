@@ -12,4 +12,6 @@ import java.util.Optional;
 public interface PaymentProviderRepository extends JpaRepository<PaymentProvider,String> {
     PaymentProvider findByCode(PaymentProviderCode stripe);
     Optional<PaymentProvider> findByCodeAndStatus(PaymentProviderCode code, PaymentProviderStatus status);
+
+    PaymentProvider findByName(String stripe);
 }
