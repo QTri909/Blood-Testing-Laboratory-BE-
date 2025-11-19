@@ -9,7 +9,6 @@ import sum25.group03.common.response.ApiResponse;
 import sum25.group03.warehouseservice.dto.response.ReagentResponseForInstrument;
 import sum25.group03.warehouseservice.dto.response.ReagentValidationResponse;
 import sum25.group03.warehouseservice.service.reagent.ReagentService;
-import sum25.group03.warehouseservice.service.reagenthistory.ReagentHistoryUsageService;
 import sum25.group03.warehouseservice.service.reagentusage.ReagentUsageService;
 
 import java.util.List;

@@ -22,48 +22,46 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class ReagentFilterServiceImpl implements ReagentFilterService {
-    private final HistorySupplyRepo historySupplyRepo;
     private final ReagentUsageRepo reagentUsageRepo;
-    private final VendorMapper vendorMapper;
 
-    @Override
-    public PageRes<HistorySupplyRes> filterSupplyHistory(String vendorName, String reagentName, LocalDate startDate, LocalDate endDate, Pageable pageable) {
-        Page<ReagentHistorySupply> supplyPage = historySupplyRepo
-                .filterSupplyHistory(vendorName, reagentName, startDate, endDate, pageable);
-
-        List<HistorySupplyRes> supplyResList = supplyPage.getContent().stream()
-                .map(supply -> HistorySupplyRes.builder()
-                        .purchaseOrderNumber(supply.getPurchaseOrderNumber())
-                        .vendor(vendorMapper.toDto(supply.getVendor()))
-                        .supply(List.of(SupplyRes.builder()
-                                        .quantityReceived(supply.getQuantityReceived())
-                                        .unitOfMeasurement(supply.getUnitOfMeasurement())
-                                        .lotNumber(supply.getLotNumber())
-                                        .manufactureDate(supply.getManufactureDate())
-                                        .expiryDate(supply.getExpiryDate())
-                                        .receivedDate(supply.getReceivedDate())
-                                        .receivedBy(supply.getReceivedBy())
-                                        .status(supply.getStatus())
-                                        .notes(supply.getNotes())
-                                        .createdAt(supply.getCreatedAt())
-                                        .reagentRes(ReagentRes.builder()
-                                                .reagentId(supply.getReagent().getReagentId())
-                                                .reagentName(supply.getReagent().getReagentName())
-                                                .catalogNumber(supply.getReagent().getCatalogNumber())
-                                                .casNumber(supply.getReagent().getCasNumber())
-                                                .unit(supply.getReagent().getUnit())
-                                                .build())
-                                .build()))
-                        .build())
-                .collect(Collectors.toList());
-        return PageRes.<HistorySupplyRes>builder()
-                .content(supplyResList)
-                .pageNumber(supplyPage.getNumber())
-                .pageSize(supplyPage.getSize())
-                .totalElements(supplyPage.getTotalElements())
-                .totalPages(supplyPage.getTotalPages())
-                .build();
-    }
+//    @Override
+//    public PageRes<HistorySupplyRes> filterSupplyHistory(String vendorName, String reagentName, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+//        Page<ReagentHistorySupply> supplyPage = historySupplyRepo
+//                .filterSupplyHistory(vendorName, reagentName, startDate, endDate, pageable);
+//
+//        List<HistorySupplyRes> supplyResList = supplyPage.getContent().stream()
+//                .map(supply -> HistorySupplyRes.builder()
+//                        .purchaseOrderNumber(supply.getPurchaseOrderNumber())
+//                        .vendor(vendorMapper.toDto(supply.getVendor()))
+//                        .supply(List.of(SupplyRes.builder()
+//                                        .quantityReceived(supply.getQuantityReceived())
+//                                        .unitOfMeasurement(supply.getUnitOfMeasurement())
+//                                        .lotNumber(supply.getLotNumber())
+//                                        .manufactureDate(supply.getManufactureDate())
+//                                        .expiryDate(supply.getExpiryDate())
+//                                        .receivedDate(supply.getReceivedDate())
+//                                        .receivedBy(supply.getReceivedBy())
+//                                        .status(supply.getStatus())
+//                                        .notes(supply.getNotes())
+//                                        .createdAt(supply.getCreatedAt())
+//                                        .reagentRes(ReagentRes.builder()
+//                                                .reagentId(supply.getReagent().getReagentId())
+//                                                .reagentName(supply.getReagent().getReagentName())
+//                                                .catalogNumber(supply.getReagent().getCatalogNumber())
+//                                                .casNumber(supply.getReagent().getCasNumber())
+//                                                .unit(supply.getReagent().getUnit())
+//                                                .build())
+//                                .build()))
+//                        .build())
+//                .collect(Collectors.toList());
+//        return PageRes.<HistorySupplyRes>builder()
+//                .content(supplyResList)
+//                .pageNumber(supplyPage.getNumber())
+//                .pageSize(supplyPage.getSize())
+//                .totalElements(supplyPage.getTotalElements())
+//                .totalPages(supplyPage.getTotalPages())
+//                .build();
+//    }
 
     @Override
     public PageRes<HistoryUsageRes> filterUsageHistory(String reagentName, LocalDate startDate, LocalDate endDate, String sortBy, String direction, Pageable pageable) {

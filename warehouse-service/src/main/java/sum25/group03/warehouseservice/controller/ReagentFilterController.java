@@ -18,19 +18,19 @@ import java.time.LocalDate;
 public class ReagentFilterController {
     private final ReagentFilterService filterService;
 
-    @GetMapping("/supply")
-    public ApiResponse<PageRes<HistorySupplyRes>> filterSupply(
-            @RequestParam(required = false) String vendorName,
-            @RequestParam(required = false) String reagentName,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
-            Pageable pageable
-    ) {
-        return ApiResponse.<PageRes<HistorySupplyRes>>builder()
-                .message("Filter usage supply successfully")
-                .data(filterService.filterSupplyHistory(vendorName, reagentName, startDate, endDate, pageable))
-                .build();
-    }
+//    @GetMapping("/supply")
+//    public ApiResponse<PageRes<HistorySupplyRes>> filterSupply(
+//            @RequestParam(required = false) String vendorName,
+//            @RequestParam(required = false) String reagentName,
+//            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+//            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+//            Pageable pageable
+//    ) {
+//        return ApiResponse.<PageRes<HistorySupplyRes>>builder()
+//                .message("Filter usage supply successfully")
+//                .data(filterService.filterSupplyHistory(vendorName, reagentName, startDate, endDate, pageable))
+//                .build();
+//    }
 
     @GetMapping("/usage")
     public ApiResponse<PageRes<HistoryUsageRes>> filterUsage(
