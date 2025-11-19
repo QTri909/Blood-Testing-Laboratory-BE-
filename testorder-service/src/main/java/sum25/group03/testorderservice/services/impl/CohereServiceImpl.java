@@ -33,13 +33,12 @@ public class CohereServiceImpl implements ICohereService {
         Parameter parameter = result.getParameter();
         String message = String.format("""
                 You are an experienced medical doctor. Review this lab test result:
-                Test Name: %s
                 Test Value: %s
                 Unit: %s
                 Reference Range: %.2f - %.2f
 
                 Provide a brief professional interpretation in 2-4 sentences.
-                """, result.getTestType(), result.getValue(), parameter.getUnit(), parameter.getMin(), parameter.getMax());
+                """, result.getValue(), parameter.getUnit(), parameter.getMin(), parameter.getMax());
         ChatRequest request = ChatRequest.builder()
                 .message(message)
                 .model(MODEL)
