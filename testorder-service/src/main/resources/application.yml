@@ -15,6 +15,10 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
+corehere:
+  client-name: default
+  api-key: yNWIxRbIiAEGo7MsgioKEQejCfUZ0vU0TgKgMHgA
+
 management:
   endpoints:
     web:

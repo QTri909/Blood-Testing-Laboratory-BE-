@@ -17,6 +17,8 @@ public class KafkaProducerService {
     private final KafkaTemplate<String, RoleUpdatedEvent> roleUpdatedKafkaTemplate;
     private final KafkaTemplate<String, RoleDeletedEvent> roleDeletedKafkaTemplate;
     private final KafkaTemplate<String, PasswordChangedEvent> passwordChangedKafkaTemplate;
+    private final KafkaTemplate<String, MonitoringLogEvent> monitoringKafkaTemplate;
+
 
     public void sendUserCreated(UserCreatedEvent event) {
         userCreatedKafkaTemplate.send("iam.user.created", event);
@@ -46,5 +48,7 @@ public class KafkaProducerService {
         passwordChangedKafkaTemplate.send("iam.password.changed", event);
     }
 
-
+    public void sendMonitoringLog(MonitoringLogEvent log) {
+        monitoringKafkaTemplate.send("monitoring-log", log);
+    }
 }

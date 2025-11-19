@@ -174,4 +174,22 @@ public class KafkaConfig {
         factory.setConsumerFactory(userCreatedEventConsumerFactory());
         return factory;
     }
+
+    @Bean
+    public ProducerFactory<String, MonitoringLogEvent> monitoringProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(producerConfigs());
+    }
+
+    @Bean
+    public KafkaTemplate<String, MonitoringLogEvent> monitoringKafkaTemplate() {
+        return new KafkaTemplate<>(monitoringProducerFactory());
+    }
+
+    @Bean
+    public NewTopic monitoringTopic() {
+        return TopicBuilder.name("monitoring-log")
+                .partitions(3)
+                .replicas(1)
+                .build();
+    }
 }
