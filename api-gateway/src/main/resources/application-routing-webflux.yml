@@ -52,6 +52,14 @@ spring:
               filters:
                 - RewritePath=/api/v1/payments/(?<segment>(\\d+|payment-providers|paypal|payments/stripe|payments/vnpay.*)), /api/v1/${segment}
 
+            # PayPal callback
+            - id: payment-paypal
+              uri: http://localhost:8084
+              predicates:
+                - Path=/paypal/**
+              filters:
+                - RewritePath=/paypal/(?<segment>.*)/?, /api/v1/paypal/${segment
+
             # for test order service
             - id: testorder-service
               uri: http://localhost:8085
