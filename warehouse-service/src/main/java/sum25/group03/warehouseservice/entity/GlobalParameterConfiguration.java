@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import sum25.group03.warehouseservice.entity.enums.TestType;
+
 import java.time.LocalDateTime; // <-- Dùng LocalDateTime cho timestamp
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +24,12 @@ public class GlobalParameterConfiguration {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "config_name", nullable = false, unique = true)
+    @Column(name = "config_name", nullable = true, unique = true)
     private String configName;
+
+    @Column(name = "test_type", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TestType testType;
 
     @Column(name = "description")
     private String description;
@@ -45,5 +51,5 @@ public class GlobalParameterConfiguration {
             orphanRemoval = true,
             fetch = FetchType.LAZY
     )
-    private List<TestParameter> testParameters = new ArrayList<>();
+    private List<GlobalTest> globalTests = new ArrayList<>();
 }
