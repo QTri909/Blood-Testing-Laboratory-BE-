@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package sum25.group03.warehouse;
+
+option java_multiple_files = true;
+option java_package = "sum25.group03.warehouse.grpc";
+
+service TestOrderService {
+  rpc SyncParameter(syncParameterRequest) returns (syncParameterResponse);
+}
+
+message syncParameterRequest {
+  int64 id = 1;
+  string abbreviation = 2;
+  string parameter_name = 3;
+  double price = 4;
+  string description = 5;
+  double min_value = 6;
+  double max_value = 7;
+  string unit = 8;
+  string gender = 9;
+}
+
+message syncParameterResponse {
+  bool success = 1;
+  string message = 2;
+}
