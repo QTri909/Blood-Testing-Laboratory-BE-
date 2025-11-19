@@ -191,6 +191,7 @@ public class TestOrderGrpcServer extends TestOrderServiceGrpc.TestOrderServiceIm
         }
     }
 
+    @Override
     public void syncParameter(
             SyncParameterRequestList request,
             StreamObserver<SyncParameterResponse> responseObserver

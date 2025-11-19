@@ -149,16 +149,17 @@ public class TestParameterServiceImpl implements  TestParameterService {
                         .abbreviation(saved.getAbbreviation())
                         .parameterName(saved.getParameterName())
                         .price(saved.getPrice())
-                        .description(saved.getDescription())
+                        .description(saved.getDescription() != null ? saved.getDescription() : "")
                         .minValue(nr.getMinValue())
                         .maxValue(nr.getMaxValue())
                         .unit(nr.getUnit().toString())
+                        .gender(nr.getGender().toString())
                         .build()
                 ).toList();
         SyncParameterResponse response = testOrderGrpcClient.syncParameter(parameterGrpcList);
         log.info("Sync Parameter Response: {}", response.getSuccess());
 
-        return TestParameterRes.builder()
+        TestParameterRes result = TestParameterRes.builder()
                 .id(saved.getId())
                 .parameterName(saved.getParameterName())
                 .abbreviation(saved.getAbbreviation())
@@ -166,6 +167,7 @@ public class TestParameterServiceImpl implements  TestParameterService {
                 .price(saved.getPrice())
                 .normalRange(normalRangeMapper.toResponse(saved.getNormalRanges()))
                 .build();
+        return result;
     }
 
     @Override

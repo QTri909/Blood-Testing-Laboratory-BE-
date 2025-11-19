@@ -34,6 +34,9 @@ public class TestOrderGrpcClient {
                         .setGender(p.getGender())
                         .build())
                 .toList();
+
+        System.out.println("CUONG-CUONT");
+
         SyncParameterRequestList request = SyncParameterRequestList.newBuilder()
                 .addAllParameters(requestList)
                 .build();
