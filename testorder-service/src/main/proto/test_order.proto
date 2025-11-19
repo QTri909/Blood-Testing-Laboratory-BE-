@@ -12,6 +12,7 @@ service TestOrderService {
   rpc GetLatestTestOrderByPatientId (GetLatestTestOrderRequest) returns (TestOrderResponse);
   rpc GetAllTestOrdersByMedicalRecordId (MedicalRecordIdRequest) returns (TestOrdersByMedicalRecordResponseList);
   rpc GetCleanTestOrderById(GetCleanTestOrderByIdRequest) returns (GrpcCleanTestOrderResponse);
+  rpc SyncParameter(SyncParameterRequest) returns (SyncParameterResponse);
 }
 
 //---------------------- Get latest test order by patient ID -----------------
@@ -131,4 +132,22 @@ message GrpcCleanTestResultResponse {
   int64 testResultId = 1;
   int64 parameterId = 2;
   string parameterCode = 3;
+}
+
+//---------------------- Sync Parameter -----------------
+message SyncParameterRequest {
+  int64 id = 1;
+  string abbreviation = 2;
+  string parameter_name = 3;
+  double price = 4;
+  string description = 5;
+  double min_value = 6;
+  double max_value = 7;
+  string unit = 8;
+  string gender = 9;
+}
+
+message SyncParameterResponse {
+  bool success = 1;
+  string message = 2;
 }
