@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class ParameterResponseDTO {
     private Long id;
+    private Long externalId;
     private String paramCode;
     private String name;
     private String abbreviation;
