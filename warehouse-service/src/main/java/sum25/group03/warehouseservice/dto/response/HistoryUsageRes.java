@@ -19,5 +19,5 @@ public class HistoryUsageRes {
     private int usedBy;
     private String lotNumber;
     private String notes;
-    private Long instrumentId;
+    private String instrumentName;
 }

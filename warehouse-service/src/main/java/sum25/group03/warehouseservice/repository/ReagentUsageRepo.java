@@ -28,17 +28,18 @@ public interface ReagentUsageRepo extends JpaRepository<ReagentHistoryUsage, Lon
     List<ReagentHistoryUsage> findAllByReagentOrderByUsedAtDesc(Reagents reagent);
 
     @Query("""
-    SELECT u FROM ReagentHistoryUsage u
-    JOIN FETCH u.reagent r
-    WHERE 
-        (:reagentName IS NULL 
-         OR :reagentName = '' 
-         OR LOWER(r.reagentName) LIKE LOWER(CONCAT('%', :reagentName, '%')))
-    AND 
-        (CAST(:startDate AS date) IS NULL OR u.usedAt >= :startDate)
-    AND 
-        (CAST(:endDate AS date) IS NULL OR u.usedAt <= :endDate)
-""")
+                SELECT u FROM ReagentHistoryUsage u
+                JOIN FETCH u.reagent r
+                LEFT JOIN FETCH u.instrument i
+                WHERE 
+                    (:reagentName IS NULL 
+                     OR :reagentName = '' 
+                     OR LOWER(r.reagentName) LIKE LOWER(CONCAT('%', :reagentName, '%')))
+                AND 
+                    (CAST(:startDate AS date) IS NULL OR u.usedAt >= :startDate)
+                AND 
+                    (CAST(:endDate AS date) IS NULL OR u.usedAt <= :endDate)
+            """)
     Page<ReagentHistoryUsage> filterUsageHistory(
             @Param("reagentName") String reagentName,
             @Param("startDate") LocalDate startDate,

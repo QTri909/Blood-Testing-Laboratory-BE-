@@ -3,7 +3,9 @@ package sum25.group03.warehouseservice.service.reagentfilter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.response.*;
 import sum25.group03.warehouseservice.entity.ReagentHistorySupply;
@@ -49,6 +51,7 @@ public class ReagentFilterServiceImpl implements ReagentFilterService {
                                                 .reagentName(supply.getReagent().getReagentName())
                                                 .catalogNumber(supply.getReagent().getCatalogNumber())
                                                 .casNumber(supply.getReagent().getCasNumber())
+                                                .unit(supply.getReagent().getUnit())
                                                 .build())
                                 .build()))
                         .build())
@@ -63,7 +66,18 @@ public class ReagentFilterServiceImpl implements ReagentFilterService {
     }
 
     @Override
-    public PageRes<HistoryUsageRes> filterUsageHistory(String reagentName, LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public PageRes<HistoryUsageRes> filterUsageHistory(String reagentName, LocalDate startDate, LocalDate endDate, String sortBy, String direction, Pageable pageable) {
+
+        Sort sort = direction.equalsIgnoreCase("ASC")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        pageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                sort
+        );
+
         Page<ReagentHistoryUsage> usagePage = reagentUsageRepo
                 .filterUsageHistory(reagentName, startDate, endDate, pageable);
 
@@ -75,6 +89,7 @@ public class ReagentFilterServiceImpl implements ReagentFilterService {
                                 .reagentName(u.getReagent().getReagentName())
                                 .catalogNumber(u.getReagent().getCatalogNumber())
                                 .casNumber(u.getReagent().getCasNumber())
+                                .unit(u.getReagent().getUnit())
                                 .build())
                         .usageType(u.getUsageType())
                         .quantityUsed(u.getQuantityUsed())
@@ -83,7 +98,7 @@ public class ReagentFilterServiceImpl implements ReagentFilterService {
                         .usedBy(u.getUsedBy())
                         .lotNumber(u.getLotNumber())
                         .notes(u.getNotes())
-                        .instrumentId(u.getInstrument().getInstrumentId())
+                        .instrumentName(u.getInstrument().getInstrumentName())
                         .build())
                 .toList();
         return PageRes.<HistoryUsageRes>builder()

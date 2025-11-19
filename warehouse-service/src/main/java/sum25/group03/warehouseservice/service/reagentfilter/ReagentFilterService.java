@@ -18,6 +18,8 @@ public interface ReagentFilterService {
             String reagentName,
             java.time.LocalDate startDate,
             java.time.LocalDate endDate,
+            String sortBy,
+            String direction,
             Pageable pageable
     );
 }

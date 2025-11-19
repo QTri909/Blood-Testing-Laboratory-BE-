@@ -9,9 +9,18 @@ import lombok.*;
 @Builder
 public class ParameterRes {
     private Long id;
-    private String name;
+    private String parameterName;
     private String abbreviation;
     private String description;
-    private String range;
+
+    private String unit;
+    private String gender;
+    private Double price;
+
     private String status;
+
+    // normal range
+    private String normalRange;
+    private Double minValue;
+    private Double maxValue;
 }

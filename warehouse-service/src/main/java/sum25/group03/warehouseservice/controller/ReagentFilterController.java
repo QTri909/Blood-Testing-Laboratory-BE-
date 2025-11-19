@@ -37,11 +37,13 @@ public class ReagentFilterController {
             @RequestParam(required = false) String reagentName,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false, defaultValue = "usedAt") String sortBy,
+            @RequestParam(required = false, defaultValue = "DESC") String direction,
             Pageable pageable
     ) {
         return ApiResponse.<PageRes<HistoryUsageRes>>builder()
                 .message("Filter usage history successfully")
-                .data(filterService.filterUsageHistory(reagentName, startDate, endDate, pageable))
+                .data(filterService.filterUsageHistory(reagentName, startDate, endDate, sortBy, direction, pageable))
                 .build();
     }
 
