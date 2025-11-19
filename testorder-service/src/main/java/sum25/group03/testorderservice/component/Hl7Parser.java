@@ -10,6 +10,7 @@ import sum25.group03.testorderservice.entities.TestOrder;
 import sum25.group03.testorderservice.entities.TestResult;
 import sum25.group03.testorderservice.enums.FlagStatus;
 import sum25.group03.testorderservice.enums.TestResultStatus;
+import sum25.group03.testorderservice.enums.TestType;
 import sum25.group03.testorderservice.repositories.ParameterRepository;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
 
@@ -62,6 +63,8 @@ public class Hl7Parser {
         }
 
         Long instrumentId = 1L;
+        Long parameterSnapshotId = 1L;
+        TestType testType = TestType.valueOf(testCode.toUpperCase());
         TestResultStatus status = TestResultStatus.COMPLETED;
 
         String orderCode = obr.getPlacerOrderNumber().getEntityIdentifier().getValue();
@@ -85,11 +88,14 @@ public class Hl7Parser {
 
         return TestResult.builder()
                 .testOrder(testOrder)
+                .instrumentId(instrumentId)
+                .parameterSnapshotId(parameterSnapshotId)
                 .flagStatus(flagStatus)
                 .status(status)
                 .value(value)
                 .createdAt(createdAt)
                 .updatedAt(LocalDateTime.now())
+                .testType(testType)
                 .parameter(parameter)
                 .build();
     }

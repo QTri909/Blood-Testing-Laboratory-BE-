@@ -10,8 +10,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.testorderservice.dtos.request.TestResultBulkedRequestDTO;
+import sum25.group03.testorderservice.dtos.request.ReviewRequestDTO;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
+import sum25.group03.testorderservice.services.impl.CohereServiceImpl;
 import sum25.group03.testorderservice.services.interfaces.TestResultService;
 
 import java.util.List;
@@ -25,15 +27,28 @@ public class TestResultController {
     @Autowired
     private TestResultService testResultService;
 
+    @Autowired
+    private CohereServiceImpl cohereService;
+
     @PostMapping("/review-test-result")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<?> reviewTestResult(
             @RequestParam("testResultId") @NotNull Long testResultId,
             @RequestParam("adjustedValue") Double adjustedValue,
-            @RequestParam("reviewId") @NotNull Long reviewId
+            @RequestHeader("X-User-Id") @NotNull Long reviewId
     ) {
         testResultService.reviewTestResult(testResultId, adjustedValue, reviewId);
         return ApiResponse.add("Review Test Result successfully", null);
+    }
+
+    @PostMapping("/doctor-review")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<?> doctorReview(
+            @RequestBody @Valid ReviewRequestDTO reviewRequestDTO,
+            @RequestHeader("X-User-Id") @NotNull Long reviewId
+    ) {
+        testResultService.doctorReview(reviewRequestDTO, reviewId);
+        return ApiResponse.ok("Review Test result reviewed successfully by user " + reviewId);
     }
 
     @PostMapping
@@ -55,13 +70,11 @@ public class TestResultController {
         return ApiResponse.add("Bulk Create Test Results successfully", createdResults);
     }
 
-
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<TestResultResponseDTO> updateTestResult(
             @PathVariable Long id,
-            @Valid @RequestBody TestResultRequestDTO requestDTO)
-    {
+            @Valid @RequestBody TestResultRequestDTO requestDTO) {
         TestResultResponseDTO response = testResultService.updateTestResult(id, requestDTO);
         return ApiResponse.add("Update Test Result successfully", response);
     }
@@ -74,7 +87,7 @@ public class TestResultController {
         return ApiResponse.add("Delete Test Result successfully", null);
     }
 
-    @GetMapping ("/{id}")
+    @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<TestResultResponseDTO> getTestResultById(@PathVariable Long id) {
         TestResultResponseDTO response = testResultService.getTestResultById(id);
@@ -88,5 +101,11 @@ public class TestResultController {
         return ApiResponse.add("Get Test Results successfully", responses);
     }
 
-
+    @PostMapping("/{id}/ai-review")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<?> aiReview(@PathVariable Long id) {
+        String reviewed = cohereService.jugeReview(id);
+        return ApiResponse.ok("AI reviewed successfully", reviewed);
+    }
 }
+

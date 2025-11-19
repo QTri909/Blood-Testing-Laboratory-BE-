@@ -47,7 +47,7 @@ public class TestResult {
     private LocalDateTime updatedAt;
 
     @ManyToOne(
-            fetch = FetchType.LAZY, // Lazy loading for better performance
+            fetch = FetchType.EAGER, // Lazy loading for better performance
             optional = false // Make the relationship mandatory
     )
     @JoinColumn(name = "parameter_id", nullable = false)
@@ -65,5 +65,18 @@ public class TestResult {
     public void prePersist() {
         if (this.status == null)
             this.status = TestResultStatus.PENDING;
+    }
+
+    @Column(name = "review", columnDefinition = "TEXT")
+    private String review;
+
+    public TestResult(TestOrder testOrder, Long instrumentId, Long parameterSnapshotId, FlagStatus flagStatus, TestResultStatus status, Double value, LocalDateTime createdAt, LocalDateTime updatedAt, TestType testType, Parameter parameter) {
+        this.testOrder = testOrder;
+        this.flagStatus = flagStatus;
+        this.status = status;
+        this.value = value;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.parameter = parameter;
     }
 }
