@@ -21,7 +21,6 @@ import java.util.Set;
 public class Parameter {
 
     @Id
-    @GeneratedValue(strategy =  GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "param_code", nullable = false, unique = true)

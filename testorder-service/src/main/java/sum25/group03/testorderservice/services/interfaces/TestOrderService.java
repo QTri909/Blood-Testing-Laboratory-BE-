@@ -2,6 +2,7 @@ package sum25.group03.testorderservice.services.interfaces;
 
 import org.springframework.data.domain.Page;
 import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
+import sum25.group03.common.response.dtos.grpc.ParameterGrpcResponse;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.*;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
@@ -14,7 +15,6 @@ public interface TestOrderService{
     // -------- THUYEN---------
     TestOrderResponseDTO getTestOrderById(Long id, Long viewerId);
     CleanTestOrderResponse getTestOrderByIdCleanData(Long id);
-
 
     Page<TestOrderResponseDTO> getAllTestOrders(Integer page, Integer size, Long viewerId);
     List<TestOrderResponseDTO> getAllTestOrdersByMedicalRecordId(Long medicalRecordId, Long viewerId);

@@ -3,10 +3,10 @@ package sum25.group03.testorderservice.services.impl;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sum25.group03.testorderservice.dtos.request.ParameterRequestDTO;
+import sum25.group03.common.response.dtos.grpc.ParameterGrpc;
+import sum25.group03.common.response.dtos.grpc.ParameterGrpcResponse;
 import sum25.group03.testorderservice.dtos.request.SyncedConfigurationDTO;
 import sum25.group03.testorderservice.dtos.response.ParameterResponseDTO;
 import sum25.group03.testorderservice.entities.Parameter;
@@ -83,5 +83,20 @@ public class ParameterServiceImpl implements ParameterService {
                 .orElseThrow(() -> new ResourceNotFoundException("Parameter not found with code: " + paramCode));
 
         return parameterMapper.toResponseDto(parameter);
+    }
+
+    @Override
+    public ParameterGrpcResponse syncParameterFromWarehouse(ParameterGrpc request) {
+
+        Parameter newParameter = parameterMapper.toParameterFromParameterGrpc(request);
+        parameterRepository.save(newParameter);
+
+        // map to response object:
+        ParameterGrpcResponse response = ParameterGrpcResponse.builder()
+                .success(true)
+                .message("Parameter synced successfully")
+                .build();
+
+        return response;
     }
 }
