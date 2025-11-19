@@ -24,7 +24,7 @@ public class GlobalParameterConfiguration {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "config_name", nullable = false, unique = true)
+    @Column(name = "config_name", nullable = true, unique = true)
     private String configName;
 
     @Column(name = "test_type", nullable = false)

@@ -1,8 +1,6 @@
 package sum25.group03.warehouseservice.dto.response;
 
 import lombok.*;
-import sum25.group03.warehouseservice.entity.enums.ParameterStatus;
-import sum25.group03.warehouseservice.entity.enums.TestType;
 
 import java.util.List;
 
@@ -11,9 +9,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class GlobalTestParameterRes {
-    private Long globalTestParameterId;
-    private TestType testType;
+public class TestParameterRes {
     private Long id;
     private String abbreviation;
     private String parameterName;

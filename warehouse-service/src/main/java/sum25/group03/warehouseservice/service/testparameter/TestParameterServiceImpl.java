@@ -3,14 +3,19 @@ package sum25.group03.warehouseservice.service.testparameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.warehouseservice.dto.request.TestTemplateReq;
 import sum25.group03.warehouseservice.dto.response.GlobalTestParameterRes;
+import sum25.group03.warehouseservice.dto.response.NewTestTemplate;
 import sum25.group03.warehouseservice.dto.response.NormalRangeRes;
+import sum25.group03.warehouseservice.dto.response.TestParameterRes;
 import sum25.group03.warehouseservice.entity.GlobalParameterConfiguration;
 import sum25.group03.warehouseservice.entity.GlobalTest;
 import sum25.group03.warehouseservice.entity.NormalRange;
 import sum25.group03.warehouseservice.entity.TestParameter;
+import sum25.group03.warehouseservice.entity.enums.ParameterStatus;
 import sum25.group03.warehouseservice.entity.enums.TestType;
 import sum25.group03.warehouseservice.exception.NotFoundException;
+import sum25.group03.warehouseservice.mapper.NormalRangeMapper;
 import sum25.group03.warehouseservice.repository.GlobalTestParameterRepo;
 import sum25.group03.warehouseservice.repository.TestParamRepo;
 
@@ -24,6 +29,7 @@ import java.util.stream.Collectors;
 public class TestParameterServiceImpl implements  TestParameterService {
     private final GlobalTestParameterRepo globalTestParameterRepo;
     private final TestParamRepo testParamRepo;
+    private final NormalRangeMapper normalRangeMapper;
 
     @Override
     public List<GlobalTestParameterRes> getGlobalTestParameters(TestType testType) {
@@ -64,13 +70,48 @@ public class TestParameterServiceImpl implements  TestParameterService {
                 .toList();
     }
 
+    @Override
+    @Transactional
+    public NewTestTemplate addTestTemplate(TestTemplateReq testTemplate) {
+        List<TestParameter> testParameters = testParamRepo.findAllByIdInAndStatus(testTemplate.getId(), ParameterStatus.ACTIVE);
+        if (testParameters.size() != testTemplate.getId().size()) {
+            throw new NotFoundException("One or more Test Parameters not found or inactive");
+        }
 
+        GlobalParameterConfiguration gpc = GlobalParameterConfiguration.builder()
+                .testType(testTemplate.getTestType())
+                .description(testTemplate.getDescription() != null ? testTemplate.getDescription() : "")
+                .active(true)
+                .build();
 
+        List<GlobalTest> globalTests = testParameters.stream()
+                .map(tp -> GlobalTest.builder()
+                        .testParameter(tp)
+                        .globalParameterConfiguration(gpc)
+                        .build())
+                //.collect(Collectors.toList());
+                        .toList();
 
+        gpc.setGlobalTests(globalTests);
 
+        GlobalParameterConfiguration saved = globalTestParameterRepo.save(gpc);
+        List<TestParameterRes> tpRes = testParameters.stream()
+                .map(tp -> TestParameterRes.builder()
+                        .id(tp.getId())
+                        .parameterName(tp.getParameterName())
+                        .abbreviation(tp.getAbbreviation())
+                        .description(tp.getDescription())
+                        .price(tp.getPrice())
+                        .normalRange(normalRangeMapper.toResponse(tp.getNormalRanges()))
+                        .build())
+                .toList();
 
-
-
+        return NewTestTemplate.builder()
+                .globalTestParameterId(saved.getId())
+                .testType(saved.getTestType())
+                .testParameters(tpRes)
+                .build();
+    }
 }
 
 
