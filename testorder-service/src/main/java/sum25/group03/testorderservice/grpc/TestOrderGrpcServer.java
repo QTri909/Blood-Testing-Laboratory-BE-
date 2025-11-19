@@ -1,6 +1,8 @@
 package sum25.group03.testorderservice.grpc;
 
 import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
+import sum25.group03.common.response.dtos.grpc.ParameterGrpc;
+import sum25.group03.common.response.dtos.grpc.ParameterGrpcResponse;
 import sum25.group03.testorder.grpc.*;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
@@ -10,8 +12,10 @@ import sum25.group03.testorderservice.dtos.response.CreationTestOrderResponse;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseForInstrument;
 import sum25.group03.testorderservice.entities.TestOrder;
+import sum25.group03.testorderservice.mapper.ParameterMapper;
 import sum25.group03.testorderservice.mapper.TestOrderMapper;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
+import sum25.group03.testorderservice.services.interfaces.ParameterService;
 import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 
 import java.time.format.DateTimeFormatter;
@@ -25,6 +29,8 @@ public class TestOrderGrpcServer extends TestOrderServiceGrpc.TestOrderServiceIm
     private final TestOrderRepository testOrderRepository;
     private final TestOrderService testOrderService;
     private final TestOrderMapper testOrderMapper;
+    private final ParameterMapper parameterMapper;
+    private final ParameterService parameterService;
 
     private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ISO_DATE_TIME;
 
@@ -183,6 +189,23 @@ public class TestOrderGrpcServer extends TestOrderServiceGrpc.TestOrderServiceIm
                     .withDescription("Internal server error: " + e.getMessage())
                     .asException());
         }
+    }
+
+    public void syncParameter(
+            SyncParameterRequest request,
+            StreamObserver<SyncParameterResponse> responseObserver
+    ) {
+        // mapping get ParameterGrpc for handling
+        ParameterGrpc parameterGrpc = parameterMapper.toParameterFromGrpc(request);
+
+        // handle sync parameter
+        ParameterGrpcResponse response = parameterService.syncParameterFromWarehouse(parameterGrpc);
+
+        // map to SyncParameterResponse for gRPC response
+        SyncParameterResponse grpcResponse = parameterMapper.toGrpcResponseFromParameter(response);
+
+        responseObserver.onNext(grpcResponse);
+        responseObserver.onCompleted();
     }
 
 }
