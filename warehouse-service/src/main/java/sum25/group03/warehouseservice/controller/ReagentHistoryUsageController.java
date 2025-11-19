@@ -31,14 +31,4 @@ public class ReagentHistoryUsageController {
         return ResponseEntity.ok(result);
     }
 
-    @PostMapping("/use")
-    public ResponseEntity<String> useReagent(
-            @RequestParam Long reagentId,
-            @RequestParam double quantity,
-            @RequestParam Long userId,
-            @RequestParam String lotNumber) {
-
-        usageService.useReagent(reagentId, quantity, userId, lotNumber);
-        return ResponseEntity.ok("Usage recorded successfully and logged.");
-    }
 }

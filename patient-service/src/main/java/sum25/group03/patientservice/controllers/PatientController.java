@@ -1,10 +1,13 @@
 package sum25.group03.patientservice.controllers;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
 import sum25.group03.patientservice.dtos.response.PatientResponseDTO;
-import sum25.group03.patientservice.grpc.TestOrderResponse;
+//import sum25.group03.patientservice.grpc.TestOrderResponse;
+import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
 import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderDTO;
 import sum25.group03.patientservice.services.interfaces.PatientService;
 
@@ -22,22 +25,41 @@ public class PatientController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<PatientResponseDTO> getAllPatients(
+    public ApiResponse<Page<UserSnapshotResponse>> getAllPatients(
             @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) Integer size,
             @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) Integer page
     ) {
-        return patientService.getAllPatientsWith(size, page);
+        return ApiResponse.ok(patientService.getAllPatientsWith(size, page));
     }
 
-    @GetMapping("/test-orders/latest/{patientId}")
+    @GetMapping("iam")
     @ResponseStatus(HttpStatus.OK)
-    public Object getPatientById(
+    public ApiResponse<List<PatientResponseDTO>> getAllPatientsIAM(
+            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) Integer size,
+            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) Integer page
+    ) {
+        return ApiResponse.ok(patientService.getAllIAMPatientsWith(size, page));
+    }
+
+    @GetMapping("/{patientId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<UserSnapshotResponse> getPatientByIdIAM(
+            @PathVariable(name = "patientId") Long patientId,
+            @RequestHeader("X-User-Id") Long viewerId
+    ) {
+        return ApiResponse.add("Fetched patient with ID: " + patientId,
+                patientService.getPatientByExternalUserId(patientId, viewerId));
+    }
+
+    @GetMapping("/test-orders/{patientId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Object> getLatestTestOrderOfPatientById(
             @PathVariable(name = "patientId") Long patientId
     ) {
         GrpcTestOrderDTO searchedTestOrder = patientService.getLatestByPatientId(patientId);
         if (searchedTestOrder == null) {
-            return "No test order found for patient with ID: " + patientId;
+            return ApiResponse.ok("No test order found for patient with ID: " + patientId, null);
         }
-        return searchedTestOrder;
+        return ApiResponse.ok(searchedTestOrder);
     }
 }

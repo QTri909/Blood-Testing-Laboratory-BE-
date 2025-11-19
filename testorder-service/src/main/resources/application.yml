@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: testorderdb
+    active: testorderdb,grpc,kafka
   kafka:
     listener:
       ack-mode: manual
@@ -14,3 +14,20 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+corehere:
+  client-name: default
+  api-key: yNWIxRbIiAEGo7MsgioKEQejCfUZ0vU0TgKgMHgA
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      tags:
+        application: testorder-service
+      export:
+        enabled: true
+

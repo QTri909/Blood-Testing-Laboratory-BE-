@@ -39,14 +39,14 @@ public class PaymentProviderSeeder implements CommandLineRunner {
         PaymentProvider paypalProvider = PaymentProvider.builder()
                 .code(PaymentProviderCode.PAYPAL)
                 .name("PayPal")
-                .status(PaymentProviderStatus.INACTIVE)
+                .status(PaymentProviderStatus.ACTIVE)
                 .build();
 
         // for stripe
         PaymentProvider stripeProvider = PaymentProvider.builder()
                 .code(PaymentProviderCode.STRIPE)
                 .name("Stripe")
-                .status(PaymentProviderStatus.INACTIVE)
+                .status(PaymentProviderStatus.ACTIVE)
                 .build();
 
         // save all:

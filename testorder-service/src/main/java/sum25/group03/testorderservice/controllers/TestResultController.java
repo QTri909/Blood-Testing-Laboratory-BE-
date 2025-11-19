@@ -5,14 +5,21 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
+import sum25.group03.testorderservice.dtos.request.TestResultBulkedRequestDTO;
+import sum25.group03.testorderservice.dtos.request.ReviewRequestDTO;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
+import sum25.group03.testorderservice.services.impl.CohereServiceImpl;
 import sum25.group03.testorderservice.services.interfaces.TestResultService;
 
+import java.util.List;
+
 @RestController
-@RequestMapping("/api/test-result")
+@RequestMapping("/api/v1/test-result") //  {{api_gateway}}/api/v1/test-orders/test-result
 @Slf4j
 @RequiredArgsConstructor
 public class TestResultController {
@@ -20,55 +27,85 @@ public class TestResultController {
     @Autowired
     private TestResultService testResultService;
 
+    @Autowired
+    private CohereServiceImpl cohereService;
+
     @PostMapping("/review-test-result")
-    public ResponseEntity<?> reviewTestResult(
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<?> reviewTestResult(
             @RequestParam("testResultId") @NotNull Long testResultId,
             @RequestParam("adjustedValue") Double adjustedValue,
-            @RequestParam("reviewId") @NotNull Long reviewId
+            @RequestHeader("X-User-Id") @NotNull Long reviewId
     ) {
         testResultService.reviewTestResult(testResultId, adjustedValue, reviewId);
-        return ResponseEntity.ok("✅ Test result reviewed successfully by user " + reviewId);
+        return ApiResponse.add("Review Test Result successfully", null);
+    }
+
+    @PostMapping("/doctor-review")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<?> doctorReview(
+            @RequestBody @Valid ReviewRequestDTO reviewRequestDTO,
+            @RequestHeader("X-User-Id") @NotNull Long reviewId
+    ) {
+        testResultService.doctorReview(reviewRequestDTO, reviewId);
+        return ApiResponse.ok("Review Test result reviewed successfully by user " + reviewId);
     }
 
     @PostMapping
-    public ResponseEntity<TestResultResponseDTO> createTestResult(@Valid @RequestBody TestResultRequestDTO requestDTO) {
-        log.info("API - Create Test Result");
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<TestResultResponseDTO> createTestResult(
+            @Valid @RequestBody TestResultRequestDTO requestDTO
+    ) {
         TestResultResponseDTO response = testResultService.createTestResult(requestDTO);
-
-        return ResponseEntity.ok(response);
+        return ApiResponse.add("Create Test Result successfully", response);
     }
 
+    @PostMapping("/bulk-create")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<List<TestResultResponseDTO>> createBulkTestResults(
+            @Valid @RequestBody TestResultBulkedRequestDTO requestDTO,
+            @RequestHeader("X-User-Id") Long creatorId
+    ) {
+        List<TestResultResponseDTO> createdResults = testResultService.createTestResultByBulk(requestDTO, creatorId);
+        return ApiResponse.add("Bulk Create Test Results successfully", createdResults);
+    }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TestResultResponseDTO> updateTestResult(
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<TestResultResponseDTO> updateTestResult(
             @PathVariable Long id,
             @Valid @RequestBody TestResultRequestDTO requestDTO) {
-        log.info("API - Update Test Result id: {}", id);
         TestResultResponseDTO response = testResultService.updateTestResult(id, requestDTO);
-        return ResponseEntity.ok(response);
+        return ApiResponse.add("Update Test Result successfully", response);
     }
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTestResult(@PathVariable Long id) {
-        log.info("API - Delete Test Result id: {}", id);
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ApiResponse<Void> deleteTestResult(@PathVariable Long id) {
         testResultService.deleteTestResult(id);
-        return ResponseEntity.noContent().build();
+        return ApiResponse.add("Delete Test Result successfully", null);
     }
 
-    @GetMapping ("/{id}")
-    public ResponseEntity<TestResultResponseDTO> getTestResultById(@PathVariable Long id) {
-        log.info("API - Get Test Result by id: {}", id);
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<TestResultResponseDTO> getTestResultById(@PathVariable Long id) {
         TestResultResponseDTO response = testResultService.getTestResultById(id);
-        return ResponseEntity.ok(response);
+        return ApiResponse.add("Get Test Result successfully", response);
     }
 
     @GetMapping("/test-order/{testOrderId}")
-    public ResponseEntity<java.util.List<TestResultResponseDTO>> getTestResultsByTestOrderId(@PathVariable Long testOrderId) {
-        log.info("API - Get Test Results by Test Order id: {}", testOrderId);
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<List<TestResultResponseDTO>> getTestResultsByTestOrderId(@PathVariable Long testOrderId) {
         java.util.List<TestResultResponseDTO> responses = testResultService.getTestResultsByTestOrderId(testOrderId);
-        return ResponseEntity.ok(responses);
+        return ApiResponse.add("Get Test Results successfully", responses);
     }
 
-
+    @PostMapping("/{id}/ai-review")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<?> aiReview(@PathVariable Long id) {
+        String reviewed = cohereService.jugeReview(id);
+        return ApiResponse.ok("AI reviewed successfully", reviewed);
+    }
 }
+

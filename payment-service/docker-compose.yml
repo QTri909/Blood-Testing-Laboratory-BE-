@@ -1,5 +1,4 @@
 
-version: '3.8'
 services:
   postgres-payment-service:
     image: postgres:15.5
@@ -15,13 +14,21 @@ services:
     networks:
       - payment-network
 
-  redis-payment-service:
+  redis-payment-service:-
     image: redis:7-alpine
     container_name: redis_payment_cache
     ports:
       - "6379:6379"
     volumes:
       - redis_payment_volume:/data
+    networks:
+      - payment-network
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    container_name: stripe_cli
+    command: listen --forward-to http://172.21.112.1:8084/api/payments/webhook
+    environment:
+      STRIPE_API_KEY: sk_test_51SMkxFDAubI9QHGxdhUqNxFl4l2GMGmzBkkloDIhXWmoOieSq673SmO8lu6kvtsfqB1i6isItbUNC5bzL1sI2N0s002yvVcO3H
     networks:
       - payment-network
 volumes:

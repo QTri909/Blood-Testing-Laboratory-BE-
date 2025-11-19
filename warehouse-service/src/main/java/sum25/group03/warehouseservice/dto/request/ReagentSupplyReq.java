@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,8 +17,6 @@ import java.util.List;
 @Setter
 @Builder
 public class ReagentSupplyReq {
-    @NotBlank
-    private String purchaseOrderNumber;
     @NotNull
     private Long vendorId;
     @NotNull

@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Data
 @Builder
@@ -20,7 +21,7 @@ public class RawTestResult {
     private String id;
     private String testOrderId;
     private String instrumentId;
-    private String hl7Payload;
+    private String hl7Message;
     private Instant receivedAt;
     private String barcode;
     private String rawData;

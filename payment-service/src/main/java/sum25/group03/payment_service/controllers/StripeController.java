@@ -6,15 +6,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
 import sum25.group03.payment_service.services.impl.StripeServiceImpl;
 
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/payments/stripe")
+@RequestMapping("/api/v1/payments/stripe")
 @Slf4j
 public class StripeController {
-
+    @GetMapping("")
+    public ResponseEntity<String> hello() {
+        return ResponseEntity.ok("Hello from StripeController");
+    }
     private final StripeServiceImpl stripeService;
 
     public StripeController(StripeServiceImpl stripeService) {
@@ -22,34 +26,34 @@ public class StripeController {
     }
 
     @PostMapping("/create-payment-intent")
-    public ResponseEntity<?> createPaymentIntent(@RequestBody Map<String, Object> data) throws Exception {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<?> createPaymentIntent(@RequestBody Map<String, Object> data) throws Exception {
         try {
             long amount = Long.parseLong(data.get("amount").toString());
             String currency = data.get("currency").toString().toLowerCase();
 
             Map<String, Object> response = stripeService.createPaymentIntent(amount, currency);
-            return ResponseEntity.ok(response);
+            return ApiResponse.add("Payment Intent created", response);
         } catch (StripeException e) {
-            log.error("Stripe exception create-payment-intent(): {}", e.getMessage());
-            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+            return ApiResponse.internalServerError("Stripe error: " + e.getMessage(), null);
+
         } catch (Exception e) {
-            log.error("Stripe common create-payment-intent(): {}", e.getMessage());
-            return ResponseEntity.status(400).body(Map.of("error", "Invalid request data"));
+            return ApiResponse.badRequest("Invalid request data: " + e.getMessage(), null);
         }
     }
 
     @PostMapping("/webhook")
-    public ResponseEntity<String> handleStripeWebhook(
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<String> handleStripeWebhook(
             @RequestBody String payload,
             @RequestHeader("Stripe-Signature") String sigHeader
     ) {
         try {
             Event event = stripeService.verifySignature(payload, sigHeader);
             stripeService.processEvent(event);
-            return ResponseEntity.ok("Event processed");
+            return ApiResponse.add("Event processed", null);
         } catch (Exception e) {
-            log.error("Webhook error: {}", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Webhook error: " + e.getMessage());
+            return ApiResponse.badRequest("Webhook error: " + e.getMessage(), null);
         }
     }
 }

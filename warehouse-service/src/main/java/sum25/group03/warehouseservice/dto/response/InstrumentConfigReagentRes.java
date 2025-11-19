@@ -1,5 +1,6 @@
 package sum25.group03.warehouseservice.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 
@@ -11,12 +12,13 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class InstrumentConfigReagentRes {
     private Long instrumentId;
     private String instrumentName;
     private String model;
     private String serialNumber;
-    private String location;
+    //private String location;
     private String notes;
     private InstrumentStatus status;
     private LocalDate createdAt;

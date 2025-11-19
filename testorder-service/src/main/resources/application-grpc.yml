@@ -1,0 +1,7 @@
+grpc:
+  server:
+    port: 9001
+    enable-keep-alive: true
+    keep-alive-time: 30s
+    keep-alive-timeout: 5s
+    max-concurrent-streams: 100

@@ -40,13 +40,13 @@ public class ParameterServiceImpl implements ParameterService {
         if(dto.getMinValue() >= dto.getMaxValue()){
             throw new InvalidParameterException("maxValue must be greater than minValue");
         }
-        log.info("Id: "+ parameter.getId());
-        log.info("ParamCode: "+ parameter.getParamCode());
-        log.info("Description: "+ parameter.getDescription());
-        log.info("Min: "+ parameter.getMin());
-        log.info("Max: "+ parameter.getMax());
-        log.info("Unit: "+ parameter.getUnit());
-        log.info("Timestamp: " + LocalDateTime.now());
+        log.info("Id: " + parameter.getId()
+        +"\nParamCode: "+ parameter.getParamCode()
+        +"\nDescription: "+ parameter.getDescription()
+        +"\nMin: "+ parameter.getMin()
+        +"\nMax: "+ parameter.getMax()
+        +"\nUnit: "+ parameter.getUnit()
+        +"\nTimestamp: "+ LocalDateTime.now());
         parameter.setMin(dto.getMinValue());
         parameter.setMax(dto.getMaxValue());
         parameter.setDescription(dto.getDescription());
@@ -55,67 +55,8 @@ public class ParameterServiceImpl implements ParameterService {
     }
 
     @Override
-    public ParameterResponseDTO createParameter(ParameterRequestDTO requestDTO) {
-        log.info("Creating new parameter with code: {}", requestDTO.getParamCode());
-
-        if (parameterRepository.existsByParamCode(requestDTO.getParamCode())) {
-            throw new IllegalArgumentException("Parameter with code " + requestDTO.getParamCode() + " already exists");
-        }
-
-        Parameter parameter = parameterMapper.toEntity(requestDTO);
-        parameter.setStatus(ParameterStatus.ACTIVE);
-        parameter.setCreatedAt(LocalDate.now());
-        parameter.setUpdatedAt(LocalDate.now());
-
-        Parameter savedParameter = parameterRepository.save(parameter);
-        log.info("Parameter created successfully with id: {}", savedParameter.getId());
-
-        return parameterMapper.toResponseDto(savedParameter);
-    }
-
-    @Override
-    public ParameterResponseDTO updateParameter(Long id, ParameterRequestDTO requestDTO) {
-        log.info("Updating parameter with id: {}", id);
-
-        Parameter existingParameter = parameterRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Parameter not found with id: " + id));
-
-        if (existingParameter.getStatus() == ParameterStatus.INACTIVE) {
-            throw new IllegalStateException("Cannot update inactive parameter");
-        }
-
-        parameterMapper.updateEntity(requestDTO, existingParameter);
-        existingParameter.setUpdatedAt(LocalDate.now());
-
-        Parameter updatedParameter = parameterRepository.save(existingParameter);
-        log.info("Parameter updated successfully with id: {}", updatedParameter.getId());
-
-        return parameterMapper.toResponseDto(updatedParameter);
-    }
-
-    @Override
-    public void deleteParameter(Long id) {
-        log.info("Deleting parameter with id: {}", id);
-
-        Parameter parameter = parameterRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Parameter not found with id: " + id));
-
-        if (parameter.getStatus() == ParameterStatus.INACTIVE) {
-            throw new IllegalStateException("Parameter already deleted");
-        }
-
-        parameter.setStatus(ParameterStatus.INACTIVE);
-        parameter.setUpdatedAt(LocalDate.now());
-
-        parameterRepository.save(parameter);
-        log.info("Parameter deleted successfully with id: {}", id);
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public ParameterResponseDTO getParameterById(Long id) {
-        log.info("Fetching parameter with id: {}", id);
-
         Parameter parameter = parameterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Parameter not found with id: " + id));
 
@@ -129,8 +70,6 @@ public class ParameterServiceImpl implements ParameterService {
     @Override
     @Transactional(readOnly = true)
     public List<ParameterResponseDTO> getAllParameters() {
-        log.info("Fetching all active parameters");
-
         List<Parameter> parameters = parameterRepository.findByStatus(ParameterStatus.ACTIVE);
         return parameters.stream()
                 .map(parameterMapper::toResponseDto)
@@ -140,8 +79,6 @@ public class ParameterServiceImpl implements ParameterService {
     @Override
     @Transactional(readOnly = true)
     public ParameterResponseDTO getParameterByCode(String paramCode) {
-        log.info("Fetching parameter with code: {}", paramCode);
-
         Parameter parameter = parameterRepository.findByParamCodeAndStatus(paramCode, ParameterStatus.ACTIVE)
                 .orElseThrow(() -> new ResourceNotFoundException("Parameter not found with code: " + paramCode));
 

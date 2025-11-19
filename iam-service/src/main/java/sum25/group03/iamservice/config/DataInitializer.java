@@ -8,7 +8,7 @@ import sum25.group03.iamservice.entity.User;
 import sum25.group03.iamservice.entity.UserRole;
 import sum25.group03.iamservice.repository.RoleRepository;
 import sum25.group03.iamservice.repository.UserRepository;
-import sum25.group03.iamservice.service.CognitoService;
+import sum25.group03.iamservice.service.Interface.CognitoService;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,7 +23,7 @@ public class DataInitializer {
 
     @PostConstruct
     public void init() {
-        // 1️⃣ Tạo role ADMIN nếu chưa có
+        // 1 Tạo role ADMIN nếu chưa có
         Role adminRole = roleRepository.findByRoleCode("ADMIN")
                 .orElseGet(() -> {
                     Role newRole = new Role();
@@ -32,12 +32,12 @@ public class DataInitializer {
                     return roleRepository.save(newRole);
                 });
 
-        // 2️⃣ Tạo user admin mặc định nếu chưa có
+        // 2️ Tạo user admin mặc định nếu chưa có Admin123!
         if (!userRepository.existsByEmail("admin@system.com")) {
             try {
                 // Tạo admin trong Cognito và nhận về sub
                 String cognitoSub = cognitoService.createAdminUser("admin@system.com", "TempPass123!");
-                System.out.println("✅ Admin user created in Cognito with sub: " + cognitoSub);
+                System.out.println(" Admin user created in Cognito with sub: " + cognitoSub);
 
                 // Sau đó lưu vào DB
                 User admin = new User();
@@ -46,7 +46,7 @@ public class DataInitializer {
                 admin.setIdentityNumber("000000000");
                 admin.setPhoneNumber("0900000000");
                 admin.setAddress("System Center");
-                admin.setCognitoUserId(cognitoSub); // ✅ lưu sub từ Cognito
+                admin.setCognitoUserId(cognitoSub); //  lưu sub từ Cognito
 
                 UserRole userRole = new UserRole();
                 userRole.setUser(admin);
@@ -57,10 +57,10 @@ public class DataInitializer {
                 admin.setUserRoles(roles);
 
                 userRepository.save(admin);
-                System.out.println("✅ Default admin created in DB: admin@system.com / TempPass123!");
+                System.out.println("/ TempPass123!");
 
             } catch (Exception e) {
-                System.err.println("⚠️ Failed to create admin in Cognito: " + e.getMessage());
+                System.err.println(" Failed to create admin in Cognito: " + e.getMessage());
             }
         }
     }

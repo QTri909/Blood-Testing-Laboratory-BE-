@@ -19,5 +19,6 @@ public interface ConfigMapper {
     void updateEntityFromDto(UpdateConfigReq configDTO, @MappingTarget Configuration configuration);
 
     List<ConfigRes> toDto(List<Configuration> configurations);
+    @Mapping(target = "instrumentName", source = "configuration.instrument.instrumentName")
     ConfigRes toDto(Configuration configuration);
 }

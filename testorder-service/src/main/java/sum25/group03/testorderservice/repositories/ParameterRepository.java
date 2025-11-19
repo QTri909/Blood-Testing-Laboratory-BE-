@@ -16,4 +16,6 @@ public interface ParameterRepository extends JpaRepository<Parameter,Long> {
     boolean existsByParamCode(String paramCode);
     Parameter findByParamCode(@NotBlank(message = "Config key cannot be blank") String configKey);
     Parameter findByAbbreviation(String abbreviation);
+
+    List<Parameter> findByIdIn(List<Long> ids);
 }

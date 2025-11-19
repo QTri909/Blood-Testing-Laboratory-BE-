@@ -9,4 +9,9 @@ public class LoginResponse {
     private long expiresIn;
     private String refreshToken;
     private String idToken;
+
+    private boolean firstLogin = false;
+    private String session;
+    private String challenge;
+
 }

@@ -1,5 +1,7 @@
 package sum25.group03.patientservice.mapper;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import sum25.group03.patientservice.dtos.request.MedicalRecordRequest;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -28,5 +30,14 @@ public interface MedicalRecordMapper {
     @Mapping(target = "clinicalNotes", ignore = true)
     MedicalRecordEntity toEntity(MedicalRecordRequest request);
 
-    public MedicalRecordDocument toMedicalRecordDocument(MedicalRecordEntity entity);
+    MedicalRecordDocument toMedicalRecordDocument(MedicalRecordEntity entity);
+
+    // Manual page mapping using default method
+    default Page<MedicalRecordResponse> toMedicalRecordResponsePage(Page<MedicalRecordEntity> entities) {
+        List<MedicalRecordResponse> list = entities.getContent()
+                .stream()
+                .map(this::toMedicalRecordResponse)
+                .toList();
+        return new PageImpl<>(list, entities.getPageable(), entities.getTotalElements());
+    }
 }

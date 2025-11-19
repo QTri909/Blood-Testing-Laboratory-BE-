@@ -19,7 +19,7 @@ public class ReagentHistoryUsage {
     private Long reagentHistoryUsageId;
 
     @Column(name = "quantity_used", nullable = true)
-    private double quantityUsed;
+    private Double quantityUsed;
 
     @Column(name = "unit", nullable = true)
     private String unit;
@@ -28,10 +28,10 @@ public class ReagentHistoryUsage {
     private String usageType;
 
     @Column(name = "test_order_id", nullable = true)
-    private long testOrderId;
+    private Long testOrderId;
 
     @Column(name = "used_by", nullable = true)
-    private int usedBy;
+    private Integer usedBy;
 
     @Column(name = "used_at", nullable = true)
     private LocalDate usedAt;

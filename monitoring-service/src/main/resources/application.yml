@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8083
 
 spring:
   application:
@@ -7,36 +7,45 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-
+    consumer:
+      group-id: monitoring-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+        enable.auto.commit: false
+        max.poll.records: 100
+      listener:
+        ack-mode: manual
+        concurrency: 3
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/monitoring_db
-
+      uri: mongodb+srv://admin:12345@monitoring.lop4zd8.mongodb.net/monitoring?retryWrites=true&w=majority
+#      uri: mongodb://root:root123@localhost:27017/monitoring_db?authSource=admin
 
   retry:
     enabled: true
-
 
 logging:
   level:
     root: info
 
-
 management:
-  server:
-    port: 4000
   endpoints:
     web:
       exposure:
-        include: health,info,prometheus,metrics
-  endpoint:
-    health:
-      show-details: always
+        include: health,info,prometheus
+  prometheus:
+    metrics:
+      tags:
+        application: monitoring-service
+      export:
+        enabled: true
+
+
 monitoring:
   kafka:
-    topic: processed-test-results
-    raw-topic: raw-test-results
+    topics:
+      - monitoring-log

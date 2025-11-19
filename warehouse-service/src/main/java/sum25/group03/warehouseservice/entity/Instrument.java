@@ -32,7 +32,7 @@ public class Instrument {
     private String serialNumber;
 
 
-    @Column(name = "location", nullable = false)
+    @Column(name = "location", nullable = true)
     private String location;
 
     @Column(name = "status", nullable = false)

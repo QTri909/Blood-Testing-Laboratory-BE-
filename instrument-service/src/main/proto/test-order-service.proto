@@ -1,0 +1,76 @@
+syntax = "proto3";
+package sum25.group03.testorder;
+option java_multiple_files = true;
+option java_package = "sum25.group03.testorder.grpc";
+
+service TestOrderService {
+  rpc GetTestOrderByBarcode(GetTestOrderByBarcodeRequest) returns (GetTestOrderByBarcodeResponse);
+  rpc CreateUnmatchedOrder(CreateUnmatchedOrderRequest) returns (CreateUnmatchedOrderResponse);
+  rpc GetLatestTestOrderByPatientId (GetLatestTestOrderRequest) returns (TestOrderResponse);
+  rpc GetCleanTestOrderById(GetCleanTestOrderByIdRequest) returns (GrpcCleanTestOrderResponse);
+}
+
+message GetLatestTestOrderRequest {
+  int64 patientId = 1;
+}
+
+message TestOrderResponse {
+  int64 id = 1;
+  string barcode = 2;
+  string type = 3;
+  int64 patientId = 4;
+  string status = 5;
+  string createdAt = 6;
+}
+
+message GetTestOrderByBarcodeRequest {
+  string barcode = 1;
+}
+
+message GetTestOrderByBarcodeResponse {
+  int64 id = 1;
+  int64 external_medical_record_id = 2;
+  string code = 3;
+  int64 patient_id = 4;
+  int64 created_by = 5;
+  int64 run_by = 6;
+  string barcode = 7;
+  string test_type = 8;
+  string run_date = 9;
+  string status = 10;
+  string created_at = 11;
+  string updated_at = 12;
+  bool found = 13;
+  string message = 14;
+}
+
+message CreateUnmatchedOrderRequest {
+  string barcode = 1;
+}
+
+message CreateUnmatchedOrderResponse {
+  int64 id = 1;
+  string code = 3;
+  string barcode = 7;
+  string status = 10;
+  string created_at = 11;
+  bool success = 13;
+  string message = 14;
+}
+
+// ---------------------- Get clean test order by ID -----------------
+message GetCleanTestOrderByIdRequest {
+  int64 testOrderId = 1;
+}
+
+message GrpcCleanTestOrderResponse {
+  int64 testOrderId = 1;
+  string barcode = 2;
+  repeated GrpcCleanTestResultResponse testResults = 3;
+}
+
+message GrpcCleanTestResultResponse {
+  int64 testResultId = 1;
+  int64 parameterId = 2;
+  string parameterCode = 3;
+}

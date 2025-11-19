@@ -1,63 +1,45 @@
 package sum25.group03.monitoringservice.controller;
 
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
+import sum25.group03.monitoringservice.dto.PagedResponse;
 import sum25.group03.monitoringservice.model.RawTestResult;
 import sum25.group03.monitoringservice.service.RawTestResultService;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/raw-results")
+@RequestMapping("/api/v1/raw-tests")
 public class RawTestResultController {
 
-    private final RawTestResultService rawTestResultService;
+    private final RawTestResultService service;
 
-    public RawTestResultController(RawTestResultService rawTestResultService) {
-        this.rawTestResultService = rawTestResultService;
+    public RawTestResultController(RawTestResultService service) {
+        this.service = service;
     }
 
-    // Add new raw test result
-    @PostMapping
-    public ResponseEntity<?> addRawTestResult(@RequestBody RawTestResult rawTestResult) {
-        try {
-            RawTestResult saved = rawTestResultService.addRawTestResult(rawTestResult);
-            return ResponseEntity.ok(saved);
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body("Error saving raw test result: " + e.getMessage());
-        }
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<PagedResponse> getRawTests(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String testOrderId,
+            @RequestParam(required = false) String instrumentId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to
+    ) {
+        Page<RawTestResult> pageResult =
+                service.getFiltered(page, size, testOrderId, instrumentId, status, from, to);
+
+        return ApiResponse.add("Fetched raw test results successfully",
+                PagedResponse.fromPage(pageResult));
     }
 
-    // Get raw test result by ID
     @GetMapping("/{id}")
-    public ResponseEntity<?> getRawTestResult(@PathVariable String id) {
-        RawTestResult result = rawTestResultService.getRawTestResultById(id);
-        if (result != null) {
-            return ResponseEntity.ok(result);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    // Verify raw test result
-    @GetMapping("/verify/{id}")
-    public ResponseEntity<?> verifyRawTestResult(@PathVariable String id) {
-        boolean isMatch = rawTestResultService.verifyRawTestResult(id);
-        return ResponseEntity.ok(isMatch ? "MATCH" : "MISMATCH");
-    }
-
-    // Get log of all backups
-    @GetMapping("/logs")
-    public ResponseEntity<List<String>> getBackupLogs() {
-        List<String> logs = rawTestResultService.getBackupLogs();
-        return ResponseEntity.ok(logs);
-    }
-
-    // Retry failed insertions
-    @PostMapping("/retry")
-    public ResponseEntity<?> retryFailedInsertions() {
-        int retriedCount = rawTestResultService.retryFailedInsertions();
-        return ResponseEntity.ok("Retried failed insertions: " + retriedCount);
+    public ApiResponse<?> getRawTestById(@PathVariable String id) {
+        return service.getById(id)
+                .map(result -> ApiResponse.add("Fetched raw test result successfully", result))
+                .orElse(ApiResponse.error(HttpStatus.NOT_FOUND, "Raw test result not found", "/api/v1/raw-tests/" + id));
     }
 }

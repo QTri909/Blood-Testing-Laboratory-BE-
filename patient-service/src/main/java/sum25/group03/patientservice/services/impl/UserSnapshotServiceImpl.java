@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.patientservice.dtos.request.GrpcMappingPatientAndCreatorIdRequest;
 import sum25.group03.patientservice.dtos.request.UserSnapshotRequest;
+import sum25.group03.patientservice.dtos.response.GrpcMappingPatientAndCreatorIdResponse;
 import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
 import sum25.group03.patientservice.feign.IAMFeignClient;
@@ -16,8 +18,10 @@ import sum25.group03.patientservice.mapper.UserSnapshotMapper;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
 import sum25.group03.patientservice.services.interfaces.UserSnapshotService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,6 +88,45 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
         log.info("Finished syncing all user snapshots from IAM service.");
     }
 
+    private Map<Long, String> mapExternalIdsToNames(List<Long> externalIds) {
+        if (externalIds == null || externalIds.isEmpty()) return Collections.emptyMap();
+
+        var users = repository.findByExternalUserIdIn(
+                externalIds.stream().filter(Objects::nonNull).toList() // remove nulls
+        );
+
+        return users.stream()
+                .filter(user -> user.getExternalUserId() != null) // skip null keys
+                .collect(Collectors.toMap(
+                        user -> user.getExternalUserId(),
+                        user -> user.getFullName(),
+                        (existing, replacement) -> existing // handle duplicates
+                ));
+    }
+
+    @Override
+    public GrpcMappingPatientAndCreatorIdResponse getGrpcMappingPatientAndCreatorName(GrpcMappingPatientAndCreatorIdRequest request) {
+        List<Long> patientIds = request.getPatientIds();
+        List<Long> creatorIds = request.getCreatorIds();
+
+        if (patientIds == null && creatorIds == null) {
+            throw new IllegalArgumentException("No patient or creator ids provided.");
+        }
+
+        GrpcMappingPatientAndCreatorIdResponse response = new GrpcMappingPatientAndCreatorIdResponse();
+        if (patientIds != null && !patientIds.isEmpty()) {
+            Map<Long, String> patientIdNameMap = mapExternalIdsToNames(patientIds);
+            response.setMappingPatientIdToName(patientIdNameMap);
+        }
+
+        if (creatorIds != null && !creatorIds.isEmpty()) {
+            Map<Long, String> creatorIdNameMap = mapExternalIdsToNames(creatorIds);
+            response.setMappingCreatorIdToName(creatorIdNameMap);
+        }
+
+        return response;
+    }
+
     @Override
     public UserSnapshotResponse create(UserSnapshotRequest request) {
         UserSnapshotEntity entity = mapper.toEntity(request);
@@ -122,5 +165,12 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
         return repository.findAll().stream()
                 .map(mapper::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public String getFullNameByExternalUserId(Long externalUserId) {
+        return repository.findByExternalUserId(externalUserId)
+                .map(UserSnapshotEntity::getFullName)
+                .orElse(null);
     }
 }

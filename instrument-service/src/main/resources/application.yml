@@ -28,26 +28,27 @@ management:
     web:
       exposure:
         include: "*"
+  endpoint:
+    prometheus:
+      enabled: true
 logging:
   level:
     web: info
     root: info
+    io.grpc: info
 
-warehouse:
-  service:
-    url: http://localhost:8082
-
-test-order:
-  service:
-    url: http://localhost:8081
+grpc:
+  warehouse:
+    host: localhost
+    port: 9002
+  testorder:
+    host: localhost
+    port: 9001
 
 aws:
-  region: ap-southeast-1
+  region: ap-southeast-2
   access-key-id: ${AWS_ACCESS_KEY_ID}
   secret-key-secret: ${AWS_SECRET_ACCESS_KEY}
-
-
-
 
 
 audit:

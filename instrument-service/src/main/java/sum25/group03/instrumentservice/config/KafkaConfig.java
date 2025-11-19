@@ -74,6 +74,23 @@ public class KafkaConfig {
     }
 
     @Bean
+    public ProducerFactory<String, ReagentUsageHistoryEvent> reagentUsageHistoryFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(ProducerConfig.ACKS_CONFIG, "all");
+        configProps.put(ProducerConfig.RETRIES_CONFIG, 3);
+        return new DefaultKafkaProducerFactory<>(configProps);
+
+    }
+
+    @Bean
+    public KafkaTemplate<String, ReagentUsageHistoryEvent> reagentUsageHistoryKafkaTemplate() {
+        return new KafkaTemplate<>(reagentUsageHistoryFactory());
+    }
+
+    @Bean
     public KafkaTemplate<String, UpdateExpiryReagent> updateExpiryReagentKafkaTemplate() {
         return new KafkaTemplate<>(updateExpiryReagentProducerFactory());
     }
@@ -184,18 +201,57 @@ public class KafkaConfig {
         return factory;
     }
 
+
+
+    @Bean
+    public ConsumerFactory<String, TestResultPublishedEvent> completeSyncTestResultConsumerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+
+        configProps.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
+
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, TestResultPublishedEvent.class.getName());
+        configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+
+        configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        return new DefaultKafkaConsumerFactory<>(configProps);
+    }
+
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, TestResultPublishedEvent> completeSyncTestResultListenerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, TestResultPublishedEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(completeSyncTestResultConsumerFactory());
+        factory.setCommonErrorHandler(errorHandler());
+        return factory;
+    }
+
     @Bean
     public DefaultErrorHandler errorHandler() {
         DefaultErrorHandler errorHandler = new DefaultErrorHandler((record, exception) -> {
-            System.err.println("[Kafka Error] Failed to deserialize message from topic: " + record.topic() +
-                    ", partition: " + record.partition() + ", offset: " + record.offset());
-            System.err.println("[Kafka Error] Exception: " + exception.getMessage());
-        }, new FixedBackOff(1000, 3));
+            System.err.println("=== [Kafka Error Detailed Log] ===");
+            System.err.println("Topic: " + record.topic());
+            System.err.println("Partition: " + record.partition());
+            System.err.println("Offset: " + record.offset());
+            System.err.println("Key: " + record.key());
+            System.err.println("Value (raw): " + record.value());
+            System.err.println("Exception class: " + exception.getClass().getName());
+            System.err.println("Message: " + exception.getMessage());
+            exception.printStackTrace(System.err);
+            System.err.println("=== [End Kafka Error Log] ===");
+        }, new FixedBackOff(1000, 0));
 
-        errorHandler.addNotRetryableExceptions(org.springframework.messaging.converter.MessageConversionException.class);
+        errorHandler.addNotRetryableExceptions(
+                org.springframework.messaging.converter.MessageConversionException.class,
+                org.springframework.kafka.support.serializer.DeserializationException.class
+        );
 
         return errorHandler;
-
     }
 
 }

@@ -1,7 +1,7 @@
 package sum25.group03.payment_service.services.impl;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,7 +14,6 @@ import sum25.group03.payment_service.repositories.PaymentRequestRepository;
 import sum25.group03.payment_service.repositories.PaymentTransactionRepository;
 import sum25.group03.payment_service.services.interfaces.PayPalService;
 import sum25.group03.payment_service.services.interfaces.PaymentTransactionService;
-import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -33,34 +32,33 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     @Transactional
     public void captureAndUpdateStatus(String token) {
         try {
-            // get orderCode from token(token= order_id from PayPal)
-            String orderCode = paymentCacheService.getOrderCodeByToken(token);
-            if (orderCode == null) {
-                throw new RuntimeException("OrderCode not found for token: " + token);
+            // token -> requestId
+            String requestId = paymentCacheService.getRequestIdByToken(token);
+            if (requestId == null) {
+                throw new RuntimeException("RequestId not found for token: " + token);
             }
 
-            // PaymentRequest only have orderCode => must be change token->oderCode
-            PaymentRequest request = paymentRequestRepository
-                    .findByOrderCode(orderCode)
-                    .orElseThrow(() -> new RuntimeException("PaymentRequest not found for orderCode: " + orderCode));
+            // requestId -> payment request
+            PaymentRequest request = paymentRequestRepository.findById(requestId)
+                    .orElseThrow(() -> new RuntimeException("PaymentRequest not found for id=" + requestId));
 
-            // token= order_id => capture payment if not status COMPLETED
             String paypalOrderId = token;
             Map<String, Object> captureResponse = null;
 
             String orderStatus = payPalService.getOrderStatus(paypalOrderId);
-            if ("COMPLETED".equalsIgnoreCase(orderStatus)) {
-                log.info("Order {} already captured → skip PayPal capture", paypalOrderId);
-            } else {
+            log.info("PayPal order {} status before capture: {}", paypalOrderId, orderStatus);
+
+            if (!"COMPLETED".equalsIgnoreCase(orderStatus)) {
                 String responseJson = payPalService.capturePayment(paypalOrderId);
-                captureResponse = captureJsonResponseToMap(responseJson);
-                log.info("Captured PayPal payment for orderCode={}, paypalOrderId={}, response={}", orderCode, paypalOrderId, captureResponse);
+                captureResponse = parseJsonToMap(responseJson);
+                log.info("Captured PayPal payment for requestId={}, paypalOrderId={}", requestId, paypalOrderId);
+            } else {
+                log.info("Order {} already completed on PayPal → skip capture", paypalOrderId);
             }
 
             request.setStatus(PaymentRequestStatus.SUCCESS);
             paymentRequestRepository.save(request);
-
-            // Write PaymentTransaction if capture success => Completed => write transaction
+            //write transaction
             PaymentTransaction transaction = PaymentTransaction.builder()
                     .paymentRequest(request)
                     .gatewayTransactionId(paypalOrderId)
@@ -70,19 +68,20 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
 
             paymentTransactionRepository.save(transaction);
 
-            // delete cache
-            paymentCacheService.removeCachedPaymentRequest(orderCode);
+            paymentCacheService.removeCachedPaymentRequest(request.getOrderCode());
+            paymentCacheService.removeTokenRequestId(token);
             paymentCacheService.removeTokenOrderCode(token);
 
+            log.info("Payment capture completed successfully for requestId={}, token={}", requestId, token);
+
         } catch (Exception e) {
-            log.error("Error capturing PayPal payment: {}", token, e);
+            log.error("Error capturing PayPal payment for token={}", token, e);
             handlePaymentFailure(token, e.getMessage());
         }
     }
 
-    private Map<String, Object> captureJsonResponseToMap(String responseJson) {
+    private Map<String, Object> parseJsonToMap(String responseJson) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
             Type type = new TypeToken<Map<String, Object>>() {}.getType();
             return new Gson().fromJson(responseJson, type);
         } catch (Exception e) {
@@ -92,12 +91,22 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     }
 
     @Override
-    public void handlePaymentFailure(String oderCode, String reason) {
-        PaymentRequest request = paymentRequestRepository
-                .findByOrderCode(oderCode)
-                .orElse(null);
+    public void handlePaymentFailure(String token, String reason) {
+        try {
+            String requestId = paymentCacheService.getRequestIdByToken(token);
+            if (requestId == null) {
+                log.warn("Cannot find requestId for failed token={}", token);
+                return;
+            }
 
-        if (request != null) {
+            PaymentRequest request = paymentRequestRepository.findById(requestId)
+                    .orElse(null);
+
+            if (request == null) {
+                log.warn("PaymentRequest not found for requestId={}", requestId);
+                return;
+            }
+
             request.setStatus(PaymentRequestStatus.FAILED);
             paymentRequestRepository.save(request);
 
@@ -105,14 +114,21 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
 
             PaymentTransaction transaction = PaymentTransaction.builder()
                     .paymentRequest(request)
-                    .gatewayTransactionId(oderCode)
+                    .gatewayTransactionId(token)
                     .status(PaymentTransactionStatus.FAILED)
                     .rawResponse(failedResponse)
                     .build();
 
             paymentTransactionRepository.save(transaction);
-        } else {
-            log.warn("PaymentRequest not found for order {}: {}", oderCode, reason);
+
+            paymentCacheService.removeCachedPaymentRequest(request.getOrderCode());
+            paymentCacheService.removeTokenRequestId(token);
+            paymentCacheService.removeTokenOrderCode(token);
+
+            log.info("Marked payment as FAILED for requestId={} (token={})", requestId, token);
+
+        } catch (Exception ex) {
+            log.error("Error while handling failed payment for token={}: {}", token, ex.getMessage());
         }
     }
 }

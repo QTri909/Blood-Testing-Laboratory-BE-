@@ -41,13 +41,13 @@ public class TestOrder {
     @Enumerated(EnumType.STRING)
     private TestOrderType type;
 
-    @Column(name = "external_medical_record_id", nullable = false)
+    @Column(name = "external_medical_record_id")
     private Long externalMedicalRecordId;
 
-    @Column(name = "patient_id", nullable = false)
+    @Column(name = "patient_id")
     private Long patientId; // User Id ( IAMService)
 
-    @Column(name = "created_by", nullable = false)
+    @Column(name = "created_by")
     private Long createdBy; // user ID ( IAMService)
 
     @Column(name = "run_by")
@@ -58,6 +58,12 @@ public class TestOrder {
 
     @Enumerated(EnumType.STRING)
     private TestOrderStatus status;
+
+    @Column(name = "instrument_id")
+    private Long instrumentId;
+
+    @Column(name = "global_test_parameter_id")
+    private Long globalTestParameterId;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
@@ -77,6 +83,6 @@ public class TestOrder {
     @PrePersist
     private void prePersist() {
         if (this.status == null)
-            this.status = TestOrderStatus.PENDING;
+            this.status = TestOrderStatus.EMPTY;
     }
 }

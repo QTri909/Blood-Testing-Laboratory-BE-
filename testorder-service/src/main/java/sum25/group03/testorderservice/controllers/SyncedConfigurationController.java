@@ -3,16 +3,15 @@ package sum25.group03.testorderservice.controllers;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import sum25.group03.common.response.ApiResponse;
 import sum25.group03.testorderservice.dtos.request.SyncedConfigurationDTO;
 import sum25.group03.testorderservice.services.impl.SyncedConfigurationServiceImpl;
 
 @RestController
-@RequestMapping("/api/config")
+@RequestMapping("/api/v1/config")//  {{api_gateway}}/api/v1/test-orders/config
 @RequiredArgsConstructor
 public class SyncedConfigurationController {
 
@@ -20,9 +19,10 @@ public class SyncedConfigurationController {
     private SyncedConfigurationServiceImpl syncedConfigurationService;
 
     @PostMapping("/publish")
-    public ResponseEntity<?> publishConfig(@Valid @RequestBody SyncedConfigurationDTO dto){
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<?> publishConfig(@Valid @RequestBody SyncedConfigurationDTO dto){
         syncedConfigurationService.handleConfigUpdate(dto);
-        return ResponseEntity.ok("Configuration published successfully.");
+        return ApiResponse.add("Configuration published successfully", null);
     }
 
 }
