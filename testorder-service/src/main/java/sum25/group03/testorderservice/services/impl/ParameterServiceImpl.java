@@ -91,6 +91,11 @@ public class ParameterServiceImpl implements ParameterService {
 
         List<Parameter> newParameters = parameterMapper.toParameterListFromParameterGrpcList(requestList);
 
+        for (Parameter param: newParameters) {
+            if (param.getStatus() == null)
+                param.setStatus(ParameterStatus.ACTIVE);
+        }
+
         // save all new parameters to the database:
         parameterRepository.saveAll(newParameters);
 
