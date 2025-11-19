@@ -1,5 +1,6 @@
 package sum25.group03.warehouseservice.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TestParameterRes {
     private Long id;
     private String abbreviation;

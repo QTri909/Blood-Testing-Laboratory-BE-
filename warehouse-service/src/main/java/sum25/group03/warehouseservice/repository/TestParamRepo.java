@@ -23,4 +23,6 @@ public interface TestParamRepo extends JpaRepository<TestParameter,Long> {
 
 
     List<TestParameter> findAllByIdInAndStatus(List<Long> id, ParameterStatus parameterStatus);
+
+    List<TestParameter> findAllByStatus(ParameterStatus parameterStatus);
 }

@@ -10,7 +10,7 @@ spring:
   application:
     name: warehouse-service
   datasource:
-
+#
 #      url: jdbc:postgresql://localhost:5432/warehouse
 #      username: postgres
 #      password: 123456
@@ -33,7 +33,7 @@ spring:
       connection-test-query: SELECT 1
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
     properties:
       hibernate:

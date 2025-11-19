@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.warehouseservice.entity.enums.Gender;
+import sum25.group03.warehouseservice.entity.enums.ParamUnit;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,8 +18,6 @@ public class NormalRange {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-//    @Column(name = "normal_range", nullable = false, length = 512)
-//    private String normalRange;
     @Column(name= "min_value")
     private Double minValue;
 
@@ -26,7 +25,8 @@ public class NormalRange {
     private Double maxValue;
 
     @Column(name = "unit")
-    private  String unit;
+    @Enumerated(EnumType.STRING)
+    private ParamUnit unit;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "gender")

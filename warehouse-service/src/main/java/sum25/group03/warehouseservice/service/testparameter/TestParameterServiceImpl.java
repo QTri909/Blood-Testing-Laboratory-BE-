@@ -3,6 +3,7 @@ package sum25.group03.warehouseservice.service.testparameter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.warehouseservice.dto.request.TestParameterReq;
 import sum25.group03.warehouseservice.dto.request.TestTemplateReq;
 import sum25.group03.warehouseservice.dto.response.GlobalTestParameterRes;
 import sum25.group03.warehouseservice.dto.response.NewTestTemplate;
@@ -111,6 +112,52 @@ public class TestParameterServiceImpl implements  TestParameterService {
                 .testType(saved.getTestType())
                 .testParameters(tpRes)
                 .build();
+    }
+
+    @Override
+    public TestParameterRes addTestParameter(TestParameterReq req) {
+
+        TestParameter testParameter = TestParameter.builder()
+                .parameterName(req.getParameterName())
+                .abbreviation(req.getAbbreviation())
+                .description(req.getDescription() != null ? req.getDescription() : "")
+                .price(req.getPrice())
+                .status(ParameterStatus.ACTIVE)
+                .build();
+        List<NormalRange> normalRanges = req.getNormalRange().stream()
+                .map(nrReq -> NormalRange.builder()
+                        .minValue(nrReq.getMinValue())
+                        .maxValue(nrReq.getMaxValue())
+                        .unit(nrReq.getUnit())
+                        .gender(nrReq.getGender())
+                        .testParameter(testParameter)
+                        .build())
+                .toList();
+        testParameter.setNormalRanges(normalRanges);
+        TestParameter saved = testParamRepo.save(testParameter);
+        return TestParameterRes.builder()
+                .id(saved.getId())
+                .parameterName(saved.getParameterName())
+                .abbreviation(saved.getAbbreviation())
+                .description(saved.getDescription())
+                .price(saved.getPrice())
+                .normalRange(normalRangeMapper.toResponse(saved.getNormalRanges()))
+                .build();
+    }
+
+    @Override
+    public List<TestParameterRes> getAllTestParameter() {
+        List<TestParameter> testParameters = testParamRepo.findAllByStatus(ParameterStatus.ACTIVE);
+        return testParameters.stream()
+                .map(tp -> TestParameterRes.builder()
+                        .id(tp.getId())
+                        .parameterName(tp.getParameterName())
+                        .abbreviation(tp.getAbbreviation())
+                        .description(tp.getDescription())
+                        .price(tp.getPrice())
+                        .normalRange(normalRangeMapper.toResponse(tp.getNormalRanges()))
+                        .build())
+                .toList();
     }
 }
 
