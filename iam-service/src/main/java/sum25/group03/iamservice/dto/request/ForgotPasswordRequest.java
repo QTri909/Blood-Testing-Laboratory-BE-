@@ -8,5 +8,5 @@ import jakarta.validation.constraints.NotBlank;
 public class ForgotPasswordRequest {
     @Email
     @NotBlank
-    private String email;
+    private String username;
 }

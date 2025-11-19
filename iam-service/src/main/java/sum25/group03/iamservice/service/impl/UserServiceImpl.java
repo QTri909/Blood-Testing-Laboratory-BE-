@@ -308,9 +308,9 @@ public class UserServiceImpl implements UserService {
 
 
         @Override
-        public Map<String, List<String>> getRolesAndPrivilegesByEmail(String email) {
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("User not found: " + email));
+        public Map<String, List<String>> getRolesAndPrivilegesByUsername(String username) {
+            User user = userRepository.findByEmailOrIdentityNumber(username, username)
+                    .orElseThrow(() -> new RuntimeException("User not found: " + username));
 
             // Lấy role
             List<String> roles = user.getUserRoles().stream()

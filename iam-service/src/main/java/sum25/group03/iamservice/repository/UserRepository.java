@@ -27,6 +27,9 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @EntityGraph(attributePaths = {"userRoles.role.rolePrivileges", "userPrivileges.privilege"})
     Optional<User> findByEmail(String email);
 
+    @EntityGraph(attributePaths = {"userRoles.role.rolePrivileges", "userPrivileges.privilege"})
+    Optional<User> findByEmailOrIdentityNumber(String email, String identityNumber);
+
 
     Optional<User> findByIdentityNumber(String identityNumber);
 
@@ -41,4 +44,6 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Modifying
     @Query("DELETE FROM User u WHERE u.id = :id")
     void deleteUserById(@Param("id") Long id);
+
+
 }

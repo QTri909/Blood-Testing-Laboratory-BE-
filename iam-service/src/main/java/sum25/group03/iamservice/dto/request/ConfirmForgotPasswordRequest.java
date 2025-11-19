@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 @Data
 public class ConfirmForgotPasswordRequest {
     @NotBlank
-    private String email;
+    private String username;
 
     @NotBlank
     private String confirmationCode;

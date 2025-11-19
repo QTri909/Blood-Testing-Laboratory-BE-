@@ -57,8 +57,12 @@ public class AuthServiceImpl implements AuthService {
         CognitoConfig config = getConfig();
 
         // 1. Lấy user từ DB
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findByEmailOrIdentityNumber(
+                request.getUsername(),
+                request.getUsername()
+        ).orElseThrow(() -> new RuntimeException("User not found"));
+
+        String cognitoUsername = user.getEmail();
 
         // 2. Kiểm tra account khóa
         if (!user.getAccountNonLocked()) {
@@ -74,17 +78,19 @@ public class AuthServiceImpl implements AuthService {
 
         try {
             // 3. Dùng AdminInitiateAuth thay vì InitiateAuth
-            InitiateAuthRequest authRequest = InitiateAuthRequest.builder()
+            AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
+                    .userPoolId(config.getUserPoolId())
                     .clientId(config.getClientId())
-                    .authFlow(AuthFlowType.USER_PASSWORD_AUTH)
+                    .authFlow(AuthFlowType.ADMIN_USER_PASSWORD_AUTH)
                     .authParameters(Map.of(
-                            "USERNAME", request.getEmail(),
+                            "USERNAME", cognitoUsername,
                             "PASSWORD", request.getPassword(),
-                            "SECRET_HASH", calculateSecretHash(request.getEmail(), config.getClientSecret(), config.getClientId())
+                            "SECRET_HASH", calculateSecretHash(cognitoUsername, config.getClientSecret(), config.getClientId())
                     ))
                     .build();
 
-            InitiateAuthResponse response = cognitoClient.initiateAuth(authRequest);
+            AdminInitiateAuthResponse response =
+                    cognitoClient.adminInitiateAuth(authRequest);
 
             if (response.challengeName() != null &&
                     response.challengeName() == ChallengeNameType.NEW_PASSWORD_REQUIRED) {
@@ -128,6 +134,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse firstLoginChangePassword(String username, String session, String newPassword) {
         CognitoConfig config = getConfig();
+        User user = userRepository.findByEmailOrIdentityNumber(username, username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String cognitoUsername = user.getEmail();
 
         try {
             RespondToAuthChallengeRequest challengeRequest = RespondToAuthChallengeRequest.builder()
@@ -135,9 +145,9 @@ public class AuthServiceImpl implements AuthService {
                     .challengeName(ChallengeNameType.NEW_PASSWORD_REQUIRED)
                     .session(session)
                     .challengeResponses(Map.of(
-                            "USERNAME", username,
+                            "USERNAME", cognitoUsername,
                             "NEW_PASSWORD", newPassword,
-                            "SECRET_HASH", calculateSecretHash(username, config.getClientSecret(), config.getClientId())
+                            "SECRET_HASH", calculateSecretHash(cognitoUsername, config.getClientSecret(), config.getClientId())
                     ))
                     .build();
 
@@ -165,6 +175,11 @@ public class AuthServiceImpl implements AuthService {
     public LoginResponse refreshToken(RefreshTokenRequest request) {
         CognitoConfig config = getConfig();
 
+        User user = userRepository.findByCognitoUserId(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String cognitoUsername = user.getCognitoUserId();
+
         try {
             AdminInitiateAuthRequest refreshRequest = AdminInitiateAuthRequest.builder()
                     .userPoolId(config.getUserPoolId())
@@ -172,7 +187,8 @@ public class AuthServiceImpl implements AuthService {
                     .authFlow(AuthFlowType.REFRESH_TOKEN_AUTH)
                     .authParameters(Map.of(
                             "REFRESH_TOKEN", request.getRefreshToken(),
-                            "SECRET_HASH", calculateSecretHash(request.getEmail(), config.getClientSecret(), config.getClientId())
+                            "USERNAME", cognitoUsername,
+                            "SECRET_HASH", calculateSecretHash(cognitoUsername, config.getClientSecret(), config.getClientId())
                     ))
                     .build();
 
@@ -221,28 +237,28 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void forgotPassword(String email) {
+    public void forgotPassword(String username) {
         CognitoConfig config = getConfig();
 
         ForgotPasswordRequest request = ForgotPasswordRequest.builder()
                 .clientId(config.getClientId())
-                .username(email)
-                .secretHash(calculateSecretHash(email, config.getClientSecret(), config.getClientId()))
+                .username(username)
+                .secretHash(calculateSecretHash(username, config.getClientSecret(), config.getClientId()))
                 .build();
 
         cognitoClient.forgotPassword(request);
     }
 
     @Override
-    public void confirmForgotPassword(String email, String confirmationCode, String newPassword) {
+    public void confirmForgotPassword(String username, String confirmationCode, String newPassword) {
         CognitoConfig config = getConfig();
 
         ConfirmForgotPasswordRequest confirmRequest = ConfirmForgotPasswordRequest.builder()
                 .clientId(config.getClientId())
-                .username(email)
+                .username(username)
                 .confirmationCode(confirmationCode)
                 .password(newPassword)
-                .secretHash(calculateSecretHash(email, config.getClientSecret(), config.getClientId()))
+                .secretHash(calculateSecretHash(username, config.getClientSecret(), config.getClientId()))
                 .build();
 
         cognitoClient.confirmForgotPassword(confirmRequest);
