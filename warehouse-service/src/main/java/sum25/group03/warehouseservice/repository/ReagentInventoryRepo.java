@@ -23,8 +23,6 @@ public interface ReagentInventoryRepo extends JpaRepository<ReagentInventory, Lo
     """)
     Integer getTotalQuantityByReagentId(@Param("reagentId") Long reagentId);
 
-    Optional<ReagentInventory> findByReagentIdAndLotNumber(Long reagentId, String lotNumber);
-
     @Query("""
         SELECT COALESCE(SUM(ri.quantityAvailable), 0)
         FROM ReagentInventory ri
@@ -44,4 +42,5 @@ public interface ReagentInventoryRepo extends JpaRepository<ReagentInventory, Lo
     // Batch fetch inventories for given reagent ids
     @Query("SELECT ri FROM ReagentInventory ri WHERE ri.reagent.reagentId IN :ids")
     List<ReagentInventory> findAllByReagentIdIn(@Param("ids") List<Long> ids);
+
 }

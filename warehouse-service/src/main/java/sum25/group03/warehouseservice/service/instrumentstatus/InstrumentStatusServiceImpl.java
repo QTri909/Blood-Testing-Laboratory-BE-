@@ -40,6 +40,7 @@ public class InstrumentStatusServiceImpl implements InstrumentStatusService {
         instrument.setStatus(InstrumentStatus.ACTIVE);
         instrument.setUpdatedAt(LocalDate.now());
         instrument.setAutoDeleteScheduledAt(null);
+        instrument.setDeactivatedAt(null);
         instrumentRepo.save(instrument);
         // publish event
         publishEvent(instrument, "ACTIVATE", username, "Instrument activated successfully");

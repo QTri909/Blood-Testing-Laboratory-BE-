@@ -4,10 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
+import sum25.group03.warehouseservice.audit.annotation.SkipAuditLog;
 import sum25.group03.warehouseservice.dto.request.AssignConfigAndReagentReq;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
-import sum25.group03.warehouseservice.dto.response.MessageResponse;
-import sum25.group03.warehouseservice.repository.InstrumentRepo;
 import sum25.group03.warehouseservice.service.instrument.InstrumentService;
 
 @RestController
@@ -34,6 +33,7 @@ public class InstrumentController {
         return ApiResponse.ok(instrumentService.addConfigAndReagentToInstrument(req));
     }
 
+    @SkipAuditLog
     @GetMapping("/status/{instrumentId}")
     public ResponseEntity<?> getInstrumentStatus(@PathVariable Long instrumentId) {
         return ResponseEntity.ok(instrumentService.getInstrumentStatus(instrumentId));

@@ -23,7 +23,6 @@ public interface ReagentUsageRepo extends JpaRepository<ReagentHistoryUsage, Lon
     @EntityGraph(attributePaths = {"reagent"})
     @Query("SELECT rhu FROM ReagentHistoryUsage rhu WHERE rhu.instrument.instrumentId = :id")
     List<ReagentHistoryUsage> findAllByInstrument(@Param("id") Long instrumentId);
-    List<ReagentHistoryUsage> findTop3ByReagentOrderByUsedAtDesc(Reagents reagent);
 
     @Query("SELECT COALESCE(SUM(rhu.quantityUsed), 0) FROM ReagentHistoryUsage rhu WHERE rhu.usedAt = :date")
     Double getTotalUsageByDate(@Param("date") LocalDate date);
@@ -34,4 +33,26 @@ public interface ReagentUsageRepo extends JpaRepository<ReagentHistoryUsage, Lon
     @EntityGraph(attributePaths = {"instrument"})
     @Query("SELECT rhu FROM ReagentHistoryUsage rhu ORDER BY rhu.usedAt DESC")
     Page<ReagentHistoryUsage> findAllUsage(Pageable pageable);
+
+    List<ReagentHistoryUsage> findAllByReagentOrderByUsedAtDesc(Reagents reagent);
+
+    @Query("""
+                SELECT u FROM ReagentHistoryUsage u
+                JOIN FETCH u.reagent r
+                LEFT JOIN FETCH u.instrument i
+                WHERE 
+                    (:reagentName IS NULL 
+                     OR :reagentName = '' 
+                     OR LOWER(r.reagentName) LIKE LOWER(CONCAT('%', :reagentName, '%')))
+                AND 
+                    (CAST(:startDate AS date) IS NULL OR u.usedAt >= :startDate)
+                AND 
+                    (CAST(:endDate AS date) IS NULL OR u.usedAt <= :endDate)
+            """)
+    Page<ReagentHistoryUsage> filterUsageHistory(
+            @Param("reagentName") String reagentName,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate,
+            Pageable pageable
+    );
 }

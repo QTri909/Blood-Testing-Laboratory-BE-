@@ -59,9 +59,10 @@ spring:
       properties:
         spring.json.add.type.headers: false
 aws:
-  region: ap-southeast-1
-  access-key-id: AKIA3RDIYFHPZTTDJPN3
-  secret-key-secret: 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
+  region: ap-southeast-2
+  access-key-id: ${AWS_ACCESS_KEY_ID}
+  secret-key-secret: ${AWS_SECRET_ACCESS_KEY}
+
 audit:
   cloudwatch:
     log-group: warehouse-service

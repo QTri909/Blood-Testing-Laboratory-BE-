@@ -18,6 +18,4 @@ public class ReagentRes {
     private String casNumber;
     private String unit;
     private int quantity;
-
-    private List<ReagentUsageMiniRes> usages;
 }
