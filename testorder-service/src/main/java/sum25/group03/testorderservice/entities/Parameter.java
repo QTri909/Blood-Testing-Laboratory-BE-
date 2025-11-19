@@ -12,7 +12,13 @@ import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
-@Table(name = "parameters")
+@Table(
+        name = "parameters",
+        indexes = {
+                @Index(name = "idx_parameters_externalid_id", columnList = "external_id, id"),
+                @Index(name = "idx_parameters_paramcode", columnList = "param_code")
+        }
+)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -25,7 +31,7 @@ public class Parameter {
     private Long id;
 
     @Column(name = "external_id", nullable = false)
-    private String externalId;
+    private Long externalId;
 
     @Column(name = "param_code", nullable = false, unique = true)
     private String paramCode;
