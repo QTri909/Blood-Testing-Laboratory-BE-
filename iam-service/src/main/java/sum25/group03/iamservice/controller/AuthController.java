@@ -53,13 +53,10 @@ public class AuthController {
 
 
 
-
-
-
     @GetMapping("/privileges")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<Map<String, List<String>>> getUserPrivileges(@RequestParam String email) {
-        Map<String, List<String>> data = userService.getRolesAndPrivilegesByEmail(email);
+    public ApiResponse<Map<String, List<String>>> getUserPrivileges(@RequestParam String username) {
+        Map<String, List<String>> data = userService.getRolesAndPrivilegesByUsername(username);
         return ApiResponse.data(data)
                 .message("Privileges retrieved successfully")
                 .build();
@@ -79,7 +76,7 @@ public class AuthController {
     @PostMapping("/forgot-password")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest req) {
-        authService.forgotPassword(req.getEmail());
+        authService.forgotPassword(req.getUsername());
         return ApiResponse.data("Verification code sent to email")
                 .message("Forgot password request processed")
                 .build();
@@ -88,7 +85,7 @@ public class AuthController {
     @PostMapping("/confirm-forgot-password")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<String> confirmForgotPassword(@Valid @RequestBody ConfirmForgotPasswordRequest req) {
-        authService.confirmForgotPassword(req.getEmail(), req.getConfirmationCode(), req.getNewPassword());
+        authService.confirmForgotPassword(req.getUsername(), req.getConfirmationCode(), req.getNewPassword());
         return ApiResponse.data("Password has been reset successfully")
                 .message("Password reset completed")
                 .build();
@@ -101,6 +98,17 @@ public class AuthController {
         authService.logout(accessToken);
         return ApiResponse.data("User logged out successfully")
                 .message("Logout completed")
+                .build();
+    }
+
+    @PostMapping("/refresh-token")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<LoginResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest req) {
+
+        LoginResponse response = authService.refreshToken(req);
+
+        return ApiResponse.data(response)
+                .message("Token refreshed successfully")
                 .build();
     }
 

@@ -21,7 +21,7 @@ public interface UserService {
     Page<UserResponse> getAllUsers(Pageable pageable);
     Page<UserResponse> getAllPatients(Pageable pageable);
 
-    Map<String, List<String>> getRolesAndPrivilegesByEmail(String email);
+    Map<String, List<String>> getRolesAndPrivilegesByUsername(String username);
 
     UserResponse getUserById(Long id);
     UserResponse getUserByIdentityNumber(String identityNumber);
