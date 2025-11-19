@@ -39,8 +39,8 @@ public class EventLogService {
         return eventLogRepo.findById(id);
     }
 
-    public List<EventLog> searchEventLogs(String action, String message, String operator) {
-        return eventLogRepo.searchEventLogs(action, message, operator);
+    public List<EventLog> searchEventLogs(String action, String message, String operator, String sourceService) {
+        return eventLogRepo.searchEventLogs(action, message, operator, sourceService);
     }
 
     private EventLogDTO convertToDTO(EventLog eventLog) {
