@@ -70,7 +70,7 @@ public class TestResult {
     @Column(name = "review", columnDefinition = "TEXT")
     private String review;
 
-    public TestResult(TestOrder testOrder, Long instrumentId, Long parameterSnapshotId, FlagStatus flagStatus, TestResultStatus status, Double value, LocalDateTime createdAt, LocalDateTime updatedAt, TestType testType, Parameter parameter) {
+    public TestResult(TestOrder testOrder, Long instrumentId, Long parameterSnapshotId, FlagStatus flagStatus, TestResultStatus status, Double value, LocalDateTime createdAt, LocalDateTime updatedAt, Parameter parameter) {
         this.testOrder = testOrder;
         this.flagStatus = flagStatus;
         this.status = status;
