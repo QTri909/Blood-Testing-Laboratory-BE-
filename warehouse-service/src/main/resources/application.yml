@@ -81,6 +81,13 @@ grpc:
     keep-alive-time: 30s
     keep-alive-timeout: 5s
     max-concurrent-streams: 100
+  client:
+    test-order-service:
+      address: static://localhost:9001
+      negotiationType: plaintext
+      enableKeepAlive: true
+      keepAliveTime: 20s
+      keepAliveTimeout: 5s
 
 management:
   endpoints:

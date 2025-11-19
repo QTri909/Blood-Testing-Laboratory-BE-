@@ -1,8 +1,12 @@
 package sum25.group03.warehouseservice.service.testparameter;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.common.response.dtos.grpc.ParameterGrpc;
+import sum25.group03.warehouse.grpc.SyncParameterResponse;
+import sum25.group03.warehouse.grpc.TestOrderServiceGrpc;
 import sum25.group03.warehouseservice.dto.request.TestParameterReq;
 import sum25.group03.warehouseservice.dto.request.TestTemplateReq;
 import sum25.group03.warehouseservice.dto.response.GlobalTestParameterRes;
@@ -16,6 +20,7 @@ import sum25.group03.warehouseservice.entity.TestParameter;
 import sum25.group03.warehouseservice.entity.enums.ParameterStatus;
 import sum25.group03.warehouseservice.entity.enums.TestType;
 import sum25.group03.warehouseservice.exception.NotFoundException;
+import sum25.group03.warehouseservice.grpc.TestOrderGrpcClient;
 import sum25.group03.warehouseservice.mapper.NormalRangeMapper;
 import sum25.group03.warehouseservice.repository.GlobalTestParameterRepo;
 import sum25.group03.warehouseservice.repository.TestParamRepo;
@@ -27,10 +32,12 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TestParameterServiceImpl implements  TestParameterService {
     private final GlobalTestParameterRepo globalTestParameterRepo;
     private final TestParamRepo testParamRepo;
     private final NormalRangeMapper normalRangeMapper;
+    private final TestOrderGrpcClient testOrderGrpcClient;
 
     @Override
     public List<GlobalTestParameterRes> getGlobalTestParameters(TestType testType) {
@@ -135,6 +142,22 @@ public class TestParameterServiceImpl implements  TestParameterService {
                 .toList();
         testParameter.setNormalRanges(normalRanges);
         TestParameter saved = testParamRepo.save(testParameter);
+
+        List<ParameterGrpc> parameterGrpcList = saved.getNormalRanges().stream()
+                .map(nr -> ParameterGrpc.builder()
+                        .id(saved.getId())
+                        .abbreviation(saved.getAbbreviation())
+                        .parameterName(saved.getParameterName())
+                        .price(saved.getPrice())
+                        .description(saved.getDescription())
+                        .minValue(nr.getMinValue())
+                        .maxValue(nr.getMaxValue())
+                        .unit(nr.getUnit().toString())
+                        .build()
+                ).toList();
+        SyncParameterResponse response = testOrderGrpcClient.syncParameter(parameterGrpcList);
+        log.info("Sync Parameter Response: {}", response.getSuccess());
+
         return TestParameterRes.builder()
                 .id(saved.getId())
                 .parameterName(saved.getParameterName())
@@ -159,6 +182,7 @@ public class TestParameterServiceImpl implements  TestParameterService {
                         .build())
                 .toList();
     }
+
 }
 
 
