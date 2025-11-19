@@ -41,13 +41,16 @@ public class EventLogController {
     }
 
     @GetMapping("/search")
-    public ApiResponse<List<EventLog>> searchEventLogs(
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<PagedResponse> searchEventLogs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String action,
             @RequestParam(required = false) String message,
             @RequestParam(required = false) String operator,
             @RequestParam(required = false) String sourceService
     ) {
-        List<EventLog> results = eventLogService.searchEventLogs(action, message, operator, sourceService);
-        return ApiResponse.add("Search completed", results);
+        Page<EventLogDTO> pageResult = eventLogService.searchEventLogs(page, size, action, message, operator, sourceService);
+        return ApiResponse.add("Search completed", PagedResponse.fromPage(pageResult));
     }
 }
