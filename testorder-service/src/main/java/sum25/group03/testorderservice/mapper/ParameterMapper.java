@@ -48,6 +48,8 @@ public interface ParameterMapper {
     @Mapping(target = "unit", source = "unit")
     @Mapping(target = "gender", source = "gender")
     @Mapping(target = "price", source = "price")
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     Parameter toParameterFromParameterGrpc(ParameterGrpc parameterGrpc);
 
     List<Parameter> toParameterListFromParameterGrpcList(List<ParameterGrpc> parameterGrpcList);

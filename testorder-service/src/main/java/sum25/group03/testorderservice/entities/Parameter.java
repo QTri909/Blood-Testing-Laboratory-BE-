@@ -48,12 +48,14 @@ public class Parameter {
     private ParameterGender gender;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
-    private LocalDate createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default // Ensures that the field is initialized during the build process
+    private LocalDate createdAt = null;
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
-    private LocalDate updatedAt;
+    @Builder.Default
+    private LocalDate updatedAt = null;
 
     private Long createdBy;
     private Long updatedBy;
