@@ -28,17 +28,6 @@ public class PayPalController {
     @Value("${frontend.url}")
     private String frontEndUrl;
 
-//    @GetMapping("/return")
-//    @ResponseStatus(HttpStatus.OK)
-//    public ApiResponse<String> handleReturn(@RequestParam("token") String token,
-//                                            @RequestParam(value = "PayerID", required = false) String payerId) {
-//        log.info("PayPal RETURN callback received: token={}, payerId={}", token, payerId);
-//        String result = payPalService.capturePayment(token);
-//        paymentTransactionService.captureAndUpdateStatus(token);
-//
-//        return ApiResponse.add("Payment success", result);
-//    }
-
     @GetMapping("/return")
     public RedirectView handleReturn(@RequestParam("token") String token,
                                      @RequestParam(value = "PayerID", required = false) String payerId) {
