@@ -10,7 +10,7 @@ spring:
   application:
     name: warehouse-service
   datasource:
-
+#
 #      url: jdbc:postgresql://localhost:5432/warehouse
 #      username: postgres
 #      password: 123456

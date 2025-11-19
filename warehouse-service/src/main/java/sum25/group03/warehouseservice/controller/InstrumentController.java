@@ -2,6 +2,7 @@ package sum25.group03.warehouseservice.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.warehouseservice.audit.annotation.SkipAuditLog;
@@ -20,6 +21,7 @@ public class InstrumentController {
 //        instrumentService.addInstrumentToWarehouse(instrument);
 //        return ResponseEntity.ok("success");
 //    }
+
     @PostMapping("/add")
     public ApiResponse<?> addInstrument(@RequestBody InstrumentReq instrument) {
         return ApiResponse.ok( instrumentService.addInstrumentToWarehouse(instrument));
