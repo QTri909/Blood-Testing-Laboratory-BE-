@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.common.response.events.UserCreatedEvent;
@@ -17,6 +18,7 @@ import sum25.group03.iamservice.entity.PendingUser;
 import sum25.group03.iamservice.entity.Role;
 import sum25.group03.iamservice.entity.User;
 import sum25.group03.iamservice.entity.UserRole;
+import sum25.group03.iamservice.event.MonitoringLogEvent;
 import sum25.group03.iamservice.event.UserDeletedEvent;
 import sum25.group03.iamservice.event.UserUpdatedEvent;
 import sum25.group03.iamservice.repository.PendingUserRepository;
@@ -33,6 +35,7 @@ import java.util.*;
 
 import java.util.stream.Collectors;
 
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -47,6 +50,27 @@ public class UserServiceImpl implements UserService {
     private final KafkaProducerService kafkaProducerService;
     private final PendingUserRepository pendingUserRepository;
 
+
+    private Long getOperatorDatabaseId() {
+        try {
+            var authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null) return null;
+
+            Object principal = authentication.getPrincipal();
+
+            if (principal instanceof org.springframework.security.oauth2.jwt.Jwt jwt) {
+                String cognitoUserId = jwt.getSubject();
+
+                return userRepository.findByCognitoUserId(cognitoUserId)
+                        .map(User::getId)
+                        .orElse(null);
+            }
+
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     @Override
     public UserResponse createUser(UserCreateRequest request) {
@@ -126,6 +150,24 @@ public class UserServiceImpl implements UserService {
 
             kafkaProducerService.sendUserCreated(event);
         } catch (Exception ignored) {}
+
+        Long operatorId = getOperatorDatabaseId();
+
+        MonitoringLogEvent log = MonitoringLogEvent.builder()
+                .action("CREATE_USER")
+                .operator(operatorId == null ? "system" : operatorId.toString())
+                .message("Created new user with id: " + user.getId())
+                .sourceService("IAM-Service")
+                .data(Map.of(
+                        "userId", user.getId(),
+                        "email", user.getEmail(),
+                        "roles", user.getUserRoles().stream()
+                                .map(ur -> ur.getRole().getRoleCode())
+                                .toList()
+                ))
+                .build();
+
+        kafkaProducerService.sendMonitoringLog(log);
 
 
         UserResponse response = new UserResponse();
@@ -208,6 +250,21 @@ public class UserServiceImpl implements UserService {
             kafkaProducerService.sendUserUpdated(event);
         } catch (Exception ignored) {}
 
+        Long operatorId = getOperatorDatabaseId();
+
+        MonitoringLogEvent log = MonitoringLogEvent.builder()
+                .action("UPDATE_USER")
+                .operator(operatorId == null ? "system" : operatorId.toString())
+                .message("Updated user with id: " + user.getId())
+                .sourceService("IAM-Service")
+                .data(Map.of(
+                        "userId", user.getId(),
+                        "updatedFields", request
+                ))
+                .build();
+
+        kafkaProducerService.sendMonitoringLog(log);
+
 
 
 
@@ -277,6 +334,21 @@ public class UserServiceImpl implements UserService {
 
             kafkaProducerService.sendUserDeleted(event);
         } catch (Exception ignored) {}
+
+        Long operatorId = getOperatorDatabaseId();
+
+        MonitoringLogEvent log = MonitoringLogEvent.builder()
+                .action("DELETE_USER")
+                .operator(operatorId == null ? "system" : operatorId.toString())
+                .message("Deleted user with id: " + user.getId())
+                .sourceService("IAM-Service")
+                .data(Map.of(
+                        "userId", user.getId(),
+                        "email", user.getEmail()
+                ))
+                .build();
+
+        kafkaProducerService.sendMonitoringLog(log);
 
     }
 
