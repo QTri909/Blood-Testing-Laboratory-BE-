@@ -39,8 +39,25 @@ public class EventLogService {
         return eventLogRepo.findById(id);
     }
 
-    public List<EventLog> searchEventLogs(String action, String message, String operator, String sourceService) {
-        return eventLogRepo.searchEventLogs(action, message, operator, sourceService);
+    public Page<EventLogDTO> searchEventLogs(
+            int page,
+            int size,
+            String action,
+            String message,
+            String operator,
+            String sourceService
+    ) {
+        Page<EventLog> eventLogs = eventLogRepo.searchEventLogs(
+                action,
+                message,
+                operator,
+                sourceService,
+                PageRequest.of(page, size)
+        );
+        List<EventLogDTO> dtoList = eventLogs.getContent().stream()
+                .map(this::convertToDTO)
+                .toList();
+        return new PageImpl<>(dtoList, eventLogs.getPageable(), eventLogs.getTotalElements());
     }
 
     private EventLogDTO convertToDTO(EventLog eventLog) {
