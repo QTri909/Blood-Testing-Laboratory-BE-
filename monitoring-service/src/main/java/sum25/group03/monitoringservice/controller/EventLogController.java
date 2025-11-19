@@ -44,9 +44,10 @@ public class EventLogController {
     public ApiResponse<List<EventLog>> searchEventLogs(
             @RequestParam(required = false) String action,
             @RequestParam(required = false) String message,
-            @RequestParam(required = false) String operator
+            @RequestParam(required = false) String operator,
+            @RequestParam(required = false) String sourceService
     ) {
-        List<EventLog> results = eventLogService.searchEventLogs(action, message, operator);
+        List<EventLog> results = eventLogService.searchEventLogs(action, message, operator, sourceService);
         return ApiResponse.add("Search completed", results);
     }
 }
