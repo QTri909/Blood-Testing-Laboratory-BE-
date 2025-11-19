@@ -8,7 +8,11 @@ option java_multiple_files = true;
 option java_package = "sum25.group03.warehouse.grpc";
 
 service TestOrderService {
-  rpc SyncParameter(SyncParameterRequest) returns (SyncParameterResponse);
+  rpc SyncParameter(SyncParameterRequestList) returns (SyncParameterResponse);
+}
+
+message SyncParameterRequestList {
+  repeated SyncParameterRequest parameters = 1;
 }
 
 message SyncParameterRequest {
