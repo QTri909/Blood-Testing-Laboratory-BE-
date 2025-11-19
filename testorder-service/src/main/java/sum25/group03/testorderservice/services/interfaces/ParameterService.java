@@ -15,5 +15,5 @@ public interface ParameterService {
     ParameterResponseDTO getParameterByCode(String paramCode);
 
     // grpc:
-    ParameterGrpcResponse syncParameterFromWarehouse(ParameterGrpc request);
+    ParameterGrpcResponse syncParameterFromWarehouse(List<ParameterGrpc> requestList);
 }

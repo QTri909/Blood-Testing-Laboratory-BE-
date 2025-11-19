@@ -86,15 +86,18 @@ public class ParameterServiceImpl implements ParameterService {
     }
 
     @Override
-    public ParameterGrpcResponse syncParameterFromWarehouse(ParameterGrpc request) {
+    @Transactional
+    public ParameterGrpcResponse syncParameterFromWarehouse(List<ParameterGrpc> requestList) {
 
-        Parameter newParameter = parameterMapper.toParameterFromParameterGrpc(request);
-        parameterRepository.save(newParameter);
+        List<Parameter> newParameters = parameterMapper.toParameterListFromParameterGrpcList(requestList);
+
+        // save all new parameters to the database:
+        parameterRepository.saveAll(newParameters);
 
         // map to response object:
         ParameterGrpcResponse response = ParameterGrpcResponse.builder()
                 .success(true)
-                .message("Parameter synced successfully")
+                .message("Synced " + newParameters.size() + " parameters successfully.")
                 .build();
 
         return response;

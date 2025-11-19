@@ -192,11 +192,11 @@ public class TestOrderGrpcServer extends TestOrderServiceGrpc.TestOrderServiceIm
     }
 
     public void syncParameter(
-            SyncParameterRequest request,
+            SyncParameterRequestList request,
             StreamObserver<SyncParameterResponse> responseObserver
     ) {
-        // mapping get ParameterGrpc for handling
-        ParameterGrpc parameterGrpc = parameterMapper.toParameterFromGrpc(request);
+        // mapping get list of ParameterGrpc for handling
+        List<ParameterGrpc> parameterGrpc = parameterMapper.toParameterListFromSyncedGrpcList(request);
 
         // handle sync parameter
         ParameterGrpcResponse response = parameterService.syncParameterFromWarehouse(parameterGrpc);

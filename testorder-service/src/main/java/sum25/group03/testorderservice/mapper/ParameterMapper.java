@@ -5,6 +5,7 @@ import org.mapstruct.*;
 import sum25.group03.common.response.dtos.grpc.ParameterGrpc;
 import sum25.group03.common.response.dtos.grpc.ParameterGrpcResponse;
 import sum25.group03.testorder.grpc.SyncParameterRequest;
+import sum25.group03.testorder.grpc.SyncParameterRequestList;
 import sum25.group03.testorder.grpc.SyncParameterResponse;
 import sum25.group03.testorderservice.dtos.request.KafkaParameterRequestDTO;
 import sum25.group03.testorderservice.dtos.request.ParameterRequestDTO;
@@ -12,6 +13,8 @@ import sum25.group03.testorderservice.dtos.response.ParameterResponseDTO;
 import sum25.group03.testorderservice.entities.Parameter;
 import sum25.group03.testorderservice.enums.ParameterGender;
 import sum25.group03.testorderservice.enums.ParameterStatus;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 public interface ParameterMapper {
@@ -47,6 +50,8 @@ public interface ParameterMapper {
     @Mapping(target = "price", source = "price")
     Parameter toParameterFromParameterGrpc(ParameterGrpc parameterGrpc);
 
+    List<Parameter> toParameterListFromParameterGrpcList(List<ParameterGrpc> parameterGrpcList);
+
 
     // from request grpc to parameter request entity
     default ParameterGrpc toParameterFromGrpc(SyncParameterRequest request) {
@@ -60,6 +65,14 @@ public interface ParameterMapper {
                 .maxValue(request.getMaxValue())
                 .unit(request.getUnit())
                 .build();
+    }
+
+    // from SyncParameterRequestList to List<ParameterGrpc>
+    default List<ParameterGrpc> toParameterListFromSyncedGrpcList(SyncParameterRequestList syncedList) {
+        return syncedList.getParametersList()
+                .stream()
+                .map(this::toParameterFromGrpc)
+                .toList();
     }
 
     // from parameter response entity to grpc response
