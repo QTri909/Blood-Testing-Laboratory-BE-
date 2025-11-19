@@ -8,7 +8,7 @@ import sum25.group03.warehouseservice.entity.TestParameter;
 
 @Mapper(componentModel = "spring")
 public interface ParameterMapper {
-    @Mapping(source = "gender", target = "gender", qualifiedByName = "enumToString")
+//    @Mapping(source = "gender", target = "gender", qualifiedByName = "enumToString")
     @Mapping(source = "status", target = "status", qualifiedByName = "enumToString")
     ParameterRes toDto(TestParameter parameter);
 
