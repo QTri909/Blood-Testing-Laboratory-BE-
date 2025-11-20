@@ -115,139 +115,224 @@ public class TestResultServiceImpl implements TestResultService {
         return testResultMapper.toResponseDto(savedResult);
     }
 
-    private List<TestResult> handleAddTestResultsByListParamEntities(
+//    private List<TestResult> handleAddTestResultsByListParamEntities(
+//            List<Parameter> parameters,
+//            TestOrder testOrder,
+//            TestResultBulkedRequestDTO requestDTO,
+//            Long creatorId
+//    ) {
+//        if (parameters == null || parameters.isEmpty()) {
+//            throw new IllegalArgumentException("There are no parameters to be added.");
+//        }
+//
+//        // Map to paramCode to ensure uniqueness (optional) - by Key paramCode
+//        Map<String, Parameter> paramMap = parameters.stream()
+//                .collect(Collectors.toMap(Parameter::getParamCode, Function.identity()));
+//
+//        List<TestResult> newTestResults = paramMap.values().stream()
+//                .map(p -> TestResult.builder()
+//                        .testOrder(testOrder)
+//                        .parameter(p)
+//                        .build())
+//                .toList();
+//
+//        // Save all new test results
+//        testResultRepository.saveAll(newTestResults);
+//
+//        // Update globalTestParameterId if exists
+//        Long globalTestParameterId = requestDTO.getGlobalTestParameterId();
+//        if (globalTestParameterId != null) {
+//            testOrder.setGlobalTestParameterId(globalTestParameterId);
+//            testOrder.setStatus(TestOrderStatus.UNPUBLISHED);
+//        }
+//
+//        // Log action
+//        actionLogService.logAction(
+//                creatorId, ActionTypeFeatures.CREATE_BULK_TEST_RESULTS, null
+//        );
+//
+//        return newTestResults;
+//    }
+//
+//
+//    private void handleRemoveTestResultsByParameters(Set<Parameter> removedParameters, TestOrder testOrder) {
+//        if (removedParameters == null || removedParameters.isEmpty()) return;
+//
+//        List<Long> paramIdsToRemove = removedParameters.stream()
+//                .map(Parameter::getId)
+//                .toList();
+//
+//        // Fetch TestResults for the given testOrder and parameters
+//        List<TestResult> removedTestResults =
+//                testResultRepository.findByTestOrderAndParameter_IdInOrderByCreatedAtDesc(testOrder, paramIdsToRemove);
+//
+//        // Debug:
+//        System.out.println("Removed TestResults: ");
+//        removedTestResults.forEach(rs ->
+//                System.out.println(" - TestResult ID: " + rs.getId() + ", Param ID: " + rs.getParameter().getId())
+//        );
+//
+//        // Remove from in-memory TestOrder
+//        testOrder.getTestResults().removeIf(removedTestResults::contains);
+//
+//        // Delete from DB
+//        testResultRepository.deleteAll(removedTestResults);
+//        testResultRepository.flush();
+//    }
+//
+//
+//    @Override
+//    @Transactional
+//    public List<TestResultResponseDTO> createTestResultByBulk(TestResultBulkedRequestDTO requestDTO, Long creatorId) {
+//
+//        // search for the existing test order:
+//        Long testOrderID = requestDTO.getTestOrderId();
+//        TestOrder testOrder = testOrderRepository.findById(testOrderID)
+//                .orElseThrow(() -> new EntityNotFoundException("Test order with id " + testOrderID + " not found"));
+//
+//        if (testOrder.getStatus() != TestOrderStatus.EMPTY
+//            && testOrder.getStatus() != TestOrderStatus.UNPUBLISHED
+//        ) {
+//            throw new RuntimeException("Only empty or unpublished test orders can be modified");
+//        }
+//
+//        List<TestResult> newTestResults = null;
+//        if (testOrder.getStatus() == TestOrderStatus.UNPUBLISHED) {
+//            // Fetch current TestResults from DB
+//            List<TestResult> currentTestResults = testResultRepository.findByTestOrderOrderByCreatedAtDesc(testOrder);
+//
+//            // Map existing Parameters by externalId
+//            Map<Long, Parameter> existingParamMap = currentTestResults.stream()
+//                    .map(TestResult::getParameter)
+//                    .collect(Collectors.toMap(Parameter::getExternalId, Function.identity(), (p1, p2) -> p1));
+//            // keep first Parameter if duplicates (Uniqueness by externalId)
+//
+//            // Get requested externalIds from request
+//            Set<Long> requestedExternalIds = requestDTO.getExternalParamIds();
+//
+//            // Fetch first Parameter per externalId from repository
+//            List<Parameter> requestedParameters = parameterRepository.findFirstPerExternalIdByExternalIds(requestedExternalIds);
+//
+//            // Compute parameters to remove and add
+//            Set<Parameter> removedParameters = existingParamMap.values().stream()
+//                    .filter(p -> requestedExternalIds.stream().noneMatch(id -> id.equals(p.getExternalId())))
+//                    .collect(Collectors.toSet());
+//
+//            List<Parameter> addedParameters = requestedParameters.stream()
+//                    .filter(p -> !existingParamMap.containsKey(p.getExternalId()))
+//                            .toList();
+//
+//            // Debug
+//            System.out.println("Existing Params: " + existingParamMap.keySet());
+//            System.out.println("Removed Params: " + removedParameters.stream().map(Parameter::getId).toList());
+//            System.out.println("Added Params: " + addedParameters.stream().map(Parameter::getId).toList());
+//
+//            // Remove old TestResults
+//            handleRemoveTestResultsByParameters(removedParameters, testOrder);
+//
+//            // Add new TestResults
+//            newTestResults = handleAddTestResultsByListParamEntities(addedParameters, testOrder, requestDTO, creatorId);
+//        }
+//
+//        else {
+//            // get a proper list of parameters from the parameters is list:
+//            Set<Long> externalIds = requestDTO.getExternalParamIds();
+//
+//            // get addedIds:
+//            List<Parameter> addedParams = parameterRepository.findFirstPerExternalIdByExternalIds(externalIds);
+//
+//            // get test results to be created:
+//            newTestResults = handleAddTestResultsByListParamEntities(addedParams, testOrder, requestDTO, creatorId);
+//        }
+//
+//        // map to response dto list and return:
+//        return testResultMapper.toResponseDtos(newTestResults);
+//    }
+
+    private List<Parameter> resolveRequestedParameters(Set<Long> externalIds) {
+        // Always use the repository method that returns the "first" per externalId
+        return parameterRepository.findFirstPerExternalIdByExternalIds(externalIds);
+    }
+
+    private void removeAllTestResults(TestOrder testOrder) {
+        List<TestResult> existing = testResultRepository.findByTestOrderOrderByCreatedAtDesc(testOrder);
+
+        if (!existing.isEmpty()) {
+            testOrder.getTestResults().clear();
+            testResultRepository.deleteAll(existing);
+            testResultRepository.flush();
+        }
+    }
+
+    private List<TestResult> createTestResults(
             List<Parameter> parameters,
             TestOrder testOrder,
             TestResultBulkedRequestDTO requestDTO,
             Long creatorId
     ) {
         if (parameters == null || parameters.isEmpty()) {
-            throw new IllegalArgumentException("There are no parameters to be added.");
+            throw new IllegalArgumentException("No parameters provided.");
         }
 
-        // Map to paramCode to ensure uniqueness (optional) - by Key paramCode
+        // Deduplicate by paramCode (your original logic) — optional
         Map<String, Parameter> paramMap = parameters.stream()
-                .collect(Collectors.toMap(Parameter::getParamCode, Function.identity()));
+                .collect(Collectors.toMap(Parameter::getParamCode, Function.identity(), (a, b) -> a));
 
-        List<TestResult> newTestResults = paramMap.values().stream()
+        List<TestResult> testResults = paramMap.values().stream()
                 .map(p -> TestResult.builder()
                         .testOrder(testOrder)
                         .parameter(p)
                         .build())
                 .toList();
 
-        // Save all new test results
-        testResultRepository.saveAll(newTestResults);
+        testResultRepository.saveAll(testResults);
 
-        // Update globalTestParameterId if exists
-        Long globalTestParameterId = requestDTO.getGlobalTestParameterId();
-        if (globalTestParameterId != null) {
-            testOrder.setGlobalTestParameterId(globalTestParameterId);
+        // globalTestParameterId update (same as before)
+        if (requestDTO.getGlobalTestParameterId() != null) {
+            testOrder.setGlobalTestParameterId(requestDTO.getGlobalTestParameterId());
             testOrder.setStatus(TestOrderStatus.UNPUBLISHED);
         }
 
-        // Log action
         actionLogService.logAction(
                 creatorId, ActionTypeFeatures.CREATE_BULK_TEST_RESULTS, null
         );
 
-        return newTestResults;
+        return testResults;
     }
-
-
-    private void handleRemoveTestResultsByParameters(Set<Parameter> removedParameters, TestOrder testOrder) {
-        if (removedParameters == null || removedParameters.isEmpty()) return;
-
-        List<Long> paramIdsToRemove = removedParameters.stream()
-                .map(Parameter::getId)
-                .toList();
-
-        // Fetch TestResults for the given testOrder and parameters
-        List<TestResult> removedTestResults =
-                testResultRepository.findByTestOrderAndParameter_IdInOrderByCreatedAtDesc(testOrder, paramIdsToRemove);
-
-        // Debug:
-        System.out.println("Removed TestResults: ");
-        removedTestResults.forEach(rs ->
-                System.out.println(" - TestResult ID: " + rs.getId() + ", Param ID: " + rs.getParameter().getId())
-        );
-
-        // Remove from in-memory TestOrder
-        testOrder.getTestResults().removeIf(removedTestResults::contains);
-
-        // Delete from DB
-        testResultRepository.deleteAll(removedTestResults);
-        testResultRepository.flush();
-    }
-
 
     @Override
     @Transactional
     public List<TestResultResponseDTO> createTestResultByBulk(TestResultBulkedRequestDTO requestDTO, Long creatorId) {
 
-        // search for the existing test order:
-        Long testOrderID = requestDTO.getTestOrderId();
-        TestOrder testOrder = testOrderRepository.findById(testOrderID)
-                .orElseThrow(() -> new EntityNotFoundException("Test order with id " + testOrderID + " not found"));
+        Long testOrderId = requestDTO.getTestOrderId();
 
+        TestOrder testOrder = testOrderRepository.findById(testOrderId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Test order with id " + testOrderId + " not found")
+                );
+
+        // business rule
         if (testOrder.getStatus() != TestOrderStatus.EMPTY
-            && testOrder.getStatus() != TestOrderStatus.UNPUBLISHED
-        ) {
+                && testOrder.getStatus() != TestOrderStatus.UNPUBLISHED) {
             throw new RuntimeException("Only empty or unpublished test orders can be modified");
         }
 
-        List<TestResult> newTestResults = null;
-        if (testOrder.getStatus() == TestOrderStatus.UNPUBLISHED) {
-            // Fetch current TestResults from DB
-            List<TestResult> currentTestResults = testResultRepository.findByTestOrderOrderByCreatedAtDesc(testOrder);
+        // Step 1: Remove all old results
+        removeAllTestResults(testOrder);
 
-            // Map existing Parameters by externalId
-            Map<Long, Parameter> existingParamMap = currentTestResults.stream()
-                    .map(TestResult::getParameter)
-                    .collect(Collectors.toMap(Parameter::getExternalId, Function.identity(), (p1, p2) -> p1));
-            // keep first Parameter if duplicates (Uniqueness by externalId)
+        // Step 2: Resolve parameters for requested externalIds
+        Set<Long> externalIds = requestDTO.getExternalParamIds();
+        List<Parameter> parameters = resolveRequestedParameters(externalIds);
 
-            // Get requested externalIds from request
-            Set<Long> requestedExternalIds = requestDTO.getExternalParamIds();
+        // Step 3: Rebuild test results
+        List<TestResult> newTestResults =
+                createTestResults(parameters, testOrder, requestDTO, creatorId);
 
-            // Fetch first Parameter per externalId from repository
-            List<Parameter> requestedParameters = parameterRepository.findFirstPerExternalIdByExternalIds(requestedExternalIds);
-
-            // Compute parameters to remove and add
-            Set<Parameter> removedParameters = existingParamMap.values().stream()
-                    .filter(p -> requestedExternalIds.stream().noneMatch(id -> id.equals(p.getExternalId())))
-                    .collect(Collectors.toSet());
-
-            List<Parameter> addedParameters = requestedParameters.stream()
-                    .filter(p -> !existingParamMap.containsKey(p.getExternalId()))
-                            .toList();
-
-            // Debug
-            System.out.println("Existing Params: " + existingParamMap.keySet());
-            System.out.println("Removed Params: " + removedParameters.stream().map(Parameter::getId).toList());
-            System.out.println("Added Params: " + addedParameters.stream().map(Parameter::getId).toList());
-
-            // Remove old TestResults
-            handleRemoveTestResultsByParameters(removedParameters, testOrder);
-
-            // Add new TestResults
-            newTestResults = handleAddTestResultsByListParamEntities(addedParameters, testOrder, requestDTO, creatorId);
-        }
-
-        else {
-            // get a proper list of parameters from the parameters is list:
-            Set<Long> externalIds = requestDTO.getExternalParamIds();
-
-            // get addedIds:
-            List<Parameter> addedParams = parameterRepository.findFirstPerExternalIdByExternalIds(externalIds);
-
-            // get test results to be created:
-            newTestResults = handleAddTestResultsByListParamEntities(addedParams, testOrder, requestDTO, creatorId);
-        }
-
-        // map to response dto list and return:
+        // Return DTOs
         return testResultMapper.toResponseDtos(newTestResults);
     }
+
+
 
     @Override
     @Transactional(readOnly = true)
