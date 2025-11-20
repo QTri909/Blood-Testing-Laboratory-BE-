@@ -50,7 +50,7 @@ spring:
               predicates:
                 - Path=${app.api-version}/payments/**
               filters:
-                - RewritePath=/api/v1/payments/(?<segment>(\\d+|payment-providers|paypal|payments/stripe|payments/vnpay.*)), /api/v1/${segment}
+                - RewritePath=/api/v1/payments/(?<segment>(\\d+|payment-providers|payment-transactions|paypal|payments/stripe|payments/vnpay.*)), /api/v1/${segment}
             # PayPal callback
             - id: payment-paypal
               uri: http://localhost:8084

@@ -4,12 +4,19 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.payment_service.dtos.request.RequestTransactionsByRequestId;
+import sum25.group03.payment_service.dtos.response.PaymentTransactionRes;
 import sum25.group03.payment_service.entities.PaymentRequest;
 import sum25.group03.payment_service.entities.PaymentTransaction;
 import sum25.group03.payment_service.enums.PaymentRequestStatus;
 import sum25.group03.payment_service.enums.PaymentTransactionStatus;
+import sum25.group03.payment_service.mappers.PaymentTransactionMapper;
 import sum25.group03.payment_service.repositories.PaymentRequestRepository;
 import sum25.group03.payment_service.repositories.PaymentTransactionRepository;
 import sum25.group03.payment_service.services.interfaces.PayPalService;
@@ -27,6 +34,7 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final PayPalService payPalService;
     private final PaymentCacheServiceImpl paymentCacheService;
+    private final PaymentTransactionMapper paymentTransactionMapper;
 
     @Override
     @Transactional
@@ -130,6 +138,17 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
         } catch (Exception ex) {
             log.error("Error while handling failed payment for token={}: {}", token, ex.getMessage());
         }
+    }
+
+    @Override
+    public Page<PaymentTransactionRes> getAllTransactionsByPaymentRequestId(RequestTransactionsByRequestId request) {
+
+        int page = request.page();
+        int size = request.size();
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<PaymentTransaction> transactionsPage = paymentTransactionRepository.findAll(pageable);
+        return paymentTransactionMapper.toTransactionResDTOPage(transactionsPage);
     }
 }
 
