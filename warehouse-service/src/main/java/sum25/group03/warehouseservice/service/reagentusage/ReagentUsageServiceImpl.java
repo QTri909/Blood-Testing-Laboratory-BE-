@@ -83,6 +83,8 @@ public class ReagentUsageServiceImpl implements ReagentUsageService {
                 .instrumentId(u.getInstrument() != null ? u.getInstrument().getInstrumentId() : null)
                 .instrumentName(u.getInstrument() != null ? u.getInstrument().getInstrumentName() : null)
                 .quantityUsed(u.getQuantityUsed() == null ? 0.0 : u.getQuantityUsed())
+                .unit(u.getUnit())
+                .reagentName(u.getReagent().getReagentName())
                 .lotNumber(u.getLotNumber())
                 .build()).collect(Collectors.toList());
 

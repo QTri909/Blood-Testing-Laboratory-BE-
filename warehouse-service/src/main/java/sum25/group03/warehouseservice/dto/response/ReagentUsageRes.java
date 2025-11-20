@@ -16,5 +16,7 @@ public class ReagentUsageRes {
     private Long instrumentId;
     private String instrumentName;
     private double quantityUsed;
+    private String unit;
+    private String reagentName;
     private String lotNumber;
 }
