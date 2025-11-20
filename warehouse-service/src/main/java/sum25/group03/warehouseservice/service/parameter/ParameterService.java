@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface ParameterService {
     List<ParameterRes> getAllParameters();
+    List<String> getAllParameterUnits();
 }

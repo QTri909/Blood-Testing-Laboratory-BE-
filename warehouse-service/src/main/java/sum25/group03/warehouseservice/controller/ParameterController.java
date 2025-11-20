@@ -21,4 +21,10 @@ public class ParameterController {
         List<ParameterRes> param = parameterService.getAllParameters();
         return ApiResponse.ok("Get all paramters successfully",param);
     }
+
+    @GetMapping("/units")
+    public ApiResponse<List<String>> getAllParameterUnits() {
+        List<String> paramUnits = parameterService.getAllParameterUnits();
+        return ApiResponse.ok("Get all parameter units successfully", paramUnits);
+    }
 }
