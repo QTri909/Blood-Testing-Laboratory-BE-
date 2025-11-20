@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import sum25.group03.warehouseservice.dto.response.ParameterRes;
+import sum25.group03.warehouseservice.entity.enums.ParamUnit;
 import sum25.group03.warehouseservice.mapper.ParameterMapper;
 import sum25.group03.warehouseservice.repository.ParameterRepo;
 
@@ -21,5 +22,10 @@ public class ParameterServiceImpl implements ParameterService {
         return parameterRepo.findAll().stream()
                 .map(parameterMapper::toDto)
                 .toList();
+    }
+
+    @Override
+    public List<String> getAllParameterUnits() {
+        return ParamUnit.getAllUnits();
     }
 }

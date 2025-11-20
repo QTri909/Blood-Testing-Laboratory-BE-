@@ -2,6 +2,7 @@ package sum25.group03.payment_service.controllers;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -131,5 +132,17 @@ public class PaymentRequestController {
             return ApiResponse.notFound("No cached payment found for orderCode: " + orderCode, null);
         }
         return ApiResponse.add("Cached payment retrieved", cached);
+    }
+
+    // get all payments (for admin/manager)
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Page<PaymentRequestResponse>> getAllPaymentRequests(
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "10") Integer size,
+            @RequestHeader("X-User-Id") Long viewerId
+    ) {
+        Page<PaymentRequestResponse> paymentRequests = paymentRequestService.getAllPaymentRequests(page, size, viewerId);
+        return ApiResponse.add("All payment requests retrieved", paymentRequests);
     }
 }

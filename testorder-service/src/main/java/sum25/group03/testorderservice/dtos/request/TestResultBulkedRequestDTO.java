@@ -17,7 +17,7 @@ public class TestResultBulkedRequestDTO implements Serializable {
     private Long testOrderId;
 
     @NotEmpty(message = "It's required to have at least one parameter for the template")
-    private Set<Long> paramsId;
+    private Set<Long> externalParamIds;
 
     private Long globalTestParameterId;
 }

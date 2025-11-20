@@ -48,6 +48,10 @@ public interface ParameterMapper {
     @Mapping(target = "unit", source = "unit")
     @Mapping(target = "gender", source = "gender")
     @Mapping(target = "price", source = "price")
+    @Mapping(target = "externalId", source = "id")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
     Parameter toParameterFromParameterGrpc(ParameterGrpc parameterGrpc);
 
     List<Parameter> toParameterListFromParameterGrpcList(List<ParameterGrpc> parameterGrpcList);
@@ -64,6 +68,7 @@ public interface ParameterMapper {
                 .minValue(request.getMinValue())
                 .maxValue(request.getMaxValue())
                 .unit(request.getUnit())
+                .gender(request.getGender())
                 .build();
     }
 

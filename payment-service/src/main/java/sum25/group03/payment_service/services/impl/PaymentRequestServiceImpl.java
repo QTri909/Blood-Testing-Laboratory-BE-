@@ -2,6 +2,10 @@ package sum25.group03.payment_service.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sum25.group03.payment_service.dtos.request.PaymentRequestRequest;
 import sum25.group03.payment_service.dtos.response.PaymentRequestResponse;
@@ -54,6 +58,15 @@ public class PaymentRequestServiceImpl implements PaymentRequestService {
         return entities.stream()
                 .map(paymentRequestMapper::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<PaymentRequestResponse> getAllPaymentRequests(Integer page, Integer size, Long viewerId) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        Page<PaymentRequest> entities = paymentRequestRepository.findAll(pageable);
+        return paymentRequestMapper.toResponsePage(entities);
     }
 
     @Override

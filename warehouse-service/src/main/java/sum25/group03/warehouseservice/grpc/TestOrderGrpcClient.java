@@ -4,15 +4,12 @@ import lombok.RequiredArgsConstructor;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 import sum25.group03.common.response.dtos.grpc.ParameterGrpc;
-import sum25.group03.warehouse.grpc.SyncParameterRequest;
-import sum25.group03.warehouse.grpc.SyncParameterRequestList;
-import sum25.group03.warehouse.grpc.SyncParameterResponse;
-import sum25.group03.warehouse.grpc.TestOrderServiceGrpc;
+import sum25.group03.testorder.grpc.SyncParameterRequest;
+import sum25.group03.testorder.grpc.SyncParameterRequestList;
+import sum25.group03.testorder.grpc.SyncParameterResponse;
+import sum25.group03.testorder.grpc.TestOrderServiceGrpc;
 
 import java.util.List;
-
-import static java.util.stream.Collectors.toList;
-
 
 @Service
 @RequiredArgsConstructor
@@ -34,8 +31,6 @@ public class TestOrderGrpcClient {
                         .setGender(p.getGender())
                         .build())
                 .toList();
-
-        System.out.println("CUONG-CUONT");
 
         SyncParameterRequestList request = SyncParameterRequestList.newBuilder()
                 .addAllParameters(requestList)

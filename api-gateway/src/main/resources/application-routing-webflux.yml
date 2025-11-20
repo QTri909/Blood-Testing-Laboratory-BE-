@@ -50,7 +50,7 @@ spring:
               predicates:
                 - Path=${app.api-version}/payments/**
               filters:
-                - RewritePath=/api/v1/payments/(?<segment>(\\d+|payment-providers|paypal|payments/stripe|payments/vnpay.*)), /api/v1/${segment}
+                - RewritePath=/api/v1/payments/(?<segment>(\\d+|payment-providers|payment-transactions|paypal|payments/stripe|payments/vnpay.*)), /api/v1/${segment}
             # PayPal callback
             - id: payment-paypal
               uri: http://localhost:8084
@@ -64,7 +64,7 @@ spring:
               predicates:
                 - Path=/api/v1/test-orders/**       # everything under test-orders
               filters:
-                - RewritePath=/api/v1/test-orders/(?<segment>(\\d+|parameters|test-result|comments|parameters|reports|config.*)), /api/v1/${segment}
+                - RewritePath=/api/v1/test-orders/(?<segment>(\\d+|parameters|test-result|comments|reports|config.*)), /api/v1/${segment}
 
             # for warehouse service
             - id: warehouse-service
@@ -72,4 +72,4 @@ spring:
               predicates:
                 - Path=${app.api-version}/warehouses/**,
               filters:
-                - RewritePath=/api/v1/warehouses/(?<segment>(\\d+|test-parameters|instruments|vendors|configurations|reagents|supply|usage.*)), /api/v1/${segment}
+                - RewritePath=/api/v1/warehouses/(?<segment>(\\d+|test-parameters|instruments|parameter|vendors|configurations|reagents|supply|usage.*)), /api/v1/${segment}

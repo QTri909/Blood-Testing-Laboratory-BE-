@@ -12,7 +12,13 @@ import java.time.LocalDate;
 import java.util.Set;
 
 @Entity
-@Table(name = "parameters")
+@Table(
+        name = "parameters",
+        indexes = {
+                @Index(name = "idx_parameters_externalid_id", columnList = "external_id, id"),
+                @Index(name = "idx_parameters_paramcode", columnList = "param_code")
+        }
+)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,7 +27,11 @@ import java.util.Set;
 public class Parameter {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "external_id", nullable = false)
+    private Long externalId;
 
     @Column(name = "param_code", nullable = false, unique = true)
     private String paramCode;
@@ -48,12 +58,14 @@ public class Parameter {
     private ParameterGender gender;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
-    private LocalDate createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Builder.Default // Ensures that the field is initialized during the build process
+    private LocalDate createdAt = null;
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
-    private LocalDate updatedAt;
+    @Builder.Default
+    private LocalDate updatedAt = null;
 
     private Long createdBy;
     private Long updatedBy;

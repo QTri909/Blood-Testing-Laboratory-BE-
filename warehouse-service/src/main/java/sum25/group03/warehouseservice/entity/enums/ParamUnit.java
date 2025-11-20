@@ -3,6 +3,9 @@ package sum25.group03.warehouseservice.entity.enums;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public enum ParamUnit {
     // common
     PERCENTAGE("%"),
@@ -38,5 +41,13 @@ public enum ParamUnit {
             }
         }
         throw new IllegalArgumentException("Invalid ParamUnit: " + value);
+    }
+
+    public static List<String> getAllUnits() {
+        List<String> list = new ArrayList<>();
+        for (ParamUnit u: values()) {
+            list.add(u.unit);
+        }
+        return list;
     }
 }
