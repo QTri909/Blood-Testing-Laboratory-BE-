@@ -1,15 +1,14 @@
 package sum25.group03.iamservice.service.Interface;
 
+import jakarta.servlet.http.HttpServletRequest;
 import sum25.group03.iamservice.dto.request.LoginRequest;
-import sum25.group03.iamservice.dto.request.RefreshTokenRequest;
-import sum25.group03.iamservice.dto.response.LoginResponse;
+import sum25.group03.iamservice.dto.response.LoginWithRefresh;
 
 public interface AuthService {
 
-
-    LoginResponse login(LoginRequest request);
-    LoginResponse firstLoginChangePassword(String username, String session, String newPassword);
-    LoginResponse refreshToken(RefreshTokenRequest refreshToken);
+    LoginWithRefresh login(LoginRequest request);
+    LoginWithRefresh firstLoginChangePassword(String username, String session, String newPassword);
+    LoginWithRefresh refreshToken(HttpServletRequest request);
     void changePassword(String accessToken, String oldPassword, String newPassword);
 
     void forgotPassword(String username);
