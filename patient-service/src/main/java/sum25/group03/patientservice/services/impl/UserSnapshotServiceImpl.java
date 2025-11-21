@@ -22,10 +22,7 @@ import sum25.group03.patientservice.mapper.UserSnapshotMapper;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
 import sum25.group03.patientservice.services.interfaces.UserSnapshotService;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -154,6 +151,7 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
     @Override
     public UserSnapshotResponse getById(Long id) {
         return repository.findById(id)
+                .filter(entity1 -> entity1.getStatus() != UserSnapshotStatus.DELETED)
                 .map(mapper::toResponse)
                 .orElseThrow(() -> new RuntimeException("User snapshot not found"));
     }
@@ -161,20 +159,24 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
     @Override
     public UserSnapshotResponse getByExternalUserId(Long externalUserId) {
         return repository.findByExternalUserId(externalUserId)
+                .filter(entity1 -> entity1.getStatus() != UserSnapshotStatus.DELETED)
                 .map(mapper::toResponse)
                 .orElseThrow(() -> new RuntimeException("User snapshot not found"));
     }
 
     @Override
     public List<UserSnapshotResponse> getAll() {
+
         return repository.findAll().stream()
+                .filter(entity -> entity.getStatus() != UserSnapshotStatus.DELETED)
                 .map(mapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
     public String getFullNameByExternalUserId(Long externalUserId) {
-        return repository.findByExternalUserId(externalUserId)
+        Optional<UserSnapshotEntity> entity = repository.findByExternalUserId(externalUserId);
+        return entity.filter(entity1 -> entity1.getStatus() != UserSnapshotStatus.DELETED)
                 .map(UserSnapshotEntity::getFullName)
                 .orElse(null);
     }
