@@ -2,10 +2,14 @@ package sum25.group03.warehouseservice.service.reagent;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import sum25.group03.warehouseservice.audit.model.AuditLog;
+import sum25.group03.warehouseservice.audit.service.AuditLogService;
+import sum25.group03.warehouseservice.dto.request.ReagentReq;
 import sum25.group03.warehouseservice.dto.response.*;
 import sum25.group03.warehouseservice.entity.ReagentHistoryUsage;
 import sum25.group03.warehouseservice.entity.ReagentInventory;
@@ -13,6 +17,10 @@ import sum25.group03.warehouseservice.entity.Reagents;
 import sum25.group03.warehouseservice.entity.enums.ReagentInventoryStatus;
 import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
 import sum25.group03.warehouseservice.event.DeleteReagentEvent;
+import sum25.group03.warehouseservice.event.ReagentCreatedEvent;
+import sum25.group03.warehouseservice.exception.DuplicateException;
+import sum25.group03.warehouseservice.exception.InvalidArgumentException;
+import sum25.group03.warehouseservice.exception.MissingRequiredFieldsException;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.repository.ReagentInventoryRepo;
 import sum25.group03.warehouseservice.repository.ReagentRepo;
@@ -31,6 +39,8 @@ public class ReagentServiceImpl implements ReagentService {
     private final ReagentInventoryRepo reagentInventoryRepo;
     private final ReagentUsageRepo reagentUsageRepo;
     private final KafkaTemplate<String, DeleteReagentEvent> kafkaDeleteTemplate;
+    private final AuditLogService auditLogService;
+    private final KafkaTemplate<String, ReagentCreatedEvent> kafkaCreateTemplate;
 
     @Override
     public List<Long> findExistingIds(List<Long> reagentIds) {
@@ -250,6 +260,90 @@ public class ReagentServiceImpl implements ReagentService {
 //                .maxStockLevel(maxStock)
 //                .totalStock(totalStock)
                 .inventories(inventoryResList)
+                .build();
+    }
+
+    @Override
+    public ReagentRes createReagent(ReagentReq req) {
+        log.info("[CREATE-REAGENT] Request received to create reagent. Name={}, Catalog={}",
+                req.getReagentName(), req.getCatalogNumber());
+        // VALIDATE
+        if (reagentRepo.existsByReagentName(req.getReagentName())) {
+            throw new DuplicateException("Reagent name already exists");
+        }
+
+        if (reagentRepo.existsByCatalogNumber(req.getCatalogNumber())) {
+            throw new DuplicateException("Catalog number already exists");
+        }
+
+        if (req.getUsageMin() != null && req.getUsageMax() != null) {
+            if (req.getUsageMax() < req.getUsageMin()) {
+                throw new InvalidArgumentException("usageMax must be greater than or equal to usageMin");
+            }
+        }
+
+        if (req.getMinStockLevel() > req.getMaxStockLevel()) {
+            throw new InvalidArgumentException("minStockLevel cannot be greater than maxStockLevel");
+        }
+
+        Reagents reagent = Reagents.builder()
+                .reagentName(req.getReagentName())
+                .catalogNumber(req.getCatalogNumber())
+                .casNumber(req.getCasNumber())
+                .unit(req.getUnit())
+                .storageConditions(req.getStorageConditions())
+                .status(ReagentStatus.ACTIVE) // default to ACTIVE
+                .maxStockLevel(req.getMaxStockLevel())
+                .minStockLevel(req.getMinStockLevel())
+                .usageMin(req.getUsageMin())
+                .usageMax(req.getUsageMax())
+                .build();
+
+        Reagents saved = reagentRepo.save(reagent);
+        log.info("[CREATE-REAGENT] Reagent created successfully. ID={}, Name={}",
+                saved.getReagentId(), saved.getReagentName());
+
+        List<AuditLog.FieldChange> changes = auditLogService.createFieldChanges(
+                Map.of(
+                        "reagentName", req.getReagentName(),
+                        "catalogNumber", req.getCatalogNumber(),
+                        "casNumber", req.getCasNumber(),
+                        "unit", req.getUnit(),
+                        "storageConditions", req.getStorageConditions(),
+                        "status", "ACTIVE",
+                        "maxStockLevel", req.getMaxStockLevel().toString(),
+                        "minStockLevel", req.getMinStockLevel().toString(),
+                        "usageMin", req.getUsageMin() == null ? "null" : req.getUsageMin().toString(),
+                        "usageMax", req.getUsageMax() == null ? "null" : req.getUsageMax().toString()
+                )
+        );
+
+        auditLogService.logWrite(
+                "CreateReagent",
+                "Reagent",
+                saved.getReagentId().toString(),
+                "0.0.0.0",
+                "Mozilla/5.0",
+                changes
+        );
+        log.info("[AUDIT] Logged creation for Reagent ID={}", saved.getReagentId());
+
+        ReagentCreatedEvent event = new ReagentCreatedEvent(
+                saved.getReagentId(),
+                saved.getReagentName(),
+                saved.getCatalogNumber(),
+                saved.getCasNumber()
+        );
+        kafkaCreateTemplate.send("reagent-created-events", event);
+        log.info("Sent reagent created event for reagent id: {}", saved.getReagentId());
+
+        return ReagentRes.builder()
+                .reagentId(saved.getReagentId())
+                .reagentName(saved.getReagentName())
+                .catalogNumber(saved.getCatalogNumber())
+                .casNumber(saved.getCasNumber())
+                .unit(saved.getUnit())
+                .quantity(0)
                 .build();
     }
 
