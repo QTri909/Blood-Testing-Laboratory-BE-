@@ -41,7 +41,6 @@ public class UserKafkaConsumerServiceImpl implements UserKafkaConsumerService {
         if (roles == null || roles.isEmpty()) {
             roles = Set.of("PATIENT");
         }
-
         userSnapshotService.handleFetchUpdatedAndCreatedUserFromIAM(kafkaUserDTO);
     }
 
@@ -53,7 +52,9 @@ public class UserKafkaConsumerServiceImpl implements UserKafkaConsumerService {
             groupId = "${spring.kafka.consumer.group-id}"
     )
     public void fetchUpdatedUserFromKafka(UserUpdatedEvent kafkaUserDTO) {
-
+        if (kafkaUserDTO.getId() == null)
+            return;
+        userSnapshotService.handleUpdateUserFromUserFromIAM(kafkaUserDTO);
     }
 
     @Override
@@ -64,7 +65,9 @@ public class UserKafkaConsumerServiceImpl implements UserKafkaConsumerService {
             groupId = "${spring.kafka.consumer.group-id}"
     )
     public void fetchDeletedUserFromKafka(UserDeletedEvent userDeletedEvent) {
-
+        if (userDeletedEvent.getId() == null)
+            return;
+        userSnapshotService.handleDeleteUserFromIAM(userDeletedEvent);
     }
 
 }

@@ -13,6 +13,7 @@ import sum25.group03.patientservice.dtos.request.UserSnapshotRequest;
 import sum25.group03.patientservice.dtos.response.GrpcMappingPatientAndCreatorIdResponse;
 import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
+import sum25.group03.patientservice.enums.UserSnapshotStatus;
 import sum25.group03.patientservice.feign.IAMFeignClient;
 import sum25.group03.patientservice.feign.dtos.FeignUserDTO;
 import sum25.group03.patientservice.feign.dtos.FeignUserResponseWrapper;
@@ -211,7 +212,16 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
     }
 
     @Override
+    @Transactional
     public void handleDeleteUserFromIAM(UserDeletedEvent userDeletedEvent) {
 
+        Long externalUserId = userDeletedEvent.getId();
+        UserSnapshotEntity searchedEntity = repository.findByExternalUserId(externalUserId)
+                .orElseThrow(() -> new RuntimeException("User snapshot not found"));
+
+        // mark as deleted
+        searchedEntity.setStatus(UserSnapshotStatus.DELETED);
+
+        repository.save(searchedEntity); // explicit save
     }
 }
