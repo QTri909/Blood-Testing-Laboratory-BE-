@@ -6,16 +6,15 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.TopicBuilder;
+import sum25.group03.common.response.constants.KafkaConstants;
 
 @Configuration
 @EnableKafka
 public class PaymentKafkaConfig {
 
-    public static final String PAYMENT_RESULT_TOPIC = "payment_result_topic";
-
     @Bean
     public NewTopic paymentResultTopic() {
-        return TopicBuilder.name(PAYMENT_RESULT_TOPIC)
+        return TopicBuilder.name(KafkaConstants.PAYMENT_RESULT_TOPIC)
                 .partitions(3)
                 .replicas(1)
                 .config(TopicConfig.RETENTION_MS_CONFIG, String.valueOf(15 * 60 * 1000L)) // 15 mins
