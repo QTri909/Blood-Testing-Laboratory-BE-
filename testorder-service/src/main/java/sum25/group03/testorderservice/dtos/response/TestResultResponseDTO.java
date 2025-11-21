@@ -26,4 +26,5 @@ public class TestResultResponseDTO {
 
     // additional fields can be added here
     private Long price;
+    private String review;
 }
