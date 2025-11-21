@@ -42,7 +42,11 @@ public class KafkaUserConsumerService {
                     .dateOfBirth(event.getDateOfBirth())
                     .identityNumber(event.getIdentityNumber())
                     .address(event.getAddress())
-                    .roleCodes(event.getRoles())
+                    .roleCode(
+                            event.getRoles() != null && !event.getRoles().isEmpty()
+                                    ? event.getRoles().iterator().next()
+                                    : null
+                    )
                     .approved(false)
                     .receivedAt(LocalDateTime.now())
                     .build();

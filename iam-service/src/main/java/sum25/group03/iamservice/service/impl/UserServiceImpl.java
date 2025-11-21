@@ -102,7 +102,10 @@ public class UserServiceImpl implements UserService {
 
 
         Set<UserRole> userRoles = new HashSet<>();
-        for (String code : request.getRoleCodes()) {
+        if (request.getRoleCode() != null && !request.getRoleCode().isBlank()) {
+
+            String code = request.getRoleCode();
+
             Role role = roleRepository.findByRoleCode(code)
                     .orElseThrow(() -> new RuntimeException("Role not found: " + code));
 
@@ -204,12 +207,11 @@ public class UserServiceImpl implements UserService {
         if (request.getGender() != null) user.setGender(request.getGender());
         if (request.getIdentityNumber() != null) user.setIdentityNumber(request.getIdentityNumber());
 
-        if (request.getRoleIds() != null) {
+        if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
             user.getUserRoles().clear();
-            List<Role> roles = roleRepository.findAllById(request.getRoleIds());
-            for (Role role : roles) {
-                user.getUserRoles().add(new UserRole(null, user, role));
-            }
+            Role role = roleRepository.findById(request.getRoleIds().get(0))
+                    .orElseThrow(() -> new RuntimeException("Role not found"));
+            user.getUserRoles().add(new UserRole(null, user, role));
         }
 
         userRepository.save(user);
@@ -488,7 +490,7 @@ public class UserServiceImpl implements UserService {
         request.setDateOfBirth(pending.getDateOfBirth());
         request.setIdentityNumber(pending.getIdentityNumber());
         request.setAddress(pending.getAddress());
-        request.setRoleCodes(pending.getRoleCodes());
+        request.setRoleCode(pending.getRoleCode());
 
         createUser(request);
 

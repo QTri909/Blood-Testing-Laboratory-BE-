@@ -42,8 +42,8 @@ public class UserCreateRequest {
     @Size(max = 255, message = "Address must be less than 255 characters")
     private String address;
 
-    @NotEmpty(message = "At least one role code is required")
-    private Set<String> roleCodes;
+    @NotBlank(message = "Role code is required")
+    private String roleCode;
 }
 
 

@@ -31,10 +31,8 @@ public class PendingUser {
     private String identityNumber;
     private String address;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "pending_user_roles", joinColumns = @JoinColumn(name = "pending_user_id"))
     @Column(name = "role_code")
-    private Set<String> roleCodes;
+    private String roleCode;
 
     private boolean approved = false;
     private LocalDateTime receivedAt;
