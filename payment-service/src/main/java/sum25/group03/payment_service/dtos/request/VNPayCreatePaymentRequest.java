@@ -17,6 +17,12 @@ public class VNPayCreatePaymentRequest {
     private Long userId;
     @NotBlank
     private String orderCode;
+
+    @NotBlank
+    private String patientEmail;
+    //@NotBlank
+    private String patientName;
+
     @Min(1)
     private Long amount; // in VND
     private String orderInfo;

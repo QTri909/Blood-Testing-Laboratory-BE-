@@ -1,5 +1,6 @@
 package sum25.group03.payment_service.controllers;
 
+import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,8 @@ import sum25.group03.payment_service.dtos.request.VNPayCreatePaymentRequest;
 import sum25.group03.payment_service.dtos.response.PaymentRequestResponse;
 import sum25.group03.payment_service.dtos.response.PaymentResponseDTO;
 import sum25.group03.payment_service.dtos.response.VNPayCreatePaymentResponse;
+import sum25.group03.payment_service.helpers.EmailHelpers;
+import sum25.group03.payment_service.services.interfaces.EmailService;
 import sum25.group03.payment_service.services.interfaces.VNPayService;
 
 import java.util.HashMap;
@@ -25,19 +28,47 @@ import java.util.Map;
 @RequestMapping("/api/v1/payments/vnpay")
 public class VNPayController {
     private final VNPayService service;
+    private final EmailService emailService;
 
     @Value("${frontend.url}")
     private String frontEndUrl;
 
-    public VNPayController(VNPayService service) {
+    public VNPayController(VNPayService service, EmailService emailService) {
         this.service = service;
+        this.emailService = emailService;
     }
 
+    /*
     @PostMapping(path = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<VNPayCreatePaymentResponse> create(@Valid @RequestBody VNPayCreatePaymentRequest req, HttpServletRequest http) {
         String ip = http.getRemoteAddr();
         return ApiResponse.add("VNPay payment created", service.create(req, ip));
+    }
+    */
+
+    @PostMapping(path = "/create", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<String> create(
+            @Valid @RequestBody VNPayCreatePaymentRequest req,
+            HttpServletRequest http
+    ) throws MessagingException {
+        String ip = http.getRemoteAddr();
+
+        VNPayCreatePaymentResponse response = service.create(req, ip);
+
+        // send email notification to user:
+        String patientEmail = req.getPatientEmail();
+        String patientName = req.getPatientName();
+        String orderCode = req.getOrderCode();
+        String paymentUrl = response.getPaymentUrl();
+
+        String subject = "VNPay Payment Created for Order " + orderCode;
+        String body = EmailHelpers.getVnPayPaymentEmailBody(patientName, paymentUrl);
+
+        emailService.sendHtmlEmail(patientEmail, subject, body);
+        // return ApiResponse.add("VNPay payment created", response);
+        return ApiResponse.add("[LAB] VNPay payment created and email sent", paymentUrl);
     }
 
     @RequestMapping(path = "/ipn", method = {RequestMethod.GET, RequestMethod.POST})
