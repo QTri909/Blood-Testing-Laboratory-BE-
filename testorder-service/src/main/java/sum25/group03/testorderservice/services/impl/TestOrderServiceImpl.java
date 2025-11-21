@@ -31,6 +31,7 @@ import sum25.group03.testorderservice.specification.TestOrderSpecification;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -391,6 +392,29 @@ public class TestOrderServiceImpl implements TestOrderService {
                 .status(savedOrder.getStatus())
                 .createdAt(savedOrder.getCreatedAt())
                 .build();
+    }
+
+    @Override
+    public void updateTestOrderStatusByTestOrderCode(UUID testOrderCode, TestOrderStatus testOrderStatus) {
+
+        if (testOrderCode == null || testOrderStatus == null) {
+            throw new IllegalStateException("Can not update test order status!");
+        }
+
+        // 1. Find test order by orderCode:
+        TestOrder testOrder = testOrderRepository.findByCode(testOrderCode).orElseThrow(
+                () -> new ResourceNotFoundException("Test order not found with code: " + testOrderCode)
+        );
+
+        // 2. update status and save
+        testOrder.setStatus(testOrderStatus);
+
+        // 3. log action
+        actionLogService.logAction(
+                0L, // system action
+                ActionTypeFeatures.UPDATE_TEST_ORDER_STATUS,
+                testOrder.getId()
+        );
     }
 
 

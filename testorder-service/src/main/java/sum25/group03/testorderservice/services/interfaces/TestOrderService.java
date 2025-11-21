@@ -9,6 +9,7 @@ import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface TestOrderService{
 
@@ -33,4 +34,6 @@ public interface TestOrderService{
     List<TestOrderResponseDTO> getTestOrdersByCreatedBy(Long createdBy);
     TestOrderResponseForInstrument findLatestByBarcode(String barcode);
     CreationTestOrderResponse createTestOrderForExternalSystem(String barcode);
+
+    void updateTestOrderStatusByTestOrderCode(UUID testOrderCode, TestOrderStatus testOrderStatus);
 }
