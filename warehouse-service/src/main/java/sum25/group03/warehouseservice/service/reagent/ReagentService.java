@@ -1,5 +1,6 @@
 package sum25.group03.warehouseservice.service.reagent;
 
+import sum25.group03.warehouseservice.dto.request.ReagentReq;
 import sum25.group03.warehouseservice.dto.response.*;
 import sum25.group03.warehouseservice.entity.Reagents;
 
@@ -17,4 +18,6 @@ public interface ReagentService {
     List<ReagentRes> getAllReagents();
     PageRes<ReagentListItemRes> getReagentListItems(int page, int size);
     ReagentDetailRes getReagentDetail(Long reagentId);
+    //add reagents
+    ReagentRes createReagent(ReagentReq req);
 }

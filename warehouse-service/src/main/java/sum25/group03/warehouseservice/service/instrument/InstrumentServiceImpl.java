@@ -282,6 +282,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                         .status(i.getStatus())
                         .createdAt(i.getCreatedAt())
                         .deactivatedAt(i.getDeactivatedAt())
+                        .autoDeleteScheduledAt(i.getAutoDeleteScheduledAt())
                         .build())
                 .toList();
         int totalPages = (int) Math.ceil((double) totalElements / size);

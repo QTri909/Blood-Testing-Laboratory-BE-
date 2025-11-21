@@ -13,6 +13,7 @@ import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 
@@ -22,7 +23,7 @@ import java.util.UUID;
 public class AuditLogService {
     private final CloudWatchAuditLogger cloudWatchAuditLogger;
     private final ActorProvider actorProvider;
-    private static String lastHash = null;
+//    private static String lastHash = null;
 
     public void logRead(String operationName, String resourceType, String resourceId,
                         String ipAddress, String userAgent) {
@@ -56,6 +57,16 @@ public class AuditLogService {
         String newValueStr = newValue != null ? newValue.toString() : "null";
         changes.add(new AuditLog.FieldChange(fieldName, oldValueStr, newValueStr));
         return changes;
+    }
+
+    public List<AuditLog.FieldChange> createFieldChanges(Map<String, String> fields) {
+        return fields.entrySet().stream()
+                .map(e -> new AuditLog.FieldChange(
+                        e.getKey(),
+                        null,               // old value (create)
+                        e.getValue()        // new value
+                ))
+                .toList();
     }
 
     private void logAction(String actionType, String operationName, String resourceType, String resourceId,
@@ -115,14 +126,10 @@ public class AuditLogService {
 //        lastHash = currentHash;
     }
 
-    public void logWrite(String activateInstrument, String instrument, String string, String system, String s, String s1, Instrument instrument1) {
-    }
-
     public void logWrite(String operationName, String resourceType, String resourceId, String description) {
         logAction("WRITE", operationName, resourceType, resourceId, "system", "N/A", null, "SUCCESS");
         log.info("[AUDIT] {} on {}#{}: {}", operationName, resourceType, resourceId, description);
     }
-
 
     private String calculateHash(String input) {
         try {
