@@ -26,7 +26,7 @@ public interface UserSnapshotService {
     // test:
     void syncUserSnapshots();
 
-    void handleFetchUpdatedAndCreatedUserFromIAM(UserCreatedEvent kafkaUserDTO);
+    void handleCreateUserFromIAM(UserCreatedEvent kafkaUserDTO);
     void handleUpdateUserFromUserFromIAM(UserUpdatedEvent userUpdatedEvent);
     void handleDeleteUserFromIAM(UserDeletedEvent userDeletedEvent);
 }

@@ -32,6 +32,7 @@ public interface UserSnapshotMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "externalUserId", source = "kafkaUserDTO.id")
+    @Mapping(target = "status", constant = "ACTIVE")
     UserSnapshotEntity fromUserKafkaDTO(UserCreatedEvent kafkaUserDTO);
 
     default LocalDate map(List<Integer> value) {

@@ -183,7 +183,7 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
 
     @Override
     @Transactional
-    public void handleFetchUpdatedAndCreatedUserFromIAM(UserCreatedEvent kafkaUserDTO) {
+    public void handleCreateUserFromIAM(UserCreatedEvent kafkaUserDTO) {
         Long externalUserId = Long.parseLong(kafkaUserDTO.getId());
 
         // 1. search for entity in the database:

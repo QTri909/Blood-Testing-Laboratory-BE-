@@ -40,8 +40,9 @@ public class UserKafkaConsumerServiceImpl implements UserKafkaConsumerService {
         Set<String> roles = kafkaUserDTO.getRoles();
         if (roles == null || roles.isEmpty()) {
             roles = Set.of("PATIENT");
+            kafkaUserDTO.setRoles(roles);
         }
-        userSnapshotService.handleFetchUpdatedAndCreatedUserFromIAM(kafkaUserDTO);
+        userSnapshotService.handleCreateUserFromIAM(kafkaUserDTO);
     }
 
     @Override

@@ -50,6 +50,7 @@ public class UserSnapshotEntity implements Serializable {
     private Long externalUserId;
 
     @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
     private UserSnapshotStatus status;
 
     @CreationTimestamp
