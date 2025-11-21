@@ -16,13 +16,13 @@ public class TestOrderGrpcClient {
     private final GrpcTestOrderMapper testOrderMapper;
 
     @GrpcClient("test-order-service")
-    private TestOrderServiceGrpc.TestOrderServiceBlockingStub blockingStub;
+    private sum25.group03.patientservice.grpc.TestOrderServiceGrpc.TestOrderServiceBlockingStub blockingStub;
 
     public GrpcTestOrderDTO getLatestTestOrderByPatientId(Long patientId) {
 
         // send gRPC request and receive response
-        TestOrderResponse fetchedResponse = blockingStub.getLatestTestOrderByPatientId(
-                GetLatestTestOrderRequest.newBuilder().setPatientId(patientId).build()
+        sum25.group03.patientservice.grpc.TestOrderResponse fetchedResponse = blockingStub.getLatestTestOrderByPatientId(
+                sum25.group03.patientservice.grpc.GetLatestTestOrderRequest.newBuilder().setPatientId(patientId).build()
         );
 
         // map response to DTO
@@ -33,10 +33,10 @@ public class TestOrderGrpcClient {
             Long medicalRecordId, Long viewerId
     ) {
         // send gRPC request and receive response
-        MedicalRecordIdRequest request = MedicalRecordIdRequest.newBuilder()
+        sum25.group03.patientservice.grpc.MedicalRecordIdRequest request = sum25.group03.patientservice.grpc.MedicalRecordIdRequest.newBuilder()
                 .setMedicalRecordId(medicalRecordId)
                 .setViewerId(viewerId).build();
-        TestOrdersByMedicalRecordResponseList fetchedResponse = blockingStub.getAllTestOrdersByMedicalRecordId(request);
+        sum25.group03.patientservice.grpc.TestOrdersByMedicalRecordResponseList fetchedResponse = blockingStub.getAllTestOrdersByMedicalRecordId(request);
 
         // map response to DTO
         return testOrderMapper.toFullFieldDtoList(fetchedResponse.getTestOrdersList());

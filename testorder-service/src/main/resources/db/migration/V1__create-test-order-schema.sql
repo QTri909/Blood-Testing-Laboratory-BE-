@@ -104,7 +104,7 @@ CREATE TABLE test_result (
                              updated_at TIMESTAMP(6) NOT NULL,
                              flag_status VARCHAR(255),
                              status VARCHAR(255) NOT NULL CHECK (status IN (
-                                                                            'PENDING','COMPLETED','FAILED','CANCELLED','WAITING'
+                                                                            'PENDING','COMPLETED','FAILED','CANCELLED','WAITING','REVIEWED','AI_REVIEWED'
                                  )),
                              CONSTRAINT unique_testorder_parameter UNIQUE (test_order_id, parameter_id)
 );

@@ -50,7 +50,7 @@ public class TestResultServiceImpl implements TestResultService {
         } else {
             throw new EntityNotFoundException("Test result not found");
         }
-        if (testResult.getStatus() != TestResultStatus.COMPLETED) {
+        if (testResult.getStatus() != TestResultStatus.COMPLETED && testResult.getStatus() != TestResultStatus.REVIEWED && testResult.getStatus() != TestResultStatus.AI_REVIEWED) {
             throw new IllegalStateException("Only completed results can be reviewed");
         }
         Parameter para = testResult.getParameter();
@@ -81,7 +81,7 @@ public class TestResultServiceImpl implements TestResultService {
         } else {
             throw new EntityNotFoundException("Test result not found");
         }
-        if (testResult.getStatus() != TestResultStatus.COMPLETED) {
+        if (testResult.getStatus() != TestResultStatus.COMPLETED && testResult.getStatus() != TestResultStatus.REVIEWED && testResult.getStatus() != TestResultStatus.AI_REVIEWED) {
             throw new IllegalStateException("Only completed results can be reviewed");
         }
         testResult.setReview(reviewRequestDTO.getReview());
