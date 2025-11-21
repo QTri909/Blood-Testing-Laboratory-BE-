@@ -30,7 +30,7 @@ public interface ReagentUsageRepo extends JpaRepository<ReagentHistoryUsage, Lon
     @Query("SELECT r.reagentName, COALESCE(SUM(rhu.quantityUsed), 0) FROM ReagentHistoryUsage rhu JOIN rhu.reagent r GROUP BY r.reagentId, r.reagentName ORDER BY SUM(rhu.quantityUsed) DESC")
     List<Object[]> findTopUsedReagents(Pageable pageable);
 
-    @EntityGraph(attributePaths = {"instrument"})
+    @EntityGraph(attributePaths = {"instrument", "reagent"})
     @Query("SELECT rhu FROM ReagentHistoryUsage rhu ORDER BY rhu.usedAt DESC")
     Page<ReagentHistoryUsage> findAllUsage(Pageable pageable);
 

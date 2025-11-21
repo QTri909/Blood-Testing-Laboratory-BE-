@@ -7,11 +7,13 @@ import lombok.Data;
 public class LoginResponse {
     private String accessToken;
     private long expiresIn;
-    private String refreshToken;
     private String idToken;
+    private String sub;
+
 
     private boolean firstLogin = false;
     private String session;
     private String challenge;
+
 
 }

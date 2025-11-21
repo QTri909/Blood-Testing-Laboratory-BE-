@@ -1,11 +1,13 @@
 package sum25.group03.iamservice.service.impl;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import sum25.group03.iamservice.dto.CognitoConfig;
 import sum25.group03.iamservice.dto.request.LoginRequest;
-import sum25.group03.iamservice.dto.request.RefreshTokenRequest;
 import sum25.group03.iamservice.dto.response.LoginResponse;
+import sum25.group03.iamservice.dto.response.LoginWithRefresh;
 import sum25.group03.iamservice.entity.User;
 import sum25.group03.iamservice.event.PasswordChangedEvent;
 import sum25.group03.iamservice.repository.UserRepository;
@@ -52,19 +54,18 @@ public class AuthServiceImpl implements AuthService {
         }
     }
 
+
     @Override
-    public LoginResponse login(LoginRequest request) {
+    public LoginWithRefresh login(LoginRequest request) {
         CognitoConfig config = getConfig();
 
-        // 1. Lấy user từ DB
         User user = userRepository.findByEmailOrIdentityNumber(
-                request.getUsername(),
-                request.getUsername()
+                request.getUsername(), request.getUsername()
         ).orElseThrow(() -> new RuntimeException("User not found"));
 
         String cognitoUsername = user.getEmail();
 
-        // 2. Kiểm tra account khóa
+        // Kiểm tra account khóa
         if (!user.getAccountNonLocked()) {
             if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(LocalDateTime.now())) {
                 throw new RuntimeException("Account is locked until " + user.getLockedUntil());
@@ -77,7 +78,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         try {
-            // 3. Dùng AdminInitiateAuth thay vì InitiateAuth
             AdminInitiateAuthRequest authRequest = AdminInitiateAuthRequest.builder()
                     .userPoolId(config.getUserPoolId())
                     .clientId(config.getClientId())
@@ -89,18 +89,15 @@ public class AuthServiceImpl implements AuthService {
                     ))
                     .build();
 
-            AdminInitiateAuthResponse response =
-                    cognitoClient.adminInitiateAuth(authRequest);
+            AdminInitiateAuthResponse response = cognitoClient.adminInitiateAuth(authRequest);
 
             if (response.challengeName() != null &&
                     response.challengeName() == ChallengeNameType.NEW_PASSWORD_REQUIRED) {
-
-
                 LoginResponse loginResponse = new LoginResponse();
                 loginResponse.setFirstLogin(true);
                 loginResponse.setSession(response.session());
                 loginResponse.setChallenge(response.challengeNameAsString());
-                return loginResponse;
+                return new LoginWithRefresh(loginResponse, null);
             }
 
             if (response.authenticationResult() == null) {
@@ -111,11 +108,13 @@ public class AuthServiceImpl implements AuthService {
 
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setAccessToken(response.authenticationResult().accessToken());
-            loginResponse.setRefreshToken(response.authenticationResult().refreshToken());
             loginResponse.setIdToken(response.authenticationResult().idToken());
             loginResponse.setExpiresIn(response.authenticationResult().expiresIn());
+            loginResponse.setSub(user.getCognitoUserId());
 
-            return loginResponse;
+            String refreshToken = response.authenticationResult().refreshToken();
+
+            return new LoginWithRefresh(loginResponse, refreshToken);
 
         } catch (NotAuthorizedException | UserNotFoundException e) {
             handleFailedAttempt(user);
@@ -132,7 +131,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginResponse firstLoginChangePassword(String username, String session, String newPassword) {
+    public LoginWithRefresh firstLoginChangePassword(String username, String session, String newPassword) {
         CognitoConfig config = getConfig();
         User user = userRepository.findByEmailOrIdentityNumber(username, username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -160,51 +159,70 @@ public class AuthServiceImpl implements AuthService {
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setAccessToken(response.authenticationResult().accessToken());
             loginResponse.setIdToken(response.authenticationResult().idToken());
-            loginResponse.setRefreshToken(response.authenticationResult().refreshToken());
             loginResponse.setExpiresIn(response.authenticationResult().expiresIn());
+            loginResponse.setSub(user.getCognitoUserId());
 
-            return loginResponse;
+            String refreshToken = response.authenticationResult().refreshToken();
+
+            return new LoginWithRefresh(loginResponse, refreshToken);
+
         } catch (Exception e) {
             throw new RuntimeException("First login password change error: " + e.getMessage(), e);
         }
     }
 
-
-
     @Override
-    public LoginResponse refreshToken(RefreshTokenRequest request) {
+    public LoginWithRefresh refreshToken(HttpServletRequest request) {
         CognitoConfig config = getConfig();
 
-        User user = userRepository.findByCognitoUserId(request.getUsername())
+        // 1. Lấy refresh token và cognitoUserId từ cookie
+        String refreshToken = null;
+        String cognitoUserId = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie c : cookies) {
+                if ("refreshToken".equals(c.getName())) refreshToken = c.getValue();
+                if ("cognitoUserId".equals(c.getName())) cognitoUserId = c.getValue();
+            }
+        }
+        if (refreshToken == null || cognitoUserId == null) {
+            throw new RuntimeException("Missing refresh token or cognitoUserId in cookies");
+        }
+
+        // 2. Lấy user từ DB bằng cognitoUserId
+        User user = userRepository.findByCognitoUserId(cognitoUserId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String cognitoUsername = user.getCognitoUserId();
+        // 3. Gọi Cognito REFRESH_TOKEN_AUTH
+        AdminInitiateAuthRequest refreshRequest = AdminInitiateAuthRequest.builder()
+                .userPoolId(config.getUserPoolId())
+                .clientId(config.getClientId())
+                .authFlow(AuthFlowType.REFRESH_TOKEN_AUTH)
+                .authParameters(Map.of(
+                        "REFRESH_TOKEN", refreshToken,
+                        "USERNAME", user.getCognitoUserId(),
+                        "SECRET_HASH", calculateSecretHash(user.getCognitoUserId(), config.getClientSecret(), config.getClientId())
+                ))
+                .build();
 
-        try {
-            AdminInitiateAuthRequest refreshRequest = AdminInitiateAuthRequest.builder()
-                    .userPoolId(config.getUserPoolId())
-                    .clientId(config.getClientId())
-                    .authFlow(AuthFlowType.REFRESH_TOKEN_AUTH)
-                    .authParameters(Map.of(
-                            "REFRESH_TOKEN", request.getRefreshToken(),
-                            "USERNAME", cognitoUsername,
-                            "SECRET_HASH", calculateSecretHash(cognitoUsername, config.getClientSecret(), config.getClientId())
-                    ))
-                    .build();
+        AdminInitiateAuthResponse response = cognitoClient.adminInitiateAuth(refreshRequest);
 
-            AdminInitiateAuthResponse response = cognitoClient.adminInitiateAuth(refreshRequest);
-
-            LoginResponse loginResponse = new LoginResponse();
-            loginResponse.setAccessToken(response.authenticationResult().accessToken());
-            loginResponse.setIdToken(response.authenticationResult().idToken());
-            loginResponse.setExpiresIn(response.authenticationResult().expiresIn());
-            loginResponse.setRefreshToken(request.getRefreshToken());
-
-            return loginResponse;
-        } catch (Exception e) {
-            throw new RuntimeException("Invalid or expired refresh token: " + e.getMessage(), e);
+        if (response.authenticationResult() == null) {
+            throw new RuntimeException("Refresh token invalid or expired");
         }
+
+        // 4. Trả về access + id token mới, refresh token vẫn giữ nguyên
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setAccessToken(response.authenticationResult().accessToken());
+        loginResponse.setIdToken(response.authenticationResult().idToken());
+        loginResponse.setExpiresIn(response.authenticationResult().expiresIn());
+        loginResponse.setSub(user.getCognitoUserId());
+
+        return new LoginWithRefresh(loginResponse, refreshToken);
     }
+
+
+
 
 
 

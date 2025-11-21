@@ -42,5 +42,4 @@ public interface ReagentInventoryRepo extends JpaRepository<ReagentInventory, Lo
     // Batch fetch inventories for given reagent ids
     @Query("SELECT ri FROM ReagentInventory ri WHERE ri.reagent.reagentId IN :ids")
     List<ReagentInventory> findAllByReagentIdIn(@Param("ids") List<Long> ids);
-
 }
