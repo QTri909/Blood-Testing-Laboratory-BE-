@@ -22,4 +22,5 @@ public class InstrumentResponse {
     private LocalDate createdAt;
     private LocalDate updatedAt;
     private LocalDate deactivatedAt;
+    private LocalDate autoDeleteScheduledAt;
 }

@@ -1,11 +1,14 @@
 package sum25.group03.warehouseservice.controller;
 
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
+import sum25.group03.warehouseservice.dto.request.ReagentReq;
+import sum25.group03.warehouseservice.dto.response.ReagentRes;
 import sum25.group03.warehouseservice.dto.response.ReagentResponseForInstrument;
 import sum25.group03.warehouseservice.dto.response.ReagentValidationResponse;
 import sum25.group03.warehouseservice.service.reagent.ReagentService;
@@ -72,5 +75,12 @@ public class ReagentController {
             @RequestParam (defaultValue = "30") int size
     ) {
         return ApiResponse.ok(usageService.getInstrumentsByReagentId(page, size));
+    }
+
+    @PostMapping
+    public ApiResponse<?> createReagent(@Valid @RequestBody ReagentReq req ) {
+        return ApiResponse.data(reagentService.createReagent(req))
+                .message("Reagent created successfully")
+                .build();
     }
 }

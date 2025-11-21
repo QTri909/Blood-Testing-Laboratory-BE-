@@ -47,4 +47,8 @@ public interface ReagentRepo extends JpaRepository<Reagents, Long> {
 
     // Support pageable return type so service can request a Page
     Page<Reagents> findAllByStatus(ReagentStatus reagentStatus, Pageable pageable);
+
+    boolean existsByCatalogNumber(String catalogNumber);
+
+    boolean existsByReagentName(String reagentName);
 }
