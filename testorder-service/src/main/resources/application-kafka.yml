@@ -10,7 +10,7 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.trusted.packages: "sum25.group03.testorderservice,sum25.group03.warehouseservice"
+        spring.json.trusted.packages: "sum25.group03.testorderservice,sum25.group03.warehouseservice,sum25.group03.common.response.events"
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonDeserializer
