@@ -32,6 +32,9 @@ public class ReagentReq {
     @NotNull
     private Integer minStockLevel;
 
+    @NotNull
     private Double usageMin;
+
+    @NotNull
     private Double usageMax;
 }
