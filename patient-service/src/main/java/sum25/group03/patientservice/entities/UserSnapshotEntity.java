@@ -3,8 +3,10 @@ package sum25.group03.patientservice.entities;
 import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.UpdateTimestamp;
+import sum25.group03.patientservice.enums.UserSnapshotStatus;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -47,6 +49,13 @@ public class UserSnapshotEntity implements Serializable {
     @Column(name = "external_user_id", nullable = false)
     private Long externalUserId;
 
+    @Column(name = "status", nullable = false)
+    private UserSnapshotStatus status;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
     @Type(JsonBinaryType.class)
     @Column(name = "roles", nullable = false)
     private List<String> roles;
@@ -71,4 +80,11 @@ public class UserSnapshotEntity implements Serializable {
     // Bidirectional relationship with ClinicalNote
     @OneToMany(mappedBy = "notedByUser", fetch = FetchType.LAZY)
     private List<ClinicalNoteEntity> authoredNotes;
+
+    @PrePersist
+    public void prePersist() {
+        if (status == null) {
+            status = UserSnapshotStatus.ACTIVE;
+        }
+    }
 }

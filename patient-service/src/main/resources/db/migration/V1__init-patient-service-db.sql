@@ -13,8 +13,11 @@ CREATE TABLE user_snapshot (
    gender VARCHAR(10),
    phone_number VARCHAR(20),
    identity_number VARCHAR(50),
-   external_user_id BIGINT NOT NULL UNIQUE,
+   external_user_id BIGINT NOT NULL,
    last_updated TIMESTAMP(6) NOT NULL,
+   status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE'
+        CHECK (status IN ('ACTIVE', 'INACTIVE', 'DELETED')),
+   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL UNIQUE,
    roles JSONB NOT NULL DEFAULT '[]'
 );
 
@@ -54,6 +57,10 @@ CREATE INDEX IF NOT EXISTS clinical_note_record_id_index
 -- ============================================================
 --  FOREIGN KEYS
 -- ============================================================
+
+ALTER TABLE user_snapshot
+    ADD CONSTRAINT uq_user_snapshot_external_user_id UNIQUE (external_user_id);
+
 
 ALTER TABLE medical_record
     ADD CONSTRAINT fk_medical_record_assigned_user
