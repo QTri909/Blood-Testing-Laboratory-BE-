@@ -13,10 +13,11 @@ public class KafkaPaymentResultProducer {
 
     private final KafkaTemplate<String, PaymentResultDTO> paymentResultKafkaTemplate;
 
-    public void sendPaymentResult(String orderCode, String status) {
+    public void sendPaymentResult(String orderCode, String status, String transactionStatus) {
         PaymentResultDTO dto = PaymentResultDTO.builder()
                 .orderCode(orderCode)
                 .status(status)
+                .transactionStatus(transactionStatus)
                 .build();
 
         String topicName = KafkaConstants.PAYMENT_RESULT_TOPIC;

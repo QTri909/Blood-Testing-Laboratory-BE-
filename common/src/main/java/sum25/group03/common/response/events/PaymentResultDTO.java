@@ -14,4 +14,5 @@ import java.io.Serializable;
 public class PaymentResultDTO implements Serializable {
     private String orderCode;
     private String status; // PENDING, SUCCESS, FAILED, CANCELLED, EXPIRED
+    private String transactionStatus; // PENDING, SUCCESS, FAILED, REFUNDED, EXPIRED, CANCELED, COMPLETED, ERROR, PROCESSING
 }

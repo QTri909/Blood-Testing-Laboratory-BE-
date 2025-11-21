@@ -55,7 +55,7 @@ public class PayPalController {
             }
 
             // 2.5. send message to Kafka about payment result
-            kafkaPaymentResultProducer.sendPaymentResult(orderCode, status);
+            kafkaPaymentResultProducer.sendPaymentResult(orderCode, "", status);
 
             // 3. build redirect URL for frontend
             String redirectUrl = String.format(

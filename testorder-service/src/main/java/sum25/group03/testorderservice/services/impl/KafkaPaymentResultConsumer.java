@@ -8,6 +8,7 @@ import sum25.group03.common.response.events.PaymentResultDTO;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -23,10 +24,17 @@ public class KafkaPaymentResultConsumer {
     public void consumePaymentResult(PaymentResultDTO paymentResultDTO) {
         String orderCodeStr = paymentResultDTO.getOrderCode();
         String statusStr = paymentResultDTO.getStatus();
-        if (orderCodeStr == null || statusStr == null)
+        String transactionStatusStr = paymentResultDTO.getTransactionStatus();
+        if (orderCodeStr == null || (statusStr == null && transactionStatusStr == null))
             return;
 
-        if (!orderCodeStr.equalsIgnoreCase("success"))
+        Set<String> acceptedStatus = Set.of("SUCCESS");
+        Set<String> acceptedTransStatus = Set.of("COMPLETED", "SUCCESS");
+
+        boolean isStatusAccepted = (statusStr != null) && (acceptedStatus.contains(statusStr));
+        boolean isTransStatusAccepted = (transactionStatusStr != null) && (acceptedTransStatus.contains(transactionStatusStr));
+
+        if (!isStatusAccepted && !isTransStatusAccepted)
             return;
 
         UUID orderCode = UUID.fromString(orderCodeStr);
