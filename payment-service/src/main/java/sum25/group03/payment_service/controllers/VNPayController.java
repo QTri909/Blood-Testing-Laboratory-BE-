@@ -12,11 +12,12 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import sum25.group03.common.response.ApiResponse;
+import sum25.group03.payment_service.dtos.request.PaymentEmailHelperDTO;
 import sum25.group03.payment_service.dtos.request.VNPayCreatePaymentRequest;
 import sum25.group03.payment_service.dtos.response.PaymentRequestResponse;
 import sum25.group03.payment_service.dtos.response.PaymentResponseDTO;
 import sum25.group03.payment_service.dtos.response.VNPayCreatePaymentResponse;
-import sum25.group03.payment_service.helpers.EmailHelpers;
+import sum25.group03.payment_service.helpers.PaymentEmailHelpers;
 import sum25.group03.payment_service.services.interfaces.EmailService;
 import sum25.group03.payment_service.services.interfaces.VNPayService;
 
@@ -28,14 +29,14 @@ import java.util.Map;
 @RequestMapping("/api/v1/payments/vnpay")
 public class VNPayController {
     private final VNPayService service;
-    private final EmailService emailService;
+    private final PaymentEmailHelpers paymentEmailHelpers;
 
     @Value("${frontend.url}")
     private String frontEndUrl;
 
-    public VNPayController(VNPayService service, EmailService emailService) {
+    public VNPayController(VNPayService service, PaymentEmailHelpers paymentEmailHelpers) {
         this.service = service;
-        this.emailService = emailService;
+        this.paymentEmailHelpers = paymentEmailHelpers;
     }
 
     /*
@@ -64,9 +65,17 @@ public class VNPayController {
         String paymentUrl = response.getPaymentUrl();
 
         String subject = "VNPay Payment Created for Order " + orderCode;
-        String body = EmailHelpers.getVnPayPaymentEmailBody(patientName, paymentUrl);
+        String additionalInfo = "Please click the link below to complete your payment for order code: " + orderCode + " with VNPay.";
+        PaymentEmailHelperDTO paymentEmailHelperDTO = PaymentEmailHelperDTO.builder()
+                .receiverEmail(patientEmail)
+                .receiverName(patientName)
+                .paymentUrl(paymentUrl)
+                .additionalInfo(additionalInfo)
+                .orderCode(orderCode)
+                .build();
 
-        emailService.sendHtmlEmail(patientEmail, subject, body);
+        paymentEmailHelpers.sendPaymentHtmlEmail(subject, paymentEmailHelperDTO);
+
         // return ApiResponse.add("VNPay payment created", response);
         return ApiResponse.add("[LAB] VNPay payment created and email sent", paymentUrl);
     }

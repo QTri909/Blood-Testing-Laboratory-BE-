@@ -1,5 +1,6 @@
 package sum25.group03.payment_service.controllers;
 
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -8,8 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
+import sum25.group03.payment_service.dtos.request.PaymentEmailHelperDTO;
 import sum25.group03.payment_service.dtos.request.PaymentRequestRequest;
 import sum25.group03.payment_service.dtos.response.PaymentRequestResponse;
+import sum25.group03.payment_service.helpers.PaymentEmailHelpers;
 import sum25.group03.payment_service.services.interfaces.PayPalService;
 import sum25.group03.payment_service.services.interfaces.PaymentRequestService;
 import sum25.group03.payment_service.services.interfaces.PaymentTransactionService;
@@ -27,29 +30,41 @@ public class PaymentRequestController {
     private final PaymentTransactionService paymentTransactionService;
     private final PayPalService payPalService;
     private final PaymentCacheService paymentCacheService;
+    private final PaymentEmailHelpers paymentEmailHelpers;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<String> createPayment(@Validated @RequestBody PaymentRequestRequest request) {
-        try {
-            PaymentRequestResponse paymentRequest = paymentRequestService.createPaymentRequest(request);
+    public ApiResponse<String> createPayment(@Validated @RequestBody PaymentRequestRequest request) throws MessagingException {
+        PaymentRequestResponse paymentRequest = paymentRequestService.createPaymentRequest(request);
 
-            request.setOrderCode(paymentRequest.getOrderCode());
-            paymentCacheService.cachePaymentRequest(paymentRequest.getOrderCode(), request);
+        request.setOrderCode(paymentRequest.getOrderCode());
+        paymentCacheService.cachePaymentRequest(paymentRequest.getOrderCode(), request);
 
-            String approvalUrl = payPalService.createPayment(request);
+        String approvalUrl = payPalService.createPayment(request);
 
-            String paypalToken = approvalUrl.split("token=")[1].split("&")[0];
-            paymentCacheService.cacheTokenOrderCode(paypalToken, paymentRequest.getOrderCode());
-            paymentCacheService.cacheTokenRequestId(paypalToken, paymentRequest.getId());
-            String approveUrl = approvalUrl + "&orderCode=" + paymentRequest.getOrderCode();
+        String paypalToken = approvalUrl.split("token=")[1].split("&")[0];
+        paymentCacheService.cacheTokenOrderCode(paypalToken, paymentRequest.getOrderCode());
+        paymentCacheService.cacheTokenRequestId(paypalToken, paymentRequest.getId());
+        String approveUrl = approvalUrl + "&orderCode=" + paymentRequest.getOrderCode();
 
-            log.info("PaymentRequest created: orderCode={}, approveUrl={}", paymentRequest.getOrderCode(), approveUrl);
-            return ApiResponse.add("Payment created", approveUrl);
-        } catch (Exception e) {
-            log.error("Error creating payment for orderCode={}", request.getOrderCode(), e);
-            return ApiResponse.add("Failed to create payment: " + e.getMessage(), null);
-        }
+        // send email notification to user:
+        String patientEmail = request.getPatientEmail();
+        String patientName = request.getPatientName();
+        String orderCode = request.getOrderCode();
+
+        String subject = "Paypal Payment Created for Order " + orderCode;
+        String additionalInfo = "Please click the link below to complete your payment for order code: " + orderCode + " with Paypal.";
+        PaymentEmailHelperDTO paymentEmailHelperDTO = PaymentEmailHelperDTO.builder()
+                .receiverEmail(patientEmail)
+                .receiverName(patientName)
+                .paymentUrl(approvalUrl)
+                .additionalInfo(additionalInfo)
+                .orderCode(orderCode)
+                .build();
+
+        paymentEmailHelpers.sendPaymentHtmlEmail(subject, paymentEmailHelperDTO);
+
+        return ApiResponse.add("Payment created", approveUrl);
     }
 
  // process payment after payment capture(for cancel or failure (not success))
