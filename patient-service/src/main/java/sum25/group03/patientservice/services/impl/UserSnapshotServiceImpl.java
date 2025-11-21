@@ -5,6 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.common.response.events.UserCreatedEvent;
+import sum25.group03.common.response.events.UserDeletedEvent;
+import sum25.group03.common.response.events.UserUpdatedEvent;
 import sum25.group03.patientservice.dtos.request.GrpcMappingPatientAndCreatorIdRequest;
 import sum25.group03.patientservice.dtos.request.UserSnapshotRequest;
 import sum25.group03.patientservice.dtos.response.GrpcMappingPatientAndCreatorIdResponse;
@@ -34,6 +37,7 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
     private final UserSnapshotMapper mapper;
     private final IAMFeignClient userFeignClient;
     private final JdbcTemplate jdbcTemplate;
+    private final UserSnapshotMapper userSnapshotMapper;
 
 
     @Transactional
@@ -172,5 +176,42 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
         return repository.findByExternalUserId(externalUserId)
                 .map(UserSnapshotEntity::getFullName)
                 .orElse(null);
+    }
+
+    @Override
+    @Transactional
+    public void handleFetchUpdatedAndCreatedUserFromIAM(UserCreatedEvent kafkaUserDTO) {
+        Long externalUserId = Long.parseLong(kafkaUserDTO.getId());
+
+        // 1. search for entity in the database:
+        UserSnapshotEntity searchedEntity = repository.findByExternalUserId(externalUserId).
+                orElse(null);
+
+        if (searchedEntity != null) {
+            // 2.1. exists, update it
+            userSnapshotMapper.updateEntityFromKafkaDTO(kafkaUserDTO, searchedEntity);
+            return;
+        }
+
+        // 2.2. else: not exist, insert one
+        UserSnapshotEntity newEntity = userSnapshotMapper.fromUserKafkaDTO(kafkaUserDTO);
+        repository.save(newEntity);
+    }
+
+    @Override
+    @Transactional
+    public void handleUpdateUserFromUserFromIAM(UserUpdatedEvent userUpdatedEvent) {
+
+        Long externalUserId = userUpdatedEvent.getId();
+        UserSnapshotEntity searchedEntity = repository.findByExternalUserId(externalUserId)
+                .orElseThrow(() -> new RuntimeException("User snapshot not found"));
+
+        userSnapshotMapper.updateEntityFrom(userUpdatedEvent, searchedEntity);
+        repository.save(searchedEntity); // explicit save
+    }
+
+    @Override
+    public void handleDeleteUserFromIAM(UserDeletedEvent userDeletedEvent) {
+
     }
 }

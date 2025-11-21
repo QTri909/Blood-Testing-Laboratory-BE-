@@ -15,7 +15,10 @@ import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.*;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import sum25.group03.common.response.constants.KafkaConstants;
 import sum25.group03.common.response.events.UserCreatedEvent;
+import sum25.group03.common.response.events.UserDeletedEvent;
+import sum25.group03.common.response.events.UserUpdatedEvent;
 import sum25.group03.iamservice.event.*;
 
 import java.util.HashMap;
@@ -116,7 +119,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic userCreatedTopic() {
-        return TopicBuilder.name("iam.user.created")
+        return TopicBuilder.name(KafkaConstants.USER_CREATED_TOPIC)
                 .partitions(3)
                 .replicas(1)
                 .build();
@@ -124,12 +127,12 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic userUpdatedTopic() {
-        return TopicBuilder.name("iam.user.updated").partitions(3).replicas(1).build();
+        return TopicBuilder.name(KafkaConstants.USER_UPDATED_TOPIC).partitions(3).replicas(1).build();
     }
 
     @Bean
     public NewTopic userDeletedTopic() {
-        return TopicBuilder.name("iam.user.deleted").partitions(3).replicas(1).build();
+        return TopicBuilder.name(KafkaConstants.USER_DELETED_TOPIC).partitions(3).replicas(1).build();
     }
 
     @Bean
