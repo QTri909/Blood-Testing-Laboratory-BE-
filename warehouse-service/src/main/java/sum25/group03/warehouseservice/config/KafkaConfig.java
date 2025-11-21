@@ -2,24 +2,23 @@ package sum25.group03.warehouseservice.config;
 
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.*;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.FixedBackOff;
-import sum25.group03.warehouseservice.event.InstrumentModeChangedEvent;
-import sum25.group03.warehouseservice.event.ReagentInstalledEvent;
-import sum25.group03.warehouseservice.event.ReagentUsageHistoryEvent;
-import sum25.group03.warehouseservice.event.UpdateExpiryReagent;
+import sum25.group03.warehouseservice.event.*;
 
 
 import java.util.HashMap;
@@ -50,7 +49,6 @@ public class KafkaConfig {
 //    @Bean
 //    public NewTopic instrumentEventTopic() {
 //        return new NewTopic("instrument-events", 1, (short) 1);
-
 
     @Value("${spring.kafka.bootstrap-servers:localhost:9092}")
     private String bootstrapServers;
@@ -188,4 +186,105 @@ public class KafkaConfig {
 
         return errorHandler;
     }
+
+    @Bean
+    public ProducerFactory<String, UpdateConfigEvent> updateConfigFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(ProducerConfig.ACKS_CONFIG, "all");
+        configProps.put(ProducerConfig.RETRIES_CONFIG, 3);
+        return new DefaultKafkaProducerFactory<>(configProps);
+
+    }
+
+    @Bean
+    public KafkaTemplate<String, UpdateConfigEvent> updateConfigKafkaTemplate() {
+        return new KafkaTemplate<>(updateConfigFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, DeleteConfigEvent> deleteConfigFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(ProducerConfig.ACKS_CONFIG, "all");
+        configProps.put(ProducerConfig.RETRIES_CONFIG, 3);
+        return new DefaultKafkaProducerFactory<>(configProps);
+
+    }
+
+    @Bean
+    public KafkaTemplate<String, DeleteConfigEvent> deleteConfigKafkaTemplate() {
+        return new KafkaTemplate<>(deleteConfigFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, DeleteReagentEvent> deleteReagentFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(ProducerConfig.ACKS_CONFIG, "all");
+        configProps.put(ProducerConfig.RETRIES_CONFIG, 3);
+        return new DefaultKafkaProducerFactory<>(configProps);
+
+    }
+
+    @Bean
+    public KafkaTemplate<String, DeleteReagentEvent> deleteReagentKafkaTemplate() {
+        return new KafkaTemplate<>(deleteReagentFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, ReagentCreatedEvent> createReagentFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(ProducerConfig.ACKS_CONFIG, "all");
+        configProps.put(ProducerConfig.RETRIES_CONFIG, 3);
+        return new DefaultKafkaProducerFactory<>(configProps);
+
+    }
+
+    @Bean
+    public KafkaTemplate<String, ReagentCreatedEvent>  createReagentKafkaTemplate() {
+        return new KafkaTemplate<>(createReagentFactory());
+    }
+
+    @Bean
+    public ProducerFactory<String, NewInstrumentEvent> newInstrumentFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(ProducerConfig.ACKS_CONFIG, "all");
+        configProps.put(ProducerConfig.RETRIES_CONFIG, 3);
+        return new DefaultKafkaProducerFactory<>(configProps);
+
+    }
+
+    @Bean
+    public KafkaTemplate<String, NewInstrumentEvent>  newInstrumentKafkaTemplate() {
+        return new KafkaTemplate<>(newInstrumentFactory());
+    }
+        @Bean
+    public ProducerFactory<String, Object> producerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        configProps.put(ProducerConfig.ACKS_CONFIG, "all");
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, Object> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
+    }
+
+
 }
