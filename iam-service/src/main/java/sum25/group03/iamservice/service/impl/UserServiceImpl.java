@@ -129,8 +129,18 @@ public class UserServiceImpl implements UserService {
                 "Created new user with email: " + user.getEmail()
         );
         try {
+            // Lấy role trực tiếp từ DB (không phụ thuộc lazy)
+            Role role = roleRepository.findByRoleCode(request.getRoleCode())
+                    .orElseThrow();
+
+            Set<String> roles = Set.of(role.getRoleCode());
+
+            Set<String> privileges = role.getRolePrivileges().stream()
+                    .map(rp -> rp.getPrivilege().getPrivilegeCode())
+                    .collect(Collectors.toSet());
+
             UserCreatedEvent event = UserCreatedEvent.builder()
-                    .id(user.getId() + "")
+                    .id(user.getId().toString())
                     .email(user.getEmail())
                     .fullName(user.getFullName())
                     .phoneNumber(user.getPhoneNumber())
@@ -138,21 +148,15 @@ public class UserServiceImpl implements UserService {
                     .dateOfBirth(user.getDateOfBirth())
                     .identityNumber(user.getIdentityNumber())
                     .address(user.getAddress())
-                    .roles(
-                            user.getUserRoles().stream()
-                                    .map(ur -> ur.getRole().getRoleCode())
-                                    .collect(Collectors.toSet())
-                    )
-                    .privileges(
-                            user.getUserRoles().stream()
-                                    .flatMap(ur -> ur.getRole().getRolePrivileges().stream())
-                                    .map(rp -> rp.getPrivilege().getPrivilegeCode())
-                                    .collect(Collectors.toSet())
-                    )
+                    .roles(roles)
+                    .privileges(privileges)
                     .build();
 
             kafkaProducerService.sendUserCreated(event);
-        } catch (Exception ignored) {}
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Long operatorId = getOperatorDatabaseId();
 
@@ -207,12 +211,23 @@ public class UserServiceImpl implements UserService {
         if (request.getGender() != null) user.setGender(request.getGender());
         if (request.getIdentityNumber() != null) user.setIdentityNumber(request.getIdentityNumber());
 
-        if (request.getRoleIds() != null && !request.getRoleIds().isEmpty()) {
-            user.getUserRoles().clear();
-            Role role = roleRepository.findById(request.getRoleIds().get(0))
+        if (request.getRoleCode() != null && !request.getRoleCode().isBlank()) {
+
+            Role role = roleRepository.findByRoleCode(request.getRoleCode())
                     .orElseThrow(() -> new RuntimeException("Role not found"));
-            user.getUserRoles().add(new UserRole(null, user, role));
+
+
+            userRoleRepository.deleteByUserId(user.getId());
+
+            UserRole userRole = UserRole.builder()
+                    .user(user)
+                    .role(role)
+                    .build();
+
+            userRoleRepository.save(userRole);
         }
+
+
 
         userRepository.save(user);
 
@@ -227,6 +242,20 @@ public class UserServiceImpl implements UserService {
         );
 
         try {
+            Set<String> roles = Collections.emptySet();
+            Set<String> privileges = Collections.emptySet();
+
+            if (request.getRoleCode() != null) {
+                Role role = roleRepository.findByRoleCode(request.getRoleCode())
+                        .orElseThrow();
+
+                roles = Set.of(role.getRoleCode());
+
+                privileges = role.getRolePrivileges().stream()
+                        .map(rp -> rp.getPrivilege().getPrivilegeCode())
+                        .collect(Collectors.toSet());
+            }
+
             UserUpdatedEvent event = UserUpdatedEvent.builder()
                     .id(user.getId())
                     .email(user.getEmail())
@@ -236,21 +265,15 @@ public class UserServiceImpl implements UserService {
                     .dateOfBirth(user.getDateOfBirth())
                     .identityNumber(user.getIdentityNumber())
                     .address(user.getAddress())
-                    .roles(
-                            user.getUserRoles().stream()
-                                    .map(ur -> ur.getRole().getRoleCode())
-                                    .collect(Collectors.toSet())
-                    )
-                    .privileges(
-                            user.getUserRoles().stream()
-                                    .flatMap(ur -> ur.getRole().getRolePrivileges().stream())
-                                    .map(rp -> rp.getPrivilege().getPrivilegeCode())
-                                    .collect(Collectors.toSet())
-                    )
+                    .roles(roles)
+                    .privileges(privileges)
                     .build();
 
             kafkaProducerService.sendUserUpdated(event);
-        } catch (Exception ignored) {}
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         Long operatorId = getOperatorDatabaseId();
 
@@ -280,7 +303,7 @@ public class UserServiceImpl implements UserService {
                 .identityNumber(user.getIdentityNumber())
                 .address(user.getAddress())
                 .roles(user.getUserRoles().stream()
-                        .map(ur -> ur.getRole().getRoleName())
+                        .map(ur -> ur.getRole().getRoleCode())
                         .collect(Collectors.toSet()))
                 .build();
 

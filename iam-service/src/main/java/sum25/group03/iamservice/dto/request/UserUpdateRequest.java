@@ -14,5 +14,6 @@ public class UserUpdateRequest {
     private String address;
     private String gender;
     private LocalDate dateOfBirth;
-    private List<Long> roleIds;
+    private String roleCode;
+
 }

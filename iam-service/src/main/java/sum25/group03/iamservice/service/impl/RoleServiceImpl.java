@@ -154,24 +154,44 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleResponse updateRolePermissions(Long roleId, List<Long> privilegeIds) {
+
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with id: " + roleId));
 
-
         rolePrivilegeRepository.deleteByRoleId(roleId);
+        role.getRolePrivileges().clear();
 
+        if (privilegeIds == null || privilegeIds.isEmpty()) {
+            auditLogService.record(
+                    "UPDATE",
+                    "Role",
+                    role.getId(),
+                    "system",
+                    "Removed all privileges from role: " + role.getRoleCode()
+            );
 
-        List<RolePrivilege> rolePrivileges = privilegeIds.stream()
+            return RoleResponse.builder()
+                    .id(role.getId())
+                    .roleName(role.getRoleName())
+                    .roleCode(role.getRoleCode())
+                    .roleDescription(role.getRoleDescription())
+                    .privileges(Set.of())
+                    .build();
+        }
+
+        List<RolePrivilege> newPrivileges = privilegeIds.stream()
                 .map(pid -> {
-                    Privilege p = privilegeRepository.findById(pid)
+                    Privilege privilege = privilegeRepository.findById(pid)
                             .orElseThrow(() -> new RuntimeException("Privilege not found with id: " + pid));
                     return RolePrivilege.builder()
                             .role(role)
-                            .privilege(p)
+                            .privilege(privilege)
                             .build();
-                }).collect(Collectors.toList());
+                })
+                .collect(Collectors.toList());
 
-        rolePrivilegeRepository.saveAll(rolePrivileges);
+        rolePrivilegeRepository.saveAll(newPrivileges);
+        role.getRolePrivileges().addAll(newPrivileges);
 
         auditLogService.record(
                 "UPDATE",
@@ -188,13 +208,14 @@ public class RoleServiceImpl implements RoleService {
                     .roleName(role.getRoleName())
                     .roleDescription(role.getRoleDescription())
                     .privileges(
-                            rolePrivileges.stream()
+                            newPrivileges.stream()
                                     .map(rp -> rp.getPrivilege().getPrivilegeName())
                                     .collect(Collectors.toSet())
                     )
                     .build();
             kafkaProducerService.sendRoleUpdated(event);
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         Long operatorId = getOperatorDatabaseId();
@@ -207,16 +228,14 @@ public class RoleServiceImpl implements RoleService {
                 .data(Map.of(
                         "roleId", role.getId(),
                         "roleCode", role.getRoleCode(),
-                        "privileges", rolePrivileges.stream()
+                        "privileges",
+                        newPrivileges.stream()
                                 .map(rp -> rp.getPrivilege().getPrivilegeName())
                                 .toList()
                 ))
                 .build();
 
         kafkaProducerService.sendMonitoringLog(log);
-
-
-
 
         cascadeRolePermissionChanges(roleId);
 
@@ -226,7 +245,9 @@ public class RoleServiceImpl implements RoleService {
                 .roleCode(role.getRoleCode())
                 .roleDescription(role.getRoleDescription())
                 .privileges(
-                        rolePrivileges.stream().map(rp -> rp.getPrivilege().getPrivilegeName()).collect(Collectors.toSet())
+                        newPrivileges.stream()
+                                .map(rp -> rp.getPrivilege().getPrivilegeName())
+                                .collect(Collectors.toSet())
                 )
                 .build();
     }
