@@ -356,29 +356,14 @@ public class TestOrderServiceImpl implements TestOrderService {
     @Override
     public TestOrderResponseForInstrument findLatestByBarcode(String barcode) {
         TestOrder testOrder = testOrderRepository
-                .findFirstByBarcodeOrderByCreatedAtDesc(barcode)
+                .findByBarcodeAndStatus(barcode, TestOrderStatus.ONGOING)
                 .orElse(null);
 
         if (testOrder == null) {
             return null;
         }
 
-        if (testOrder.getStatus() != TestOrderStatus.ONGOING)
-            throw new IllegalArgumentException("Test order must be ongoing to run test");
-
-        return TestOrderResponseForInstrument.builder()
-                .id(testOrder.getId())
-                .code(testOrder.getCode())
-                .externalMedicalRecordId(testOrder.getExternalMedicalRecordId())
-                .patientId(testOrder.getPatientId())
-                .createdBy(testOrder.getCreatedBy())
-                .runBy(testOrder.getRunBy())
-                .barcode(testOrder.getBarcode())
-                .runDate(testOrder.getRunDate())
-                .status(testOrder.getStatus())
-                .createdAt(testOrder.getCreatedAt())
-                .updatedAt(testOrder.getUpdatedAt())
-                .build();
+        return testOrderMapper.toTestOrderResponseForInstrument(testOrder);
     }
 
     @Override
