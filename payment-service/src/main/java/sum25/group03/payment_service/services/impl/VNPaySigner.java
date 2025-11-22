@@ -2,6 +2,8 @@ package sum25.group03.payment_service.services.impl;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,9 +15,23 @@ public final class VNPaySigner {
         return params.entrySet().stream()
                 .filter(e -> e.getKey() != null && e.getValue() != null)
                 .sorted(Map.Entry.comparingByKey())
-                .map(e -> e.getKey() + "=" + urlEncode(e.getValue()))
+                .map(e -> e.getKey() + "=" + urlEncodeVNPay(e.getValue()))
                 .collect(Collectors.joining("&"));
     }
+
+    /**
+     * VNPay-compatible URL encoding:
+     * - Spaces -> %20 (not +)
+     * - UTF-8 encoding for special characters
+     */
+    private static String urlEncodeVNPay(String value) {
+        // Standard URLEncoder.encode turns spaces into '+', VNPay expects '%20'
+        return URLEncoder.encode(value, StandardCharsets.UTF_8)
+                .replace("+", "%20")   // fix spaces
+                .replace("*", "%2A")   // optional
+                .replace("%7E", "~");  // optional
+    }
+
 
     public static String hmacSHA512(String secret, String data) {
         try {
