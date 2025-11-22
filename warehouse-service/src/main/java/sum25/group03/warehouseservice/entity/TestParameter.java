@@ -27,7 +27,7 @@ public class TestParameter {
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "abbreviation", nullable = false)
+    @Column(name = "abbreviation", nullable = false, unique = true)
     private String abbreviation;
 
     @Column(name = "price")
