@@ -32,6 +32,13 @@ public class UserController {
     private  final PendingUserRepository pendingUserRepository;
 
 
+    @GetMapping("/by-cognito-sub/{sub}")
+    public ApiResponse<UserResponse> getByCognitoSub(@PathVariable String sub) {
+        return ApiResponse.ok(userService.getUserByCognitoSub(sub));
+
+    }
+
+
     @PreAuthorize("hasAuthority('USER_UPDATE')")
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.CREATED)

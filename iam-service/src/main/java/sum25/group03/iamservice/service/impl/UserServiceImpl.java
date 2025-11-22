@@ -570,6 +570,16 @@ public class UserServiceImpl implements UserService {
         return resp;
     }
 
+    @Override
+    public UserResponse getUserByCognitoSub(String cognitoSub) {
+        User user = userRepository.findByCognitoUserId(cognitoSub)
+                .orElseThrow(() ->
+                        new RuntimeException("User not found with cognito sub: " + cognitoSub)
+                );
 
+        return UserResponse.builder()
+                .id(user.getId())
+                .build();
+    }
 
 }
