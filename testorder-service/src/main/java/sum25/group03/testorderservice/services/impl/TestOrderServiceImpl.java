@@ -363,6 +363,9 @@ public class TestOrderServiceImpl implements TestOrderService {
             return null;
         }
 
+        if (testOrder.getStatus() != TestOrderStatus.ONGOING)
+            throw new IllegalArgumentException("Test order must be ongoing to run test");
+
         return TestOrderResponseForInstrument.builder()
                 .id(testOrder.getId())
                 .code(testOrder.getCode())
