@@ -44,20 +44,38 @@ spring:
               filters:
                 - RewritePath=/api/v1/patients/(?<segment>(\\d+|audit-entries|clinical-notes|medical-records|user-snapshots.*)), /api/v1/${segment}
 
-            # for payment service
-            - id: payment-service
+            # VNPay endpoints (create, callback, etc.)
+            - id: payment-vnpay
               uri: http://localhost:8084
               predicates:
-                - Path=${app.api-version}/payments/**
+                - Path=/api/v1/payments/vnpay/**
               filters:
-                - RewritePath=/api/v1/payments/(?<segment>(\\d+|payment-providers|payment-transactions|paypal|payments/stripe|payments/vnpay.*)), /api/v1/${segment}
-            # PayPal callback
+                - name: RewritePath
+                  args:
+                    regexp: '/api/v1/payments/vnpay/(.*)'
+                    replacement: '/api/v1/payments/vnpay/$1'
+
+            # PayPal endpoints
+            # PayPal fallback
             - id: payment-paypal
               uri: http://localhost:8084
               predicates:
                 - Path=/paypal/**
               filters:
                 - RewritePath=/paypal/(?<segment>.*)/?, /api/v1/paypal/${segment}
+
+            # Generic payment-service routes
+            - id: payment-service
+              uri: http://localhost:8084
+              predicates:
+                - Path=/api/v1/payments/**
+              filters:
+                - name: RewritePath
+                  args:
+                    regexp: '/api/v1/payments/(.*)'
+                    replacement: '/api/v1/payments/$1'
+
+
             # for test order service
             - id: testorder-service
               uri: http://localhost:8085
