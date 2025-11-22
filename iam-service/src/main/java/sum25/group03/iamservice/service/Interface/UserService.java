@@ -27,6 +27,6 @@ public interface UserService {
     UserResponse getUserByIdentityNumber(String identityNumber);
     String approvePendingUser(Long id);
     List<PendingUser> getPendingUsers();
-
+    UserResponse getUserByCognitoSub(String cognitoSub);
     Page<UserResponse> searchFilteredUsers(UserFilterSearchingRequest request);
 }
