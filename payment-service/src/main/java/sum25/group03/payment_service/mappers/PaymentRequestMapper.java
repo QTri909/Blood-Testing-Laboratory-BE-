@@ -14,6 +14,7 @@ import java.util.List;
 @Mapper(componentModel = "spring", uses = {PaymentProviderMapper.class})
 public interface PaymentRequestMapper {
 
+    @Mapping(target = "standardCurrency", source = "currency")
     PaymentRequestResponse toResponse(PaymentRequest entity);
 
     @Mapping(target = "id", ignore = true)
