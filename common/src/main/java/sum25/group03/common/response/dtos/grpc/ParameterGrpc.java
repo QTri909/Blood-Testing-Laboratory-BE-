@@ -21,5 +21,4 @@ public class ParameterGrpc {
     private Double maxValue;
     private String unit;
     private String gender;
-
 }
