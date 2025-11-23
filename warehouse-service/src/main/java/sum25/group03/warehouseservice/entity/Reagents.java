@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
+import sum25.group03.warehouseservice.entity.enums.ReagentUnit;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -35,7 +36,8 @@ public class Reagents {
     private String casNumber;
 
     @Column(name = "unit", nullable = false)
-    private String unit;
+    @Enumerated(EnumType.STRING)
+    private ReagentUnit unit;
 
     @Column(name = "storage_conditions", nullable = false)
     private String storageConditions;

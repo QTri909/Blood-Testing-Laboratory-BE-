@@ -48,7 +48,7 @@ public class ReagentFilterServiceImpl implements ReagentFilterService {
                                 .reagentName(u.getReagent().getReagentName())
                                 .catalogNumber(u.getReagent().getCatalogNumber())
                                 .casNumber(u.getReagent().getCasNumber())
-                                .unit(u.getReagent().getUnit())
+                                .unit(u.getReagent().getUnit().getUnit())
                                 .build())
                         .usageType(u.getUsageType())
                         .quantityUsed(u.getQuantityUsed())

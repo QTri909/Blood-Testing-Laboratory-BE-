@@ -89,7 +89,7 @@ public class ReagentServiceImpl implements ReagentService {
         ReagentValidationResponse.ReagentValidationResponseBuilder responseBuilder = ReagentValidationResponse.builder()
                 .reagentId(reagent.getReagent().getReagentId())
                 .reagentName(reagent.getReagent().getReagentName())
-                .unit(reagent.getReagent().getUnit())
+                .unit(reagent.getReagent().getUnit().getUnit())
                 .lotNumber(reagent.getLotNumber())
                 .catalogNumber(reagent.getReagent().getCatalogNumber())
                 .expirationDate(reagent.getExpiryDate())
@@ -158,7 +158,7 @@ public class ReagentServiceImpl implements ReagentService {
         return reagents.stream().map(reagent -> {
             ReagentResponseForInstrument response = new ReagentResponseForInstrument();
             response.setReagentId(reagent.getReagentId());
-            response.setUnit(reagent.getUnit());
+            response.setUnit(reagent.getUnit().getUnit());
             response.setReagentName(reagent.getReagentName());
             response.setUsageMin(reagent.getUsageMin());
             response.setUsageMax(reagent.getUsageMax());
@@ -208,7 +208,7 @@ public class ReagentServiceImpl implements ReagentService {
                     .reagentName(reagent.getReagentName())
                     .catalogNumber(reagent.getCatalogNumber())
                     .totalStock(totalQty)
-                    .unit(reagent.getUnit())
+                    .unit(reagent.getUnit().getUnit())
                     .maxStockLevel(maxLevel)
                     .percentage(percentage)
                     .build();
@@ -308,7 +308,7 @@ public class ReagentServiceImpl implements ReagentService {
                         "reagentName", req.getReagentName(),
                         "catalogNumber", req.getCatalogNumber(),
                         "casNumber", req.getCasNumber(),
-                        "unit", req.getUnit(),
+                        "unit", req.getUnit().getUnit(),
                         "storageConditions", req.getStorageConditions(),
                         "status", "ACTIVE",
                         "maxStockLevel", req.getMaxStockLevel().toString(),
@@ -342,7 +342,7 @@ public class ReagentServiceImpl implements ReagentService {
                 .reagentName(saved.getReagentName())
                 .catalogNumber(saved.getCatalogNumber())
                 .casNumber(saved.getCasNumber())
-                .unit(saved.getUnit())
+                .unit(saved.getUnit().getUnit())
                 .quantity(0)
                 .build();
     }

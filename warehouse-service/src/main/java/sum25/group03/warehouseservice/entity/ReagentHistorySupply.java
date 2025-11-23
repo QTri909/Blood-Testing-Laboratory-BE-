@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import sum25.group03.warehouseservice.entity.enums.ReagentUnit;
 import sum25.group03.warehouseservice.entity.enums.SupplyStatus;
 
 import java.math.BigDecimal;
@@ -38,7 +39,8 @@ public class ReagentHistorySupply {
     private double quantityReceived;
 
     @Column(name = "unit_of_measurement", nullable = false)
-    private String unitOfMeasurement;
+    @Enumerated(EnumType.STRING)
+    private ReagentUnit unitOfMeasurement;
 
 
 //    @Column(name = "received_date", nullable = false)

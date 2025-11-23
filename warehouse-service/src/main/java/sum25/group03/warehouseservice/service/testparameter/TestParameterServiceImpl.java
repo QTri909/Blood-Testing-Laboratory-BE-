@@ -151,7 +151,7 @@ public class TestParameterServiceImpl implements  TestParameterService {
                         .description(saved.getDescription() != null ? saved.getDescription() : "")
                         .minValue(nr.getMinValue())
                         .maxValue(nr.getMaxValue())
-                        .unit(nr.getUnit().toString())
+                        .unit(nr.getUnit().getUnit())
                         .gender(nr.getGender().toString())
                         .build()
                 ).toList();

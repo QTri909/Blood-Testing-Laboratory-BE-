@@ -2,6 +2,7 @@ package sum25.group03.warehouseservice.dto.request;
 
 import jakarta.validation.constraints.*;
 import lombok.*;
+import sum25.group03.warehouseservice.entity.enums.ReagentUnit;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,7 +20,7 @@ public class SupplyReq {
     @NotBlank
     private String lotNumber;
     @NotBlank
-    private String unitOfMeasurement;
+    private ReagentUnit unitOfMeasurement;
     @NotNull
     private LocalDate expiryDate;
     @NotNull

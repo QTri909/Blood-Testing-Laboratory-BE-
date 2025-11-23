@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
+import sum25.group03.warehouseservice.entity.enums.ReagentUnit;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -21,7 +22,7 @@ public class ReagentReq {
     private String casNumber;
 
     @NotBlank
-    private String unit;
+    private ReagentUnit unit;
 
     @NotBlank
     private String storageConditions;
