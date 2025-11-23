@@ -104,6 +104,14 @@ public class VNPayServiceImpl implements VNPayService {
                 .paymentProvider(vnPayProviderInfo)
                 .build();
 
+        // checking any existing payment request with same orderCode and PENDING status
+        List<PaymentRequest> existingRequestsOpt = paymentRequestRepository.findAllByOrderCodeAndStatus(req.getOrderCode(), PaymentRequestStatus.PENDING)
+                .orElse(List.of());
+        for (PaymentRequest existingRequest: existingRequestsOpt) {
+            existingRequest.setStatus(PaymentRequestStatus.CANCELLED);
+        }
+
+
         paymentRequestRepository.save(paymentRequest);
 
         // generate response
