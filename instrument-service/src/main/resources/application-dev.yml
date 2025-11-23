@@ -9,7 +9,6 @@ spring:
 #      username: postgres
 #      password: 123456
 #      driver-class-name: org.postgresql.Driver
-<<<<<<< HEAD
 
     # Khanhs's postgres
 #    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
@@ -19,17 +18,9 @@ spring:
 
     # Tri's postgres
     url: jdbc:postgresql://pg-11205524-quachtri865-70aa.c.aivencloud.com:22441/defaultdb?sslmode=require
-=======
-    url: jdbc:postgresql://pg-11205524-quachtri865-70aa.c.aivencloud.com:22441/defaultdb
->>>>>>> 96ff5488ad599b6d9dad55549f47df0464f67d0a
     username: avnadmin
     password: AVNS_OueYmZUJ75GK00khbkn
     driver-class-name: org.postgresql.Driver
-#    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
-#
-#    username: postgres.optgwypzavmomcarviwh
-#    password: 123456
-#    driver-class-name: org.postgresql.Driver
 
     hikari:
       maximum-pool-size: 5
