@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
+import sum25.group03.common.response.dtos.rest.CustomPaginationDTO;
 import sum25.group03.common.response.events.UserCreatedEvent;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.*;
@@ -415,6 +416,24 @@ public class TestOrderServiceImpl implements TestOrderService {
                 ActionTypeFeatures.UPDATE_TEST_ORDER_STATUS,
                 testOrder.getId()
         );
+    }
+
+    @Override
+    public CustomPaginationDTO<List<String>> getBarcodesOfOngoingTestOrders(Integer page, Integer size) {
+
+        // get all ongoing test orders with pagination:
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<TestOrder> testOrderPage = testOrderRepository.findByStatus(TestOrderStatus.ONGOING, pageable);
+
+        List<String> barcodes = testOrderPage.getContent()
+                .stream().map(TestOrder::getBarcode).toList();
+
+        return CustomPaginationDTO.<List<String>>builder()
+                .total(testOrderPage.getTotalElements())
+                .page(page)
+                .size(size)
+                .data(barcodes)
+                .build();
     }
 
 

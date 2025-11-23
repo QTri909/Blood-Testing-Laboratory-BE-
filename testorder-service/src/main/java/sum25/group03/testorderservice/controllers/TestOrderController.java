@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
+import sum25.group03.common.response.dtos.rest.CustomPaginationDTO;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.request.TestOrderStatusUpdateRequest;
 import sum25.group03.testorderservice.dtos.response.CreationTestOrderResponse;
@@ -172,5 +173,14 @@ public class TestOrderController {
     {
         CreationTestOrderResponse response = testOrderService.createTestOrderForExternalSystem(barcode);
         return ApiResponse.add("Create unmatched test order successfully", response);
+    }
+
+    @GetMapping("/by-barcode/ongoing")
+    public ApiResponse<CustomPaginationDTO<List<String>>> getBarcodesOfOngoingTestOrders(
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "size", defaultValue = "10") Integer size
+    ) {
+        CustomPaginationDTO<List<String>> ongoingBarcodes = testOrderService.getBarcodesOfOngoingTestOrders(page, size);
+        return ApiResponse.add("Get barcodes of ongoing test orders successfully", ongoingBarcodes);
     }
 }

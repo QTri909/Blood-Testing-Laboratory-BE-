@@ -3,6 +3,7 @@ package sum25.group03.testorderservice.services.interfaces;
 import org.springframework.data.domain.Page;
 import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
 import sum25.group03.common.response.dtos.grpc.ParameterGrpcResponse;
+import sum25.group03.common.response.dtos.rest.CustomPaginationDTO;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.*;
 import sum25.group03.testorderservice.dtos.request.TestOrderFiltering;
@@ -36,4 +37,5 @@ public interface TestOrderService{
     CreationTestOrderResponse createTestOrderForExternalSystem(String barcode);
 
     void updateTestOrderStatusByTestOrderCode(UUID testOrderCode, TestOrderStatus testOrderStatus);
+    CustomPaginationDTO<List<String>> getBarcodesOfOngoingTestOrders(Integer page, Integer size);
 }

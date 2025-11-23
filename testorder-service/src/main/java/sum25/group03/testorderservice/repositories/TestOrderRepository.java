@@ -27,6 +27,7 @@ public interface TestOrderRepository extends JpaRepository<TestOrder,Long>, JpaS
     Page<TestOrder> findByPatientId(Long patientId, Pageable pageable);
     List<TestOrder> findByPatientId(Long patientId);
     List<TestOrder> findByStatus(TestOrderStatus status);
+    Page<TestOrder> findByStatus(TestOrderStatus status, Pageable pageable);
     List<TestOrder> findByCreatedBy(Long createdBy);
     List<TestOrder> findAllByExternalMedicalRecordId(Long externalMedicalRecordId, Sort sort);
 
