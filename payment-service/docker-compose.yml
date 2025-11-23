@@ -15,14 +15,14 @@ services:
       - payment-network
 
   redis-payment-service:-
-    image: redis:7-alpine
-    container_name: redis_payment_cache
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_payment_volume:/data
-    networks:
-      - payment-network
+  image: redis:7-alpine
+  container_name: redis_payment_cache
+  ports:
+    - "6379:6379"
+  volumes:
+    - redis_payment_volume:/data
+  networks:
+    - payment-network
   stripe-cli:
     image: stripe/stripe-cli:latest
     container_name: stripe_cli
