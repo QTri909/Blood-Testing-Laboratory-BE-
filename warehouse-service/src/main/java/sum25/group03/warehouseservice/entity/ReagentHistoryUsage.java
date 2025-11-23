@@ -19,7 +19,7 @@ public class ReagentHistoryUsage {
     private Long reagentHistoryUsageId;
 
     @Column(name = "quantity_used", nullable = true)
-    private Double quantityUsed;
+    private Double quantityUsed = 0.0;
 
     @Column(name = "unit", nullable = true)
     private String unit;
