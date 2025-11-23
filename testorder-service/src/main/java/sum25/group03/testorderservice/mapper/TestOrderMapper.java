@@ -81,6 +81,9 @@ public interface TestOrderMapper {
     }
 
     // map test order entity to "TestOrderResponseForInstrument"
+    @Mapping(target = "testType", source = "type")
+    @Mapping(target = "createdAt", source = "createdAt")
+    @Mapping(target = "updatedAt", source = "updatedAt")
     TestOrderResponseForInstrument toTestOrderResponseForInstrument(TestOrder testOrder);
 
     //--------------------------------------------------------------
