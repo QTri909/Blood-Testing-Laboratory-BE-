@@ -66,8 +66,14 @@ public class SimulatorServiceImpl implements SimulatorService {
             log.info("Starting Blood Analyser simulator for barcode: {} on instrument: {}",
                     request.getBarcode(), request.getInstrumentId());
 
-            List<InstalledReagent> installedReagents = installedReagentRepository
-                    .findByInstrumentIdAndStatusIsNot(request.getInstrumentId(), InstalledReagentStatus.REMOVED);
+//            List<InstalledReagent> installedReagents = installedReagentRepository
+//                    .findByInstrumentIdAndStatusIsNot(request.getInstrumentId(), InstalledReagentStatus.REMOVED);
+
+            // only get available reagents
+            List<InstalledReagent> installedReagents = installedReagentRepository.findByInstrumentIdAndStatus(
+                    request.getInstrumentId(), InstalledReagentStatus.AVAILABLE
+            );
+
             if (installedReagents.isEmpty()) {
                 log.info("No installed reagents found for instrument ID: {}", request.getInstrumentId());
                 throw new RuntimeException("No installed reagents found for instrument ID");
@@ -92,6 +98,7 @@ public class SimulatorServiceImpl implements SimulatorService {
 
             testOrderResponse =
                     testOrderServiceClient.getTestOrderByBarcode(request.getBarcode());
+
             if(testOrderResponse==null){
                 CreationTestOrderResponse creationTestOrderResponse =
                         testOrderServiceClient.createUnmatchedOrder(request.getBarcode());

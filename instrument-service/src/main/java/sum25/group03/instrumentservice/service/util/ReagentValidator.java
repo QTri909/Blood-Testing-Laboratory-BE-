@@ -43,20 +43,20 @@ public class ReagentValidator {
         // ---------------------------------------------------------
         // 2. If ANY installed reagent is EXPIRED / QUARANTINED / EMPTY → fail
         // ---------------------------------------------------------
-        for (InstalledReagent ir : installedReagents) {
-            InstalledReagentStatus st = ir.getStatus();
+       for (InstalledReagent ir : installedReagents) {
+           InstalledReagentStatus st = ir.getStatus();
 
-            if (st == InstalledReagentStatus.EXPIRED ||
-                    st == InstalledReagentStatus.QUARANTINED ||
-                    st == InstalledReagentStatus.EMPTY) {
+           if (st == InstalledReagentStatus.EXPIRED ||
+                   st == InstalledReagentStatus.QUARANTINED ||
+                   st == InstalledReagentStatus.EMPTY) {
 
-                System.out.printf(
-                        "[FAIL] Reagent '%s' is in invalid status: %s%n",
-                        ir.getReagentName(), st);
+               System.out.printf(
+                       "[FAIL] Reagent '%s' is in invalid status: %s%n",
+                       ir.getReagentName(), st);
 
-                return false;
-            }
-        }
+               return false;
+           }
+       }
 
 
         // ---------------------------------------------------------
@@ -79,12 +79,14 @@ public class ReagentValidator {
             InstalledReagent installed = installedMap.get(name);
 
             // Case A: reagent not installed → fail
+            /*
             if (installed == null) {
                 System.out.printf(
                         "[FAIL] Reagent '%s' not installed. Required=%.2f%n",
                         name, required);
                 return false;
             }
+             */
 
             // Case B: insufficient volume → fail
             if (installed.getCurrentVolume() < required) {

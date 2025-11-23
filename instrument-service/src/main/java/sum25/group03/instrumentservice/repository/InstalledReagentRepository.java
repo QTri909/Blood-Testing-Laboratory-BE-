@@ -29,6 +29,8 @@ public interface InstalledReagentRepository extends JpaRepository<InstalledReage
                                                        @Param("status") InstalledReagentStatus status,
                                                        Pageable pageable);
 
+    List<InstalledReagent> findByInstrumentIdAndStatus(Long instrumentId, InstalledReagentStatus status);
+
     @Query("SELECT ir FROM InstalledReagent ir WHERE " +
             "LOWER(ir.instrument.instrumentName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "CAST(ir.lotReagentId AS string) LIKE CONCAT('%', :keyword, '%') OR " +

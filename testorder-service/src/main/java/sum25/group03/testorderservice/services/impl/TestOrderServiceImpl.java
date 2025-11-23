@@ -372,8 +372,15 @@ public class TestOrderServiceImpl implements TestOrderService {
                 .findByBarcodeAndStatus(barcode, TestOrderStatus.ONGOING)
                 .orElse(null);
 
+        System.out.println("Test Order fetched for barcode " + barcode + ": ");
+        System.out.println("id: " + (testOrder != null ? testOrder.getId() : "null"));
+        System.out.println("status: " + (testOrder != null ? testOrder.getStatus() : "null"));
+        System.out.println("barcode: " + (testOrder != null ? testOrder.getBarcode() : "null"));
+        System.out.println("code: " + (testOrder != null ? testOrder.getCode() : "null"));
+        System.out.println("createdAt: " + (testOrder != null ? testOrder.getCreatedAt() : "null"));
+
         if (testOrder == null) {
-            return null;
+            throw new IllegalArgumentException("No ongoing test order found for barcode: " + barcode);
         }
 
         return testOrderMapper.toTestOrderResponseForInstrument(testOrder);
