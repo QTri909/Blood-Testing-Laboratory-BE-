@@ -9,10 +9,17 @@ spring:
 #      username: postgres
 #      password: 123456
 #      driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
 
-    username: postgres.optgwypzavmomcarviwh
-    password: 123456
+    # Khanhs's postgres
+#    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+#    username: postgres.optgwypzavmomcarviwh
+#    password: 123456
+#    driver-class-name: org.postgresql.Driver
+
+    # Tri's postgres
+    url: jdbc:postgresql://pg-11205524-quachtri865-70aa.c.aivencloud.com:22441/defaultdb?sslmode=require
+    username: avnadmin
+    password: AVNS_OueYmZUJ75GK00khbkn
     driver-class-name: org.postgresql.Driver
 
     hikari:
