@@ -8,4 +8,4 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "sum25.group03.common.response.events"
-        spring.json.user.type.headers: true
+        spring.json.use.type.headers: true

@@ -2,6 +2,8 @@ package sum25.group03.payment_service.services.impl;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -13,9 +15,36 @@ public final class VNPaySigner {
         return params.entrySet().stream()
                 .filter(e -> e.getKey() != null && e.getValue() != null)
                 .sorted(Map.Entry.comparingByKey())
-                .map(e -> e.getKey() + "=" + urlEncode(e.getValue()))
+                .map(e -> e.getKey() + "=" + encodeVnPay(e.getValue()))
                 .collect(Collectors.joining("&"));
     }
+
+    /**
+     * VNPay-compatible URL encoding:
+     * - encodeURIComponent-style encoding
+     * - Spaces MUST be converted to '+'
+     * - NOT %20
+     */
+    private static String encodeVnPay(String value) {
+        try {
+            // URLEncoder.encode converts ' ' → '+', which is EXACTLY what VNPay requires
+            String encoded = URLEncoder.encode(value, StandardCharsets.UTF_8);
+
+            // However, URLEncoder encodes '*' and '~' incorrectly for VNPay
+            // VNPay wants encodeURIComponent behavior:
+            encoded = encoded.replace("%21", "!")
+                    .replace("%27", "'")
+                    .replace("%28", "(")
+                    .replace("%29", ")")
+                    .replace("%7E", "~");
+
+            return encoded;
+        } catch (Exception e) {
+            throw new RuntimeException("VNPay encoding failed", e);
+        }
+    }
+
+
 
     public static String hmacSHA512(String secret, String data) {
         try {

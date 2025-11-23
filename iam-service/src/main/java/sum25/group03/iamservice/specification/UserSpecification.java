@@ -27,19 +27,15 @@ public class UserSpecification {
             // ==========================
             // ROLE FILTERING
             // ==========================
-            if (req.getRoles() != null && !req.getRoles().isEmpty()) {
-                // Join only if necessary
-                Join<Object, Object> userRoleJoin = root.join("userRoles", JoinType.LEFT);
-                Join<Object, Object> roleJoin = userRoleJoin.join("role", JoinType.LEFT);
+            if (req.getRoleCode() != null && !req.getRoleCode().isBlank()) {
 
-                // Convert requested roles to uppercase
-                List<String> rolesUpper =
-                        req.getRoles().stream().map(String::toUpperCase).toList();
+                Join<Object, Object> userRoleJoin = root.join("userRoles", JoinType.INNER);
+                Join<Object, Object> roleJoin = userRoleJoin.join("role", JoinType.INNER);
 
-                // Filter using IN (better than equals)
-                predicates.add(roleJoin.get("roleCode").in(rolesUpper));
+                String roleCode = req.getRoleCode().toUpperCase();
 
-                // Avoid duplicated rows if multiple roles
+                predicates.add(cb.equal(roleJoin.get("roleCode"), roleCode));
+
                 query.distinct(true);
             }
 

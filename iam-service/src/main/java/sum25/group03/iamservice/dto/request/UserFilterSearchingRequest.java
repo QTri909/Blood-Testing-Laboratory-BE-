@@ -15,7 +15,7 @@ public class UserFilterSearchingRequest {
     private String identityNumber;
     private String phoneNumber;
     private String email;
-    private Set<String> roles;
+    private String roleCode;
 
     // paging
     private int page = 0;

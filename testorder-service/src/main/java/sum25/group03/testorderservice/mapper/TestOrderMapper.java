@@ -80,6 +80,9 @@ public interface TestOrderMapper {
         return new PageImpl<>(dtoList, testOrders.getPageable(), testOrders.getTotalElements());
     }
 
+    // map test order entity to "TestOrderResponseForInstrument"
+    TestOrderResponseForInstrument toTestOrderResponseForInstrument(TestOrder testOrder);
+
     //--------------------------------------------------------------
     // Grpc CleanTestResultResponse to GrpcCleanTestResultResponse
     default GrpcCleanTestResultResponse toGrpcCleanTestResultResponseDto(CleanTestResultResponse dtoResponse) {

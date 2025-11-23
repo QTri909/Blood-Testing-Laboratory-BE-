@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import sum25.group03.testorderservice.entities.TestOrder;
 
@@ -33,10 +34,18 @@ public interface TestOrderRepository extends JpaRepository<TestOrder,Long>, JpaS
     @EntityGraph(attributePaths = {"testResults", "testResults.parameter"})
     Optional<TestOrder> findById(@NonNull Long id);
 
+    @NonNull
+    @EntityGraph(attributePaths = {"testResults"})
+    Optional<TestOrder> findByCode(@NonNull UUID code);
+
     // find all by list of ids:
     List<TestOrder> findByIdInOrderByCreatedAtDesc(List<Long> ids);
 
     Optional<TestOrder> findFirstByBarcodeOrderByCreatedAtDesc(String barcode);
+
+    // first test order by barcode and status ONGOING
+    Optional<TestOrder> findByBarcodeAndStatus(String barcode, TestOrderStatus status);
+
     Optional<TestOrder> findTopByPatientIdOrderByCreatedAtDesc(Long patientId);
     List<TestOrder> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
 

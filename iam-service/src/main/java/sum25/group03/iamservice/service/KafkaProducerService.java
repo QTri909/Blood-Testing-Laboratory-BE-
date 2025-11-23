@@ -3,7 +3,10 @@ package sum25.group03.iamservice.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.response.constants.KafkaConstants;
 import sum25.group03.common.response.events.UserCreatedEvent;
+import sum25.group03.common.response.events.UserDeletedEvent;
+import sum25.group03.common.response.events.UserUpdatedEvent;
 import sum25.group03.iamservice.event.*;
 
 @Service
@@ -21,15 +24,15 @@ public class KafkaProducerService {
 
 
     public void sendUserCreated(UserCreatedEvent event) {
-        userCreatedKafkaTemplate.send("iam.user.created", event);
+        userCreatedKafkaTemplate.send(KafkaConstants.USER_CREATED_TOPIC, event);
     }
 
     public void sendUserUpdated(UserUpdatedEvent event) {
-        userUpdatedKafkaTemplate.send("iam.user.updated", event);
+        userUpdatedKafkaTemplate.send(KafkaConstants.USER_UPDATED_TOPIC, event);
     }
 
     public void sendUserDeleted(UserDeletedEvent event) {
-        userDeletedKafkaTemplate.send("iam.user.deleted", event);
+        userDeletedKafkaTemplate.send(KafkaConstants.USER_DELETED_TOPIC, event);
     }
 
     public void sendRoleCreated(RoleCreatedEvent event) {

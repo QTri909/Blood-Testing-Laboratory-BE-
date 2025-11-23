@@ -1,5 +1,8 @@
 package sum25.group03.patientservice.services.interfaces;
 
+import sum25.group03.common.response.events.UserCreatedEvent;
+import sum25.group03.common.response.events.UserDeletedEvent;
+import sum25.group03.common.response.events.UserUpdatedEvent;
 import sum25.group03.patientservice.dtos.request.GrpcMappingPatientAndCreatorIdRequest;
 import sum25.group03.patientservice.dtos.request.UserSnapshotRequest;
 import sum25.group03.patientservice.dtos.response.GrpcMappingPatientAndCreatorIdResponse;
@@ -22,4 +25,8 @@ public interface UserSnapshotService {
 
     // test:
     void syncUserSnapshots();
+
+    void handleCreateUserFromIAM(UserCreatedEvent kafkaUserDTO);
+    void handleUpdateUserFromUserFromIAM(UserUpdatedEvent userUpdatedEvent);
+    void handleDeleteUserFromIAM(UserDeletedEvent userDeletedEvent);
 }

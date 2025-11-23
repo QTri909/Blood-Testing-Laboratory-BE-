@@ -4,6 +4,7 @@ import org.mapstruct.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import sum25.group03.common.response.events.UserCreatedEvent;
+import sum25.group03.common.response.events.UserUpdatedEvent;
 import sum25.group03.patientservice.dtos.request.UserSnapshotRequest;
 import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
@@ -31,6 +32,7 @@ public interface UserSnapshotMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "externalUserId", source = "kafkaUserDTO.id")
+    @Mapping(target = "status", constant = "ACTIVE")
     UserSnapshotEntity fromUserKafkaDTO(UserCreatedEvent kafkaUserDTO);
 
     default LocalDate map(List<Integer> value) {
@@ -55,4 +57,11 @@ public interface UserSnapshotMapper {
 
         return new PageImpl<>(responseList, entities.getPageable(), entities.getTotalElements());
     }
+
+    // map from "UserUpdatedEvent" to "UserSnapshotEntity"
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "lastUpdated", ignore = true)
+    @Mapping(target = "externalUserId", source = "userUpdatedEvent.id")
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateEntityFrom(UserUpdatedEvent userUpdatedEvent, @MappingTarget UserSnapshotEntity userSnapshotEntity);
 }

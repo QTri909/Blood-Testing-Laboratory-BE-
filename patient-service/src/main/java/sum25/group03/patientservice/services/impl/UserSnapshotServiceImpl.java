@@ -5,11 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.common.response.events.UserCreatedEvent;
+import sum25.group03.common.response.events.UserDeletedEvent;
+import sum25.group03.common.response.events.UserUpdatedEvent;
 import sum25.group03.patientservice.dtos.request.GrpcMappingPatientAndCreatorIdRequest;
 import sum25.group03.patientservice.dtos.request.UserSnapshotRequest;
 import sum25.group03.patientservice.dtos.response.GrpcMappingPatientAndCreatorIdResponse;
 import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
+import sum25.group03.patientservice.enums.UserSnapshotStatus;
 import sum25.group03.patientservice.feign.IAMFeignClient;
 import sum25.group03.patientservice.feign.dtos.FeignUserDTO;
 import sum25.group03.patientservice.feign.dtos.FeignUserResponseWrapper;
@@ -18,10 +22,7 @@ import sum25.group03.patientservice.mapper.UserSnapshotMapper;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
 import sum25.group03.patientservice.services.interfaces.UserSnapshotService;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +35,7 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
     private final UserSnapshotMapper mapper;
     private final IAMFeignClient userFeignClient;
     private final JdbcTemplate jdbcTemplate;
+    private final UserSnapshotMapper userSnapshotMapper;
 
 
     @Transactional
@@ -149,6 +151,7 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
     @Override
     public UserSnapshotResponse getById(Long id) {
         return repository.findById(id)
+                .filter(entity1 -> entity1.getStatus() != UserSnapshotStatus.DELETED)
                 .map(mapper::toResponse)
                 .orElseThrow(() -> new RuntimeException("User snapshot not found"));
     }
@@ -156,21 +159,71 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
     @Override
     public UserSnapshotResponse getByExternalUserId(Long externalUserId) {
         return repository.findByExternalUserId(externalUserId)
+                .filter(entity1 -> entity1.getStatus() != UserSnapshotStatus.DELETED)
                 .map(mapper::toResponse)
                 .orElseThrow(() -> new RuntimeException("User snapshot not found"));
     }
 
     @Override
     public List<UserSnapshotResponse> getAll() {
+
         return repository.findAll().stream()
+                .filter(entity -> entity.getStatus() != UserSnapshotStatus.DELETED)
                 .map(mapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Override
     public String getFullNameByExternalUserId(Long externalUserId) {
-        return repository.findByExternalUserId(externalUserId)
+        Optional<UserSnapshotEntity> entity = repository.findByExternalUserId(externalUserId);
+        return entity.filter(entity1 -> entity1.getStatus() != UserSnapshotStatus.DELETED)
                 .map(UserSnapshotEntity::getFullName)
                 .orElse(null);
+    }
+
+    @Override
+    @Transactional
+    public void handleCreateUserFromIAM(UserCreatedEvent kafkaUserDTO) {
+        Long externalUserId = Long.parseLong(kafkaUserDTO.getId());
+
+        // 1. search for entity in the database:
+        UserSnapshotEntity searchedEntity = repository.findByExternalUserId(externalUserId).
+                orElse(null);
+
+        if (searchedEntity != null) {
+            // 2.1. exists, update it
+            userSnapshotMapper.updateEntityFromKafkaDTO(kafkaUserDTO, searchedEntity);
+            return;
+        }
+
+        // 2.2. else: not exist, insert one
+        UserSnapshotEntity newEntity = userSnapshotMapper.fromUserKafkaDTO(kafkaUserDTO);
+        repository.save(newEntity);
+    }
+
+    @Override
+    @Transactional
+    public void handleUpdateUserFromUserFromIAM(UserUpdatedEvent userUpdatedEvent) {
+
+        Long externalUserId = userUpdatedEvent.getId();
+        UserSnapshotEntity searchedEntity = repository.findByExternalUserId(externalUserId)
+                .orElseThrow(() -> new RuntimeException("User snapshot not found"));
+
+        userSnapshotMapper.updateEntityFrom(userUpdatedEvent, searchedEntity);
+        repository.save(searchedEntity); // explicit save
+    }
+
+    @Override
+    @Transactional
+    public void handleDeleteUserFromIAM(UserDeletedEvent userDeletedEvent) {
+
+        Long externalUserId = userDeletedEvent.getId();
+        UserSnapshotEntity searchedEntity = repository.findByExternalUserId(externalUserId)
+                .orElseThrow(() -> new RuntimeException("User snapshot not found"));
+
+        // mark as deleted
+        searchedEntity.setStatus(UserSnapshotStatus.DELETED);
+
+        repository.save(searchedEntity); // explicit save
     }
 }
