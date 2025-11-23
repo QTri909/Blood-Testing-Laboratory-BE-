@@ -188,7 +188,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .configEvent(configEvent)
                 .newReagentEvents(reagentEvents)
                 .build();
-        kafkaTemplate.send("config-updates", event);
+        kafkaTemplate.send("new-instrument-events", event);
         log.info("Published Kafka event (update instrument): {}", event);
 
         return InstrumentConfigReagentRes.builder()
