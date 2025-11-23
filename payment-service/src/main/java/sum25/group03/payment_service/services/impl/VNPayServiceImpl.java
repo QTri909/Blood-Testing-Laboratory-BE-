@@ -47,6 +47,8 @@ public class VNPayServiceImpl implements VNPayService {
     private final PaymentProviderRepository paymentProviderRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
 
+    private final KafkaPaymentResultProducer kafkaPaymentResultProducer;
+
     private final String TXN_REF_PREFIX = "TR_";
 
     @Override
@@ -182,6 +184,13 @@ public class VNPayServiceImpl implements VNPayService {
         // update PaymentRequest:
         PaymentRequestStatus mappedPaymentStatus = PaymentStatusMapper.toRequestStatus(mappedStatus);
         searchedPaymentRequest.setStatus(mappedPaymentStatus);
+
+        // push test order information with payment status to kafka:
+        kafkaPaymentResultProducer.sendPaymentResult(
+                searchedPaymentRequest.getOrderCode(),
+                mappedPaymentStatus.toString(),
+                newTransaction.getStatus().toString()
+        );
 
         return Map.of("RspCode", rsp, "Status", mappedStatusStr);
     }
