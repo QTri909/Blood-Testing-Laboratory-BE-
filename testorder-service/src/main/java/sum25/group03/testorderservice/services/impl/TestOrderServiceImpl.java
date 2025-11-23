@@ -28,10 +28,7 @@ import sum25.group03.testorderservice.services.interfaces.TestOrderKafkaProducer
 import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 import sum25.group03.testorderservice.specification.TestOrderSpecification;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -315,6 +312,20 @@ public class TestOrderServiceImpl implements TestOrderService {
         }
     }
 
+    private void validateCancelTestOrder(TestOrderStatus newStatus, TestOrderStatus oldStatus) {
+        if (newStatus != TestOrderStatus.CANCELED)
+            return;
+
+        Set<TestOrderStatus> allowedOldStatuses = Set.of(
+                TestOrderStatus.EMPTY,
+                TestOrderStatus.UNASSIGNED,
+                TestOrderStatus.UNPUBLISHED,
+                TestOrderStatus.WAITING_PAYMENT
+        );
+        if (!allowedOldStatuses.contains(oldStatus))
+            throw new IllegalStateException("Cannot cancel test order with status " + oldStatus.toString().toLowerCase() + "!");
+    }
+
     @Override
     public TestOrderStatusUpdateResponse updateTestOrderStatus(Long id, TestOrderStatus newStatus, Long updatedBy) {
 
@@ -326,6 +337,7 @@ public class TestOrderServiceImpl implements TestOrderService {
         TestOrderStatus oldStatus = testOrder.getStatus();
         // validate status transition
         validatePublishTestOrder(newStatus, oldStatus);
+        validateCancelTestOrder(newStatus, oldStatus);
         testOrder.setStatus(newStatus);
 
         // store to response object:
