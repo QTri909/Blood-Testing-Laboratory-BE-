@@ -36,6 +36,8 @@ public class PatientGrpcServer extends PatientServiceGrpc.PatientServiceImplBase
                 .setId(user.getId())
                 .setFullName(user.getFullName())
                 .setPhoneNumber(user.getPhoneNumber())
+                .setDateOfBirth(user.getDateOfBirth() != null ? user.getDateOfBirth().toString() : "")
+                .setGender(user.getGender() != null ? user.getGender() : "")
                 .setEmail(user.getEmail())
                 .build();
 

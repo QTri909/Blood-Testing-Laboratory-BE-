@@ -16,15 +16,16 @@ public class ReportController {
 
     //  Export PDF
     @GetMapping("/test-orders/pdf/{testOrderId}")
-    public ApiResponse<String> exportPdf(@PathVariable Long testOrderId,
-                                         HttpServletResponse response) {
+    public void exportPdf(@PathVariable Long testOrderId,
+                          HttpServletResponse response) {
         try {
             reportService.exportPdf(testOrderId, response);
-            return ApiResponse.ok("PDF exported successfully", null);
         } catch (Exception e) {
-            return ApiResponse.internalServerError("Failed to export PDF: " + e.getMessage(), "/api/reports/test-orders/pdf/" + testOrderId);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            throw new RuntimeException("Failed to export PDF: " + e.getMessage());
         }
     }
+
 
     //  Export Excel
     @GetMapping("/test-orders/excel/{patientId}")

@@ -90,10 +90,15 @@ public class ReportServiceImpl implements ReportService {
                         .build()
         ).toList();
 
+        patient.getDateOfBirth();
         TestOrderResponseExportExcelDTO dto = TestOrderResponseExportExcelDTO.builder()
                 .id(order.getId())
                 .patientName(patient.getFullName())
                 .phoneNumber(patient.getPhoneNumber())
+                .gender(patient.getGender())
+                .dateOfBirth(!patient.getDateOfBirth().isEmpty()
+                        ? LocalDate.parse(patient.getDateOfBirth())
+                        : null)
                 .status(order.getStatus())
                 .createdBy(order.getCreatedBy())
                 .createdAt(order.getCreatedAt())
@@ -156,7 +161,7 @@ public class ReportServiceImpl implements ReportService {
 
         // Header
         Row header = sheet.createRow(0);
-        String[] headers = {"Id Test Order", "Patient Name", "Phone Number", "Status", "Created By", "Created On", "Run By", "Run On"};
+        String[] headers = {"Id Test Order", "Patient Name", "Gender", "Date of Birth", "Phone Number", "Status", "Created By", "Created On", "Run By", "Run On"};
         for (int i = 0; i < headers.length; i++) {
             header.createCell(i).setCellValue(headers[i]);
         }
@@ -167,16 +172,18 @@ public class ReportServiceImpl implements ReportService {
             Row row = sheet.createRow(rowIdx++);
             row.createCell(0).setCellValue(o.getId());
             row.createCell(1).setCellValue(patient !=null ?patient.getFullName() : "");
-            row.createCell(2).setCellValue(patient !=null ?patient.getPhoneNumber() : "");
-            row.createCell(3).setCellValue(o.getStatus().name());
-            row.createCell(4).setCellValue(o.getCreatedBy() != null ? o.getCreatedBy().toString() : "");
-            row.createCell(5).setCellValue(o.getCreatedAt() != null ? o.getCreatedAt().toString() : "");
+            row.createCell(2).setCellValue(patient !=null ?patient.getGender() : "");
+            row.createCell(3).setCellValue(patient !=null ? patient.getDateOfBirth() : "");
+            row.createCell(4).setCellValue(patient !=null ?patient.getPhoneNumber() : "");
+            row.createCell(5).setCellValue(o.getStatus().name());
+            row.createCell(6).setCellValue(o.getCreatedBy() != null ? o.getCreatedBy().toString() : "");
+            row.createCell(7).setCellValue(o.getCreatedAt() != null ? o.getCreatedAt().toString() : "");
             if(o.getStatus()== TestOrderStatus.COMPLETED){
-                row.createCell(6).setCellValue(o.getRunBy() != null ? o.getRunBy().toString() : "");
-                row.createCell(7).setCellValue(o.getRunDate() != null ? o.getRunDate().toString() : "");
+                row.createCell(8).setCellValue(o.getRunBy() != null ? o.getRunBy().toString() : "");
+                row.createCell(9).setCellValue(o.getRunDate() != null ? o.getRunDate().toString() : "");
             } else {
-                row.createCell(6).setCellValue("");
-                row.createCell(7).setCellValue("");
+                row.createCell(8).setCellValue("");
+                row.createCell(9).setCellValue("");
             }
 
         }

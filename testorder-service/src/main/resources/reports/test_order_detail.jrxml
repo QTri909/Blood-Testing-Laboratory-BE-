@@ -37,6 +37,8 @@
     <!-- ==================== ROOT DATASET FIELDS ==================== -->
     <field name="id" class="java.lang.Long"/>
     <field name="patientName" class="java.lang.String"/>
+    <field name="gender" class="java.lang.String"/>
+    <field name="dateOfBirth" class="java.time.LocalDate"/>
     <field name="phoneNumber" class="java.lang.String"/>
     <field name="status" class="sum25.group03.testorderservice.enums.TestOrderStatus"/>
     <field name="createdBy" class="java.lang.Long"/>
@@ -112,7 +114,7 @@
 
     <!-- ==================== DETAIL ==================== -->
     <detail>
-        <band height="120">
+        <band height="140">
 <!--            <staticText>-->
 <!--                <reportElement x="0" y="0" width="555" height="20"/>-->
 <!--                <text><![CDATA[Order Information]]></text>-->
@@ -136,21 +138,31 @@
 
             <textField>
                 <reportElement x="0" y="45" width="300" height="18"/>
-                <textFieldExpression><![CDATA["Phone: " + ($F{phoneNumber} != null ? $F{phoneNumber} : "")]]></textFieldExpression>
+                <textFieldExpression><![CDATA["Gender: " + ($F{gender} != null ? $F{gender} : "")]]></textFieldExpression>
             </textField>
 
             <textField>
                 <reportElement x="0" y="65" width="300" height="18"/>
-                <textFieldExpression><![CDATA["Status: " + ($F{status} != null ? $F{status}.name() : "")]]></textFieldExpression>
+                <textFieldExpression><![CDATA["dateOfBirth: " + ($F{dateOfBirth} != null ? $F{dateOfBirth} : "")]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="85" width="300" height="18"/>
+                <textFieldExpression><![CDATA["Phone: " + ($F{phoneNumber} != null ? $F{phoneNumber} : "")]]></textFieldExpression>
             </textField>
 
             <textField>
                 <reportElement x="300" y="5" width="300" height="18"/>
-                <textFieldExpression><![CDATA["Created By: " + ($F{createdBy} != null ? $F{createdBy}.toString() : "")]]></textFieldExpression>
+                <textFieldExpression><![CDATA["Status: " + ($F{status} != null ? $F{status}.name() : "")]]></textFieldExpression>
             </textField>
 
             <textField>
                 <reportElement x="300" y="25" width="300" height="18"/>
+                <textFieldExpression><![CDATA["Created By: " + ($F{createdBy} != null ? $F{createdBy}.toString() : "")]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="300" y="45" width="300" height="18"/>
                 <textFieldExpression><![CDATA["Created On: " + ($F{createdAt} != null
                      ? new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
                     .format(java.sql.Timestamp.valueOf($F{createdAt}))
@@ -168,12 +180,12 @@
 <!--            </textField>-->
 
             <textField>
-                <reportElement x="300" y="45" width="300" height="18"/>
+                <reportElement x="300" y="65" width="300" height="18"/>
                 <textFieldExpression><![CDATA["Run By: " + ($F{runBy} != null ? $F{runBy}.toString() : "")]]></textFieldExpression>
             </textField>
 
             <textField>
-                <reportElement x="300" y="65" width="300" height="18"/>
+                <reportElement x="300" y="85" width="300" height="18"/>
                 <textFieldExpression><![CDATA["Run On: " + ($F{runOn} != null ? $F{runOn}.toString() : "")]]></textFieldExpression>
             </textField>
 
@@ -184,7 +196,7 @@
 <!--            </textField>-->
 
             <textField>
-                <reportElement x="0" y="85" width="555" height="18"/>
+                <reportElement x="0" y="115" width="555" height="18"/>
                 <textElement>
                     <font fontName="DejaVu Sans"
                           pdfFontName="fonts/DejaVuSans.ttf"
@@ -325,7 +337,7 @@
             </staticText>
 
             <image>
-                <reportElement x="390" y="295" width="150" height="40" forecolor="#566573"/>
+                <reportElement x="390" y="295" width="150" height="40" />
                 <imageExpression><![CDATA["images/doctor-signature.png"]]></imageExpression>
             </image>
 
