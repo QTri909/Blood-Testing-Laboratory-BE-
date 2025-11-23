@@ -47,7 +47,7 @@ public class VNPayServiceImpl implements VNPayService {
     private final PaymentProviderRepository paymentProviderRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
 
-    private final String TXN_REF_PREFIX = "TR-";
+    private final String TXN_REF_PREFIX = "TR_";
 
     @Override
     @Transactional
@@ -71,6 +71,7 @@ public class VNPayServiceImpl implements VNPayService {
         params.put("vnp_CurrCode", req.getCurrency().toString());
         params.put("vnp_TxnRef", txnRef);
         params.put("vnp_OrderInfo", Optional.ofNullable(req.getOrderInfo()).orElse("Payment " + req.getOrderCode()));
+//        params.put("vnp_OrderInfo", "Payment for order " + req.getOrderCode());
         params.put("vnp_OrderType", props.getOrderType());
         params.put("vnp_Locale", Optional.ofNullable(req.getLocale().toString()).orElse("vn"));
         params.put("vnp_ReturnUrl", props.getReturnUrl());
@@ -81,10 +82,13 @@ public class VNPayServiceImpl implements VNPayService {
 
         String data = VNPaySigner.canonicalQuery(params);
         String secureHash = VNPaySigner.hmacSHA512(props.getHashSecret(), data);
-        String paymentUrl = UriComponentsBuilder.fromHttpUrl(props.getPaymentUrl())
-                .query(data + "&vnp_SecureHash=" + secureHash)
-                .build(true)
-                .toUriString();
+//        String paymentUrl = UriComponentsBuilder.fromHttpUrl(props.getPaymentUrl())
+//                .query(data + "&vnp_SecureHash=" + secureHash)
+//                //.build(true)
+//                .toUriString();
+
+        // Manually build the URL — do not let Spring re-encode
+        String paymentUrl = props.getPaymentUrl() + "?" + data + "&vnp_SecureHash=" + secureHash;
 
         // persist PaymentRequest entity
         PaymentProvider vnPayProviderInfo = paymentProviderRepository.findByCodeAndStatus(PaymentProviderCode.VN_PAY, PaymentProviderStatus.ACTIVE)

@@ -15,22 +15,35 @@ public final class VNPaySigner {
         return params.entrySet().stream()
                 .filter(e -> e.getKey() != null && e.getValue() != null)
                 .sorted(Map.Entry.comparingByKey())
-                .map(e -> e.getKey() + "=" + urlEncodeVNPay(e.getValue()))
+                .map(e -> e.getKey() + "=" + encodeVnPay(e.getValue()))
                 .collect(Collectors.joining("&"));
     }
 
     /**
      * VNPay-compatible URL encoding:
-     * - Spaces -> %20 (not +)
-     * - UTF-8 encoding for special characters
+     * - encodeURIComponent-style encoding
+     * - Spaces MUST be converted to '+'
+     * - NOT %20
      */
-    private static String urlEncodeVNPay(String value) {
-        // Standard URLEncoder.encode turns spaces into '+', VNPay expects '%20'
-        return URLEncoder.encode(value, StandardCharsets.UTF_8)
-                .replace("+", "%20")   // fix spaces
-                .replace("*", "%2A")   // optional
-                .replace("%7E", "~");  // optional
+    private static String encodeVnPay(String value) {
+        try {
+            // URLEncoder.encode converts ' ' → '+', which is EXACTLY what VNPay requires
+            String encoded = URLEncoder.encode(value, StandardCharsets.UTF_8);
+
+            // However, URLEncoder encodes '*' and '~' incorrectly for VNPay
+            // VNPay wants encodeURIComponent behavior:
+            encoded = encoded.replace("%21", "!")
+                    .replace("%27", "'")
+                    .replace("%28", "(")
+                    .replace("%29", ")")
+                    .replace("%7E", "~");
+
+            return encoded;
+        } catch (Exception e) {
+            throw new RuntimeException("VNPay encoding failed", e);
+        }
     }
+
 
 
     public static String hmacSHA512(String secret, String data) {

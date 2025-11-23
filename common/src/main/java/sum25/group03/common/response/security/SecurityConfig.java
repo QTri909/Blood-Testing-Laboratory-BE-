@@ -37,8 +37,13 @@ public class SecurityConfig {
                         ).permitAll()
 
                         .requestMatchers(
+                                // PayPal return and cancel URLs
                                 "/api/v1/paypal/return",
-                                "/api/v1/paypal/cancel"
+                                "/api/v1/paypal/cancel",
+
+                                // VNPay IPN and return URLs
+                                "/api/v1/payments/vnpay/ipn",
+                                "/api/v1/payments/vnpay/return"
                         ).permitAll()
 //                        .requestMatchers("/actuator/prometheus").permitAll()
                         .anyRequest().authenticated()
