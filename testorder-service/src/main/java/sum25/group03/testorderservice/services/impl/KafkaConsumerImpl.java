@@ -9,11 +9,13 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Service;
 import sum25.group03.testorderservice.component.Hl7Parser;
+import sum25.group03.testorderservice.dtos.request.TestResultPublishedEventDTO;
 import sum25.group03.testorderservice.entities.TestResult;
 import sum25.group03.testorderservice.repositories.TestResultRepository;
 import sum25.group03.testorderservice.services.interfaces.IKafkaConsumer;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 public class KafkaConsumerImpl implements IKafkaConsumer {
@@ -29,16 +31,20 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
     }
 
     @Override
-    @KafkaListener(topics = "test-order-result", groupId = "test-order")
-    public void listen(String message, Acknowledgment ack) throws IOException {
-        System.out.println("📥 Received HL7 message: " + message);
+    @KafkaListener(
+            topics = "test-results-hl7",
+            groupId = "test-result-group",
+            containerFactory = "testResultKafkaListenerFactory"
+    )
+    public void listen(TestResultPublishedEventDTO eventDTO, Acknowledgment ack) throws IOException {
+        System.out.println("📥 Received HL7 message: " + eventDTO);
         try {
-            process(message);
+            process(eventDTO);
         } catch (Exception e) {
             System.err.println("Error while processing message: " + e.getMessage());
         } finally {
             ack.acknowledge();
-            System.out.println("Offset acknowledged for message: " + message);
+            System.out.println("Offset acknowledged for message: " + eventDTO);
         }
     }
 
@@ -51,21 +57,20 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
     @Override
     public void process(Object message) {
 
-        String msgString = validateMessage(message);
+        if (!(message instanceof TestResultPublishedEventDTO))
+            throw new IllegalArgumentException("Message is not TestResultPublishedEventDTO");
+
+        TestResultPublishedEventDTO dto = (TestResultPublishedEventDTO) message;
 
         try {
-            JsonNode jsonNode = new ObjectMapper().readTree(msgString);
-            String hl7Content = jsonNode.get("message").asText().replace("\\n", "\r");
+            String hl7Content = dto.getHl7Message().replace("\\n", "\r");
 
             if (!hl7Content.startsWith("MSH")) {
                 throw new IllegalArgumentException("Invalid HL7 header");
             }
 
-            TestResult testResult = hl7Parser.parseHL7(hl7Content);
-            testResultRepository.save(testResult);
-
-            System.out.println("Saved test result ID: " + testResult.getId());
-            System.out.println("Value: " + testResult.getValue());
+            List<TestResult> testResults = hl7Parser.parseHL7(hl7Content);
+            testResultRepository.saveAll(testResults);
 
         } catch (Exception e) {
             System.err.println("Parsing failed: " + e.getMessage());
@@ -75,11 +80,12 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
 
     @Override
     public void sendToQuarantine(Object message, String reason) {
+        if (!(message instanceof TestResultPublishedEventDTO))
+            throw new IllegalArgumentException("Message is not TestResultPublishedEventDTO");
 
-        String msgStr = validateMessage(message);
-
-        String wrapped = "❌ INVALID HL7 [" + reason + "] → " + msgStr;
-        kafkaTemplate.send("test-order-quaratine", wrapped);
+        TestResultPublishedEventDTO dto = (TestResultPublishedEventDTO) message;
+        String wrapped = "❌ INVALID HL7 [" + reason + "] → " + dto;
+        kafkaTemplate.send("test-order-quarantine", wrapped);
         System.out.println("Sent to quarantine queue: " + wrapped);
     }
 }

@@ -2,7 +2,10 @@ package sum25.group03.testorderservice.component;
 
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.v251.message.ORU_R01;
+import ca.uhn.hl7v2.model.v251.segment.OBR;
+import ca.uhn.hl7v2.model.v251.segment.OBX;
 import ca.uhn.hl7v2.parser.PipeParser;
+import ca.uhn.hl7v2.validation.impl.ValidationContextFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import sum25.group03.testorderservice.entities.Parameter;
@@ -15,6 +18,8 @@ import sum25.group03.testorderservice.repositories.TestOrderRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Component
@@ -28,71 +33,73 @@ public class Hl7Parser {
     @Autowired
     private ParameterRepository parameterRepository;
 
-    public TestResult parseHL7(String hl7Message) throws HL7Exception {
-        ORU_R01 oru = (ORU_R01) parser.parse(hl7Message);
+    private static final DateTimeFormatter HL7_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 
-        // 🔹 Extract fields
-        var obx = oru.getPATIENT_RESULT()
-                .getORDER_OBSERVATION()
-                .getOBSERVATION(0)
-                .getOBX();
+    private FlagStatus calculateFlag(Parameter parameter, Double value) {
+        if (parameter == null || value == null) return null;
 
-        var obr = oru.getPATIENT_RESULT()
-                .getORDER_OBSERVATION()
-                .getOBR();
+        double criticalLow = parameter.getMin() * 0.8;
+        double criticalHigh = parameter.getMax() * 1.2;
 
-        String testCode = obx.getObservationIdentifier().getIdentifier().getValue();
-        System.out.println("testCode: " + testCode);
-        String testName = obx.getObservationIdentifier().getText().getValue();
-        String resultStr = obx.getObservationValue(0).getData().toString();
-        String observationDate = obr.getObservationDateTime().getTime().getValue();
+        if (value < criticalLow || value > criticalHigh) return FlagStatus.C;
+        if (value >= parameter.getMin() && value <= parameter.getMax()) return FlagStatus.N;
+        if (value < parameter.getMin()) return FlagStatus.L;
+        return FlagStatus.H;
+    }
 
-        Double value = null;
-        if (resultStr != null && !resultStr.isEmpty()) {
-            try {
-                value = Double.parseDouble(resultStr);
-            } catch (NumberFormatException ignored) {}
+    public List<TestResult> parseHL7(String hl7Message) {
+        List<TestResult> results = new ArrayList<>();
+        String[] lines = hl7Message.split("\\r?\\n");
+
+        TestOrder testOrder = null;
+
+        for (String line : lines) {
+            String[] fields = line.split("\\|");
+            if (fields.length == 0) continue;
+
+            switch (fields[0]) {
+                case "PID":
+                    String barcode = fields[3];
+                    testOrder = testOrderRepository.findByBarcode(barcode)
+                            .orElseThrow(() -> new RuntimeException("TestOrder not found for barcode: " + barcode));
+                    break;
+
+                case "OBX":
+                    if (testOrder == null) {
+                        throw new RuntimeException("TestOrder must be parsed before OBX");
+                    }
+
+                    String testCode = fields[3]; // OBX-3
+                    System.out.println(testCode);
+                    Parameter parameter = parameterRepository.findByAbbreviation(testCode);
+
+
+                    Double value = null;
+                    try {
+                        value = Double.parseDouble(fields[5]); // OBX-5
+                    } catch (NumberFormatException ignored) {}
+
+                    FlagStatus flag = calculateFlag(parameter, value);
+
+                    TestResult tr = TestResult.builder()
+                            .testOrder(testOrder)
+                            .parameter(parameter)
+                            .value(value)
+                            .flagStatus(flag)
+                            .status(TestResultStatus.COMPLETED)
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build();
+
+                    results.add(tr);
+                    break;
+
+                default:
+                    break;
+            }
         }
 
-        LocalDateTime createdAt = LocalDateTime.now();
-        if (observationDate != null && observationDate.length() >= 12) {
-            try {
-                createdAt = LocalDateTime.parse(observationDate, DateTimeFormatter.ofPattern("yyyyMMddHHmm"));
-            } catch (Exception ignored) {}
-        }
-
-        Long instrumentId = 1L;
-        Long parameterSnapshotId = 1L;
-        TestResultStatus status = TestResultStatus.COMPLETED;
-
-        String orderCode = obr.getPlacerOrderNumber().getEntityIdentifier().getValue();
-        TestOrder testOrder = testOrderRepository.findById(Long.valueOf(orderCode))
-                .orElseThrow(() -> new HL7Exception("Test Order Not Found"));
-        Parameter parameter = parameterRepository.findByAbbreviation(testCode);
-
-        FlagStatus flagStatus = null;
-         double critialLow = parameter.getMin() * 0.8;
-         double critialHigh = parameter.getMax() * 1.2;
-         if(value < critialLow || value > critialHigh){
-             flagStatus = FlagStatus.C;
-         } else
-         if(value >= parameter.getMin() && value <= parameter.getMax() ){
-             flagStatus = FlagStatus.N;
-         } else if(value < parameter.getMin()){
-             flagStatus = FlagStatus.L;
-         } else if(value > parameter.getMax()) {
-             flagStatus = FlagStatus.H;
-         }
-
-        return TestResult.builder()
-                .testOrder(testOrder)
-                .flagStatus(flagStatus)
-                .status(status)
-                .value(value)
-                .createdAt(createdAt)
-                .updatedAt(LocalDateTime.now())
-                .parameter(parameter)
-                .build();
+        return results;
     }
 }
 
