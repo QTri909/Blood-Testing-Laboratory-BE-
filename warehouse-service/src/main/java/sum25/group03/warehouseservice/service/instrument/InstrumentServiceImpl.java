@@ -63,6 +63,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .map(r -> ReagentHistoryUsage.builder()
                         .instrument(instrument)
                         .reagent(r)
+                        .quantityUsed(0.0)
                         .build())
                 .toList();
     }
