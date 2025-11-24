@@ -18,12 +18,19 @@ public class TestOrderServiceClient {
     private final TestOrderServiceGrpc.TestOrderServiceBlockingStub testOrderServiceStub;
 
     public TestOrderResponse getTestOrderByBarcode(String barcode) {
+
+        log.info("DEBUG:::Entering getTestOrderByBarcode with barcode: {}", barcode);
+
         try {
             log.info("Fetching test order by barcode via gRPC: {}", barcode);
             GetTestOrderByBarcodeRequest request = GetTestOrderByBarcodeRequest.newBuilder()
                     .setBarcode(barcode)
                     .build();
             GetTestOrderByBarcodeResponse response = testOrderServiceStub.getTestOrderByBarcode(request);
+
+            // debug
+            log.debug("DEBUG:::Received response from Test Order Service: {}", response);
+
             if (response == null || !response.getFound()) {
                 log.warn("Test Order Service returned not found for barcode: {}", barcode);
                 return null;

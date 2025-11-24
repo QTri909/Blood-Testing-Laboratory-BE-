@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
 import sum25.group03.instrumentservice.audit.service.AuditLogService;
+import sum25.group03.instrumentservice.client.TestOrderServiceClient;
+import sum25.group03.instrumentservice.client.response.TestOrderResponse;
 import sum25.group03.instrumentservice.controller.request.BloodTestingRequest;
 import sum25.group03.instrumentservice.controller.response.RawTestResultResponse;
 import sum25.group03.instrumentservice.exception.BarcodeAlreadyTestedException;
@@ -36,6 +38,8 @@ public class BloodTestingController {
     private final SimulatorService simulatorService;
     private final RawTestResultService rawTestResultService;
     private final BloodTestingService bloodTestingService;
+
+    private final TestOrderServiceClient testOrderServiceClient;
 
     @PostMapping("/start-test")
     @Operation(summary = "Bắt đầu chạy một xét nghiệm máu"
@@ -150,4 +154,14 @@ public class BloodTestingController {
                 response
         );
     }
+
+    @GetMapping("/test")
+    @ResponseStatus(HttpStatus.OK)
+    public Object testEndpoint() {
+
+        TestOrderResponse testOrder = testOrderServiceClient.getTestOrderByBarcode("BC-394883");
+
+        return testOrder;
+    }
+
 }

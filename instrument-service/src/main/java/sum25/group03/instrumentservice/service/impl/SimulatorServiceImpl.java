@@ -54,7 +54,7 @@ public class SimulatorServiceImpl implements SimulatorService {
     private final AuditLogService auditLogService;
 
     @Override
-    @Async("taskExecutor")
+//    @Async("taskExecutor")
     public CompletableFuture<RawTestResultResponse> startTest(BloodTestingRequest request) {
         TestOrderResponse testOrderResponse = null;
         try {
@@ -200,7 +200,7 @@ public class SimulatorServiceImpl implements SimulatorService {
 
         } catch (InterruptedException e) {
             log.error("Simulation thread interrupted for barcode: {}", request.getBarcode());
-            publishFailureEvent(request, "INTERRUPTED",testOrderResponse.getId());
+//            publishFailureEvent(request, "INTERRUPTED",testOrderResponse.getId());
             Thread.currentThread().interrupt();
             return CompletableFuture.failedFuture(e);
         } catch (InsufficientReagentException e) {
@@ -215,7 +215,7 @@ public class SimulatorServiceImpl implements SimulatorService {
         } catch (Exception e) {
             log.error("Critical error during simulation for barcode: {} | Error: {}",
                     request.getBarcode(), e.getMessage(), e);
-            publishFailureEvent(request, "ERROR",testOrderResponse.getId());
+//            publishFailureEvent(request, "ERROR",testOrderResponse.getId());
             return CompletableFuture.failedFuture(e);
         }
     }

@@ -25,7 +25,7 @@ spring:
               predicates:
                 - Path=${app.api-version}/instruments/**
               filters:
-                - RewritePath=/api/v1/patients/(?<segment>(\\d+|blood-testing|reagents|instrument-test-results|instruments.*)), /api/v1/${segment}
+                - RewritePath=/api/v1/patients/(?<segment>(\\d+|blood-testing|reagents|instrument-test-results|test-results|instruments.*)), /api/v1/${segment}
 
 
             # for monitoring service
