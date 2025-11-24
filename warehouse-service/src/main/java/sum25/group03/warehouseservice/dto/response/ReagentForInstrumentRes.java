@@ -1,5 +1,6 @@
 package sum25.group03.warehouseservice.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
@@ -20,5 +21,6 @@ public class ReagentForInstrumentRes {
     private double quantityUsed;
     private String unit;
     private String lotNumber;
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate usedAt;
 }
