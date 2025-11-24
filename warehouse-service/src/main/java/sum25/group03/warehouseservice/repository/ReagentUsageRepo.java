@@ -55,4 +55,7 @@ public interface ReagentUsageRepo extends JpaRepository<ReagentHistoryUsage, Lon
             @Param("endDate") LocalDate endDate,
             Pageable pageable
     );
+    @EntityGraph(attributePaths = {"reagent"})
+    Page<ReagentHistoryUsage> findAllByInstrument_InstrumentId(Long instrumentId, Pageable pageable);
+
 }

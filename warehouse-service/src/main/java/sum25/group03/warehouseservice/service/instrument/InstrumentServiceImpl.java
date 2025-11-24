@@ -42,7 +42,6 @@ public class InstrumentServiceImpl implements InstrumentService {
     private final ReagentMapper reagentMapper;
     private final ConfigService configService;
     private final ReagentService reagentService;
-    private final ReagentUsageService reagentUsageService;
     private final KafkaTemplate<String, NewInstrumentEvent> kafkaTemplate;
 
 
@@ -234,16 +233,16 @@ public class InstrumentServiceImpl implements InstrumentService {
     public InstrumentConfigReagentRes getInstrumentById(Long instrumentId) {
         Instrument instrument = instrumentRepo.findInstrumentById(instrumentId)
                 .orElseThrow(() -> new NotFoundException("Instrument not found with id: " + instrumentId));
-        List<ReagentForInstrumentRes> reagentForInstrumentRes = instrument.getReagentHistoryUsages().stream()
-                .map(r -> ReagentForInstrumentRes.builder()
-                        .reagentId(r.getReagent().getReagentId())
-                        .reagentName(r.getReagent().getReagentName())
-                        .quantityUsed(r.getQuantityUsed())
-                        .unit(r.getUnit())
-                        .lotNumber(r.getLotNumber())
-                        .usedAt(r.getUsedAt())
-                        .build())
-                .toList();
+//        List<ReagentForInstrumentRes> reagentForInstrumentRes = instrument.getReagentHistoryUsages().stream()
+//                .map(r -> ReagentForInstrumentRes.builder()
+//                        .reagentId(r.getReagent().getReagentId())
+//                        .reagentName(r.getReagent().getReagentName())
+//                        .quantityUsed(r.getQuantityUsed())
+//                        .unit(r.getUnit())
+//                        .lotNumber(r.getLotNumber())
+//                        .usedAt(r.getUsedAt())
+//                        .build())
+//                .toList();
         Configuration configuration = instrument.getConfiguration();
         ConfigRes configRes = null;
         if(configuration != null) {
@@ -261,7 +260,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .createdAt(instrument.getCreatedAt())
                 .updatedAt(instrument.getUpdatedAt())
                 .configRes(configRes)
-                .reagentForInstrumentRes(reagentForInstrumentRes)
+               // .reagentForInstrumentRes(reagentForInstrumentRes)
                 .build();
         return response;
     }
@@ -309,4 +308,6 @@ public class InstrumentServiceImpl implements InstrumentService {
                         .build())
                 .toList();
     }
+
+
 }

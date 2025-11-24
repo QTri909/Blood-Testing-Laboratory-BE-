@@ -4,10 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import sum25.group03.warehouseservice.dto.response.PageRes;
-import sum25.group03.warehouseservice.dto.response.ReagentDashboardRes;
-import sum25.group03.warehouseservice.dto.response.ReagentUsageRes;
-import sum25.group03.warehouseservice.dto.response.TopUsedReagentsRes;
+import sum25.group03.warehouseservice.dto.response.*;
 import sum25.group03.warehouseservice.entity.Instrument;
 import sum25.group03.warehouseservice.entity.ReagentHistoryUsage;
 import sum25.group03.warehouseservice.repository.ReagentInventoryRepo;
@@ -28,11 +25,6 @@ public class ReagentUsageServiceImpl implements ReagentUsageService {
     @Override
     public List<Long> getReagentUsageIdsByInstrumentId(Long instrumentId) {
         return reagentUsageRepo.findAllByInstrument_InstrumentId(instrumentId);
-    }
-
-    @Override
-    public List<ReagentHistoryUsage> getReagentUsageByInstrument(Long instrumentId) {
-        return reagentUsageRepo.findAllByInstrument(instrumentId);
     }
 
     @Override
@@ -94,6 +86,25 @@ public class ReagentUsageServiceImpl implements ReagentUsageService {
                 .pageSize(usagesPage.getSize())
                 .totalElements(usagesPage.getTotalElements())
                 .totalPages(usagesPage.getTotalPages())
+                .build();
+    }
+
+    @Override
+    public PageRes<ReagentHistoryUsageOfInstrumentRes> getReagentUsageHistoryByInstrument(Long instrumentId, int page, int size) {
+        Page<ReagentHistoryUsage> pageReagentUsage = reagentUsageRepo.findAllByInstrument_InstrumentId(instrumentId, PageRequest.of(page, size));
+        List<ReagentHistoryUsageOfInstrumentRes> content = pageReagentUsage.stream().map(ru -> ReagentHistoryUsageOfInstrumentRes.builder()
+                .reagentName(ru.getReagent().getReagentName())
+                .lotNumber(ru.getLotNumber())
+                .usedAt(ru.getUsedAt())
+                .quantityUsed(ru.getQuantityUsed() == null ? 0.0 : ru.getQuantityUsed())
+                .unit(ru.getUnit())
+                .build()).toList();
+        return PageRes.<ReagentHistoryUsageOfInstrumentRes>builder()
+                .content(content)
+                .pageNumber(pageReagentUsage.getNumber())
+                .totalPages(pageReagentUsage.getTotalPages())
+                .totalElements(pageReagentUsage.getTotalElements())
+                .pageSize(pageReagentUsage.getSize())
                 .build();
     }
 }
