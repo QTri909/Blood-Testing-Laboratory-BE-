@@ -1,13 +1,11 @@
-package sum25.group03.warehouseservice.event;
+package sum25.group03.common.response.events;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -18,7 +16,7 @@ public class InstrumentEvent {
     private String instrumentName;
     private String eventType;
     private String performedBy;
-    private InstrumentStatus status;
+    private String status;
     private LocalDate timestamp;
     private String details;
 }

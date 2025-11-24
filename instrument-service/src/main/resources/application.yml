@@ -47,9 +47,8 @@ grpc:
 
 aws:
   region: ap-southeast-2
-  access-key-id: AKIAUAT3BD6HAAX4OYWX
-  secret-key-secret: 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
-
+  access-key-id: ${AWS_ACCESS_KEY_ID}
+  secret-key-secret: ${AWS_SECRET_ACCESS_KEY}
 
 audit:
   cloudwatch:

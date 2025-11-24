@@ -7,7 +7,8 @@ import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
-import sum25.group03.instrumentservice.event.*;
+
+import sum25.group03.common.response.events.*;
 import sum25.group03.instrumentservice.service.KafkaEventPublisher;
 
 @Service

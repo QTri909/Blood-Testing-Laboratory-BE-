@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.instrumentservice.controller.response.RawTestResultPageResponse;
 import sum25.group03.instrumentservice.controller.response.RawTestResultResponse;
-import sum25.group03.instrumentservice.controller.response.RawTestResultResponse;
 import sum25.group03.instrumentservice.service.RawTestResultService;
 
 import java.util.List;
