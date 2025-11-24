@@ -7,6 +7,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.iamservice.dto.request.RoleCreateRequest;
+import sum25.group03.iamservice.dto.request.RoleUpdateRequest;
 import sum25.group03.iamservice.dto.response.RoleResponse;
 import sum25.group03.iamservice.entity.*;
 import sum25.group03.iamservice.event.MonitoringLogEvent;
@@ -153,52 +154,63 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleResponse updateRolePermissions(Long roleId, List<Long> privilegeIds) {
+    @Transactional
+    public RoleResponse updateRole(Long roleId, RoleUpdateRequest request) {
 
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with id: " + roleId));
 
-        rolePrivilegeRepository.deleteByRoleId(roleId);
-        role.getRolePrivileges().clear();
-
-        if (privilegeIds == null || privilegeIds.isEmpty()) {
-            auditLogService.record(
-                    "UPDATE",
-                    "Role",
-                    role.getId(),
-                    "system",
-                    "Removed all privileges from role: " + role.getRoleCode()
-            );
-
-            return RoleResponse.builder()
-                    .id(role.getId())
-                    .roleName(role.getRoleName())
-                    .roleCode(role.getRoleCode())
-                    .roleDescription(role.getRoleDescription())
-                    .privileges(Set.of())
-                    .build();
+        if (request.getRoleName() != null) {
+            role.setRoleName(request.getRoleName());
         }
 
-        List<RolePrivilege> newPrivileges = privilegeIds.stream()
-                .map(pid -> {
-                    Privilege privilege = privilegeRepository.findById(pid)
-                            .orElseThrow(() -> new RuntimeException("Privilege not found with id: " + pid));
-                    return RolePrivilege.builder()
-                            .role(role)
-                            .privilege(privilege)
-                            .build();
-                })
-                .collect(Collectors.toList());
+        if (request.getRoleCode() != null) {
+            boolean exists = roleRepository.existsByRoleCodeAndIdNot(request.getRoleCode(), roleId);
+            if (exists) {
+                throw new RuntimeException("Role code already exists: " + request.getRoleCode());
+            }
+            role.setRoleCode(request.getRoleCode());
+        }
 
-        rolePrivilegeRepository.saveAll(newPrivileges);
-        role.getRolePrivileges().addAll(newPrivileges);
+        if (request.getRoleDescription() != null) {
+            role.setRoleDescription(request.getRoleDescription());
+        }
+
+        roleRepository.save(role);
+
+        if (role.getRolePrivileges() == null) {
+            role.setRolePrivileges(new HashSet<>());
+        } else {
+            role.getRolePrivileges().clear();
+        }
+
+        Set<String> finalPrivileges = new HashSet<>();
+        List<Long> privilegeIds = request.getPrivilegeIds();
+
+        if (privilegeIds != null && !privilegeIds.isEmpty()) {
+            List<Privilege> privileges = privilegeRepository.findAllById(privilegeIds);
+
+            List<RolePrivilege> newPrivileges = privileges.stream()
+                    .map(p -> RolePrivilege.builder()
+                            .role(role)
+                            .privilege(p)
+                            .build())
+                    .toList();
+
+            rolePrivilegeRepository.saveAll(newPrivileges);
+            role.getRolePrivileges().addAll(newPrivileges);
+
+            finalPrivileges = privileges.stream()
+                    .map(Privilege::getPrivilegeName)
+                    .collect(Collectors.toSet());
+        }
 
         auditLogService.record(
                 "UPDATE",
                 "Role",
                 role.getId(),
                 "system",
-                "Updated privileges for role: " + role.getRoleCode()
+                "Updated role info + privileges: " + role.getRoleCode()
         );
 
         try {
@@ -207,12 +219,9 @@ public class RoleServiceImpl implements RoleService {
                     .roleCode(role.getRoleCode())
                     .roleName(role.getRoleName())
                     .roleDescription(role.getRoleDescription())
-                    .privileges(
-                            newPrivileges.stream()
-                                    .map(rp -> rp.getPrivilege().getPrivilegeName())
-                                    .collect(Collectors.toSet())
-                    )
+                    .privileges(finalPrivileges)
                     .build();
+
             kafkaProducerService.sendRoleUpdated(event);
         } catch (Exception e) {
             e.printStackTrace();
@@ -223,15 +232,14 @@ public class RoleServiceImpl implements RoleService {
         MonitoringLogEvent log = MonitoringLogEvent.builder()
                 .action("UPDATE_ROLE")
                 .operator(operatorId == null ? "system" : operatorId.toString())
-                .message("Updated privileges for role: " + role.getRoleCode())
+                .message("Updated role: " + role.getRoleCode())
                 .sourceService("IAM-Service")
                 .data(Map.of(
                         "roleId", role.getId(),
                         "roleCode", role.getRoleCode(),
-                        "privileges",
-                        newPrivileges.stream()
-                                .map(rp -> rp.getPrivilege().getPrivilegeName())
-                                .toList()
+                        "roleName", role.getRoleName(),
+                        "roleDescription", role.getRoleDescription(),
+                        "privileges", finalPrivileges
                 ))
                 .build();
 
@@ -244,13 +252,10 @@ public class RoleServiceImpl implements RoleService {
                 .roleName(role.getRoleName())
                 .roleCode(role.getRoleCode())
                 .roleDescription(role.getRoleDescription())
-                .privileges(
-                        newPrivileges.stream()
-                                .map(rp -> rp.getPrivilege().getPrivilegeName())
-                                .collect(Collectors.toSet())
-                )
+                .privileges(finalPrivileges)
                 .build();
     }
+
 
     @Override
     public void cascadeRolePermissionChanges(Long roleId) {

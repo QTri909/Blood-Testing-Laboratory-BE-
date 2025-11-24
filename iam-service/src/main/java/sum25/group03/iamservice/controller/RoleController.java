@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.iamservice.dto.request.RoleCreateRequest;
+import sum25.group03.iamservice.dto.request.RoleUpdateRequest;
 import sum25.group03.iamservice.dto.response.PrivilegeResponse;
 import sum25.group03.iamservice.dto.response.RoleResponse;
 import sum25.group03.iamservice.service.Interface.PrivilegeService;
@@ -36,16 +37,17 @@ public class RoleController {
                 .build();
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ASSIGN_PRIVILEGE')")
-    @PutMapping("/{id}/permissions")
+    @PreAuthorize("hasAuthority('ROLE_UPDATE')")
+    @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<RoleResponse> updateRolePermissions(
+    public ApiResponse<RoleResponse> updateRole(
             @PathVariable Long id,
-            @RequestBody List<Long> privilegeIds) {
+            @RequestBody RoleUpdateRequest request) {
 
-        RoleResponse updatedRole = roleService.updateRolePermissions(id, privilegeIds);
+        RoleResponse updatedRole = roleService.updateRole(id, request);
+
         return ApiResponse.data(updatedRole)
-                .message("Role privileges updated successfully")
+                .message("Role updated successfully")
                 .build();
     }
 

@@ -431,7 +431,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {
-        Page<User> usersPage = userRepository.findAll(pageable);
+        Page<User> usersPage = userRepository.findUsersNotHavingRole("PATIENT", pageable);
+
+
         List<UserResponse> responses = usersPage.getContent().stream()
                 .map(user -> UserResponse.builder()
                         .id(user.getId())
@@ -443,8 +445,7 @@ public class UserServiceImpl implements UserService {
                         .dateOfBirth(user.getDateOfBirth())
                         .identityNumber(user.getIdentityNumber())
                         .roles(
-                                user.getUserRoles()
-                                        .stream()
+                                user.getUserRoles().stream()
                                         .map(ur -> ur.getRole().getRoleCode())
                                         .collect(Collectors.toSet())
                         )

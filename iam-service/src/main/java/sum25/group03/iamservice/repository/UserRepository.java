@@ -45,5 +45,16 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Query("DELETE FROM User u WHERE u.id = :id")
     void deleteUserById(@Param("id") Long id);
 
+    @Query("""
+    SELECT u FROM User u
+    WHERE NOT EXISTS (
+        SELECT 1 
+        FROM UserRole ur
+        JOIN ur.role r
+        WHERE ur.user = u 
+          AND r.roleCode = :roleCode
+    )
+""")
+    Page<User> findUsersNotHavingRole(@Param("roleCode") String roleCode, Pageable pageable);
 
 }

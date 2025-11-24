@@ -24,4 +24,8 @@ public interface RoleRepository extends JpaRepository<Role, Long> {
     @Query("SELECT r FROM Role r WHERE r.userRoles IS EMPTY")
     List<Role> findRolesWithoutUsers();
 
+    boolean existsByRoleCodeAndIdNot(String roleCode, Long id);
+
+
+
 }
