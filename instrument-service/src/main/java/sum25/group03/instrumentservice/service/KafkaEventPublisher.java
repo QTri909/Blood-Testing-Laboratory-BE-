@@ -1,7 +1,7 @@
 package sum25.group03.instrumentservice.service;
 
-import sum25.group03.instrumentservice.event.*;
 
+import sum25.group03.common.response.events.*;
 
 public interface KafkaEventPublisher {
     void publishReagentInstalledEvent(ReagentInstalledEvent event);

@@ -373,7 +373,7 @@ public class TestOrderServiceImpl implements TestOrderService {
                 .orElse(null);
 
         if (testOrder == null) {
-            return null;
+            throw new IllegalArgumentException("No ongoing test order found for barcode: " + barcode);
         }
 
         return testOrderMapper.toTestOrderResponseForInstrument(testOrder);

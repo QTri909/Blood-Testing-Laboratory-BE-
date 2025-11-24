@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.response.events.ReagentUsageHistoryEvent;
+import sum25.group03.common.response.events.TestResultPublishedEvent;
 import sum25.group03.instrumentservice.audit.service.AuditLogService;
 import sum25.group03.instrumentservice.client.TestOrderServiceClient;
 import sum25.group03.instrumentservice.client.WarehouseServiceClient;
@@ -15,8 +17,6 @@ import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.common.InstrumentStatus;
 import sum25.group03.instrumentservice.controller.request.BloodTestingRequest;
 import sum25.group03.instrumentservice.controller.response.RawTestResultResponse;
-import sum25.group03.instrumentservice.event.ReagentUsageHistoryEvent;
-import sum25.group03.instrumentservice.event.TestResultPublishedEvent;
 import sum25.group03.instrumentservice.exception.BarcodeAlreadyTestedException;
 import sum25.group03.instrumentservice.exception.InstrumentNotReadyException;
 import sum25.group03.instrumentservice.exception.InsufficientReagentException;
@@ -54,7 +54,7 @@ public class SimulatorServiceImpl implements SimulatorService {
     private final AuditLogService auditLogService;
 
     @Override
-    @Async("taskExecutor")
+//    @Async("taskExecutor")
     public CompletableFuture<RawTestResultResponse> startTest(BloodTestingRequest request) {
         TestOrderResponse testOrderResponse = null;
         try {
@@ -66,8 +66,14 @@ public class SimulatorServiceImpl implements SimulatorService {
             log.info("Starting Blood Analyser simulator for barcode: {} on instrument: {}",
                     request.getBarcode(), request.getInstrumentId());
 
-            List<InstalledReagent> installedReagents = installedReagentRepository
-                    .findByInstrumentIdAndStatusIsNot(request.getInstrumentId(), InstalledReagentStatus.REMOVED);
+//            List<InstalledReagent> installedReagents = installedReagentRepository
+//                    .findByInstrumentIdAndStatusIsNot(request.getInstrumentId(), InstalledReagentStatus.REMOVED);
+
+            // only get available reagents
+            List<InstalledReagent> installedReagents = installedReagentRepository.findByInstrumentIdAndStatus(
+                    request.getInstrumentId(), InstalledReagentStatus.AVAILABLE
+            );
+
             if (installedReagents.isEmpty()) {
                 log.info("No installed reagents found for instrument ID: {}", request.getInstrumentId());
                 throw new RuntimeException("No installed reagents found for instrument ID");
@@ -92,6 +98,7 @@ public class SimulatorServiceImpl implements SimulatorService {
 
             testOrderResponse =
                     testOrderServiceClient.getTestOrderByBarcode(request.getBarcode());
+
             if(testOrderResponse==null){
                 CreationTestOrderResponse creationTestOrderResponse =
                         testOrderServiceClient.createUnmatchedOrder(request.getBarcode());
@@ -193,7 +200,7 @@ public class SimulatorServiceImpl implements SimulatorService {
 
         } catch (InterruptedException e) {
             log.error("Simulation thread interrupted for barcode: {}", request.getBarcode());
-            publishFailureEvent(request, "INTERRUPTED",testOrderResponse.getId());
+//            publishFailureEvent(request, "INTERRUPTED",testOrderResponse.getId());
             Thread.currentThread().interrupt();
             return CompletableFuture.failedFuture(e);
         } catch (InsufficientReagentException e) {
@@ -208,7 +215,7 @@ public class SimulatorServiceImpl implements SimulatorService {
         } catch (Exception e) {
             log.error("Critical error during simulation for barcode: {} | Error: {}",
                     request.getBarcode(), e.getMessage(), e);
-            publishFailureEvent(request, "ERROR",testOrderResponse.getId());
+//            publishFailureEvent(request, "ERROR",testOrderResponse.getId());
             return CompletableFuture.failedFuture(e);
         }
     }

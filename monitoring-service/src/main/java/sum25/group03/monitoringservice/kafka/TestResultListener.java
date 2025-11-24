@@ -7,7 +7,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
-import sum25.group03.monitoringservice.event.TestResultPublishedEvent;
+import sum25.group03.common.response.events.TestResultPublishedEvent;
 import sum25.group03.monitoringservice.model.RawTestResult;
 import sum25.group03.monitoringservice.service.EventLogService;
 import sum25.group03.monitoringservice.service.KafkaEventPublisher;

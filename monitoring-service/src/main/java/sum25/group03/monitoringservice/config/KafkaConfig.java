@@ -11,7 +11,8 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.FixedBackOff;
-import sum25.group03.monitoringservice.event.TestResultPublishedEvent;
+import sum25.group03.common.response.events.TestResultPublishedEvent;
+
 
 import java.util.HashMap;
 import java.util.Map;

@@ -156,6 +156,18 @@ public class AuthServiceImpl implements AuthService {
                 throw new RuntimeException("First login password change failed: no authenticationResult returned");
             }
 
+            cognitoClient.adminUpdateUserAttributes(AdminUpdateUserAttributesRequest.builder()
+                    .userPoolId(config.getUserPoolId())
+                    .username(cognitoUsername)
+                    .userAttributes(
+                            AttributeType.builder()
+                                    .name("email_verified")
+                                    .value("true")
+                                    .build()
+                    )
+                    .build()
+            );
+
             LoginResponse loginResponse = new LoginResponse();
             loginResponse.setAccessToken(response.authenticationResult().accessToken());
             loginResponse.setIdToken(response.authenticationResult().idToken());

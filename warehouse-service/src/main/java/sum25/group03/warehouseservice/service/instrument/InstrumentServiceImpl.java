@@ -9,14 +9,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.response.events.ConfigEvent;
+import sum25.group03.common.response.events.NewInstrumentEvent;
+import sum25.group03.common.response.events.NewReagentEvent;
 import sum25.group03.warehouseservice.dto.request.AssignConfigAndReagentReq;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
 import sum25.group03.warehouseservice.dto.response.*;
 import sum25.group03.warehouseservice.entity.*;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
-import sum25.group03.warehouseservice.event.ConfigEvent;
-import sum25.group03.warehouseservice.event.NewInstrumentEvent;
-import sum25.group03.warehouseservice.event.NewReagentEvent;
+
 import sum25.group03.warehouseservice.exception.MissingRequiredFieldsException;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.ConfigMapper;
@@ -188,7 +189,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .configEvent(configEvent)
                 .newReagentEvents(reagentEvents)
                 .build();
-        kafkaTemplate.send("config-updates", event);
+        kafkaTemplate.send("new-instrument-events", event);
         log.info("Published Kafka event (update instrument): {}", event);
 
         return InstrumentConfigReagentRes.builder()

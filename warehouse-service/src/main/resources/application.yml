@@ -18,16 +18,16 @@ spring:
 
 
     ## Khanh's Supabase PostgreSQL
-    # url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
-    # username: postgres.utosgzbzcjenqzpruter
-    # password: 123456
-    # driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+    username: postgres.utosgzbzcjenqzpruter
+    password: 123456
+    driver-class-name: org.postgresql.Driver
 
     ## Cuong's Aiven PostgreSQL
-    url: jdbc:postgresql://darkkernel-postgresql-333-darkkernel-aiven.j.aivencloud.com:11868/defaultdb?sslmode=require
-    username: avnadmin
-    password: AVNS_ZPFNWkDP1CZwYC0bULB
-    driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://darkkernel-postgresql-333-darkkernel-aiven.j.aivencloud.com:11868/defaultdb?sslmode=require
+#    username: avnadmin
+#    password: AVNS_ZPFNWkDP1CZwYC0bULB
+#    driver-class-name: org.postgresql.Driver
 
     hikari:
       maximum-pool-size: 5

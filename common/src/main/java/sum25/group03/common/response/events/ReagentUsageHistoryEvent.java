@@ -1,13 +1,10 @@
-package sum25.group03.instrumentservice.event;
+package sum25.group03.common.response.events;
 
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import sum25.group03.instrumentservice.common.InstalledReagentStatus;
-import sum25.group03.instrumentservice.model.Instrument;
 
 import java.io.Serializable;
 import java.time.LocalDate;
