@@ -25,9 +25,15 @@ public class TestResultResponseExportPDFDTO {
     private LocalDateTime createdAt;
     private List<CommentResponseDTO> comments;
 
+    /**
+     * Trả về tất cả comment của TestResult nối bằng ", "
+     */
     public String getCommentTexts() {
         if (comments == null || comments.isEmpty()) return "";
-        return comments.stream().map(CommentResponseDTO::getCommentText).collect(Collectors.joining(", "));
+        return comments.stream()
+                .map(CommentResponseDTO::getCommentText)
+                .filter(c -> c != null && !c.isBlank())
+                .collect(Collectors.joining(", "));
     }
 
 
