@@ -21,7 +21,7 @@ public class TestOrderResponseExportExcelDTO {
     private Long id;
     private String patientName;
     private String gender;
-//    private LocalDate dateOfBirth;
+    private LocalDate dateOfBirth;
     private String phoneNumber;
     private TestOrderStatus status;
     private Long createdBy;

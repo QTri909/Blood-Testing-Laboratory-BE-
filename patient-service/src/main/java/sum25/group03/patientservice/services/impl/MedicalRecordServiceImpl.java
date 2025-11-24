@@ -55,11 +55,11 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     // check if a viewerId belongs to our system or not, if not, throw exception and warn to admin
     private void validateViewerExistence(Long actorId) {
-        boolean isViewerExisted = userSnapshotRepository.existsByExternalUserId(actorId);
-        if (!isViewerExisted) {
-            log.warn("WARN: User with id {} has been found in the system!", actorId);
-            throw new UserNotFoundException("User with id " + actorId + " not found in the system!");
-        }
+//        boolean isViewerExisted = userSnapshotRepository.existsByExternalUserId(actorId);
+//        if (!isViewerExisted) {
+//            log.warn("WARN: User with id {} has been found in the system!", actorId);
+//            throw new UserNotFoundException("User with id " + actorId + " not found in the system!");
+//        }
     }
 
     @Transactional
