@@ -1,16 +1,29 @@
 package sum25.group03.instrumentservice.service.impl;
 
+import com.google.common.reflect.TypeToken;
+import com.nimbusds.jose.shaded.gson.Gson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sum25.group03.instrumentservice.audit.service.AuditLogService;
+import sum25.group03.instrumentservice.controller.response.InstrumentPageResponse;
+import sum25.group03.instrumentservice.controller.response.InstrumentResponse;
+import sum25.group03.instrumentservice.controller.response.RawTestResultPageResponse;
+import sum25.group03.instrumentservice.controller.response.RawTestResultResponse;
 import sum25.group03.instrumentservice.exception.ResourceNotFoundException;
 import sum25.group03.instrumentservice.repository.RawTestResultRepository;
 import sum25.group03.instrumentservice.service.RawTestResultService;
 import sum25.group03.instrumentservice.model.RawTestResult;
 
+import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -72,6 +85,44 @@ public class RawTestResultServiceImpl implements RawTestResultService {
         return rawTestResultRepository.findOldBackedUpResults(cutoffDate);
     }
 
+    @Override
+    public RawTestResultPageResponse getResultFromInstrumentId(Long instrumentId, int page, int size) {
+        int pageNo = 0;
+        if (page > 0) {
+            pageNo = page - 1;
+        }
+        Pageable pageable = PageRequest.of(pageNo, size, Sort.by("createdAt").descending());
+        Page<RawTestResult> testResultPage = rawTestResultRepository.getByInstrumentId(instrumentId, pageable);
+
+        List<RawTestResultResponse> testResultPageResponse = testResultPage.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+
+        RawTestResultPageResponse response = new RawTestResultPageResponse();
+        response.setPageNumber(page);
+        response.setPageSize(size);
+        response.setTotalPages(testResultPage.getTotalPages());
+        response.setTotalElements(testResultPage.getTotalElements());
+        response.setRawTestResults(testResultPageResponse);
+        return response;
+
+    }
+
+    @Override
+    public boolean deleteById(Long resultId) {
+        RawTestResult result = rawTestResultRepository.findById(resultId).orElse(null);
+        if(result == null ) {
+            log.error("Delete failed. RawTestResult not found with ID: {}", resultId);
+            throw new ResourceNotFoundException("RawTestResult not found with ID: " + resultId);
+        }
+        if (isSafeToDelete(result)) {
+            rawTestResultRepository.deleteById(resultId);
+            log.info("Successfully deleted RawTestResult with ID: {}", resultId);
+            return true;
+        }
+        return false;
+    }
+
 
     private void performDelete(RawTestResult result, String deleteType, String ipAddress, String userAgent) {
         Long resultId = result.getResultId();
@@ -114,4 +165,24 @@ public class RawTestResultServiceImpl implements RawTestResultService {
         return (result.getIsSentToMonitoring() != null && result.getIsSentToMonitoring()) ||
                 (result.getIsSynced() != null && result.getIsSynced());
     }
+
+    public static Map<String, Double> convertJsonStringToMap(String jsonString) {
+        Gson gson = new Gson();
+        Type mapType = new TypeToken<Map<String, Double>>() {}.getType();
+        return gson.fromJson(jsonString, mapType);
+    }
+
+    private RawTestResultResponse mapToResponse(RawTestResult rawTestResult) {
+        return RawTestResultResponse.builder()
+                .resultId(rawTestResult.getResultId())
+                .testOrderId(rawTestResult.getTestOrderId())
+                .instrumentId(rawTestResult.getInstrument() != null ? rawTestResult.getInstrument().getId() : null)
+                .rawData(convertJsonStringToMap(rawTestResult.getRawData()))
+                .hl7Message(rawTestResult.getHl7Message())
+                .isSentToMonitoring(rawTestResult.getIsSentToMonitoring())
+                .isSynced(rawTestResult.getIsSynced())
+                .createdAt(rawTestResult.getCreatedAt())
+                .build();
+    }
+
 }

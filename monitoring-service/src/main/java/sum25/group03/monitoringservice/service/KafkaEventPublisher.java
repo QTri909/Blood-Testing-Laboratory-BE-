@@ -8,7 +8,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.KafkaHeaders;
 
 import org.springframework.stereotype.Service;
-import sum25.group03.monitoringservice.event.TestResultPublishedEvent;
+import sum25.group03.common.response.events.TestResultPublishedEvent;
+
 
 @Slf4j
 @Service

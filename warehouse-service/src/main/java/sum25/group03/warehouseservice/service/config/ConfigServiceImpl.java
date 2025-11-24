@@ -9,14 +9,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.response.events.ConfigEvent;
+import sum25.group03.common.response.events.DeleteConfigEvent;
+import sum25.group03.common.response.events.UpdateConfigEvent;
 import sum25.group03.warehouseservice.dto.request.ConfigReq;
 import sum25.group03.warehouseservice.dto.request.UpdateConfigReq;
 import sum25.group03.warehouseservice.dto.response.ConfigRes;
 import sum25.group03.warehouseservice.dto.response.PageRes;
 import sum25.group03.warehouseservice.entity.Configuration;
-import sum25.group03.warehouseservice.event.ConfigEvent;
-import sum25.group03.warehouseservice.event.DeleteConfigEvent;
-import sum25.group03.warehouseservice.event.UpdateConfigEvent;
+
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.ConfigMapper;
 import sum25.group03.warehouseservice.repository.ConfigRepo;

@@ -16,11 +16,15 @@ import sum25.group03.warehouseservice.entity.ReagentInventory;
 import sum25.group03.warehouseservice.entity.Reagents;
 import sum25.group03.warehouseservice.entity.enums.ReagentInventoryStatus;
 import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
+<<<<<<< HEAD
 import sum25.group03.warehouseservice.event.DeleteReagentEvent;
 import sum25.group03.warehouseservice.event.ReagentCreatedEvent;
 import sum25.group03.warehouseservice.exception.DuplicateException;
 import sum25.group03.warehouseservice.exception.InvalidArgumentException;
 import sum25.group03.warehouseservice.exception.MissingRequiredFieldsException;
+=======
+import sum25.group03.common.response.events.DeleteReagentEvent;
+>>>>>>> feature/instrument-service/execute-blood-testing
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.repository.ReagentInventoryRepo;
 import sum25.group03.warehouseservice.repository.ReagentRepo;

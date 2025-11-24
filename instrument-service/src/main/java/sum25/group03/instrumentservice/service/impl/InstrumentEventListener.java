@@ -5,11 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.response.events.DeleteConfigEvent;
+import sum25.group03.common.response.events.NewInstrumentEvent;
+import sum25.group03.common.response.events.UpdateConfigEvent;
 import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.common.InstrumentStatus;
-import sum25.group03.instrumentservice.event.DeleteConfigEvent;
-import sum25.group03.instrumentservice.event.NewInstrumentEvent;
-import sum25.group03.instrumentservice.event.UpdateConfigEvent;
+
 import sum25.group03.instrumentservice.exception.ResourceNotFoundException;
 import sum25.group03.instrumentservice.model.Configuration;
 import sum25.group03.instrumentservice.model.InstalledReagent;
