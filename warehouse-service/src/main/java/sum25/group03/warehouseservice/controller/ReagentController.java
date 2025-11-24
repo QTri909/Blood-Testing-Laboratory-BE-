@@ -83,4 +83,13 @@ public class ReagentController {
                 .message("Reagent created successfully")
                 .build();
     }
+
+    @GetMapping("/instrument/{instrumentId}/usage-history")
+    public ApiResponse<?> getReagentUsageHistoryByInstrument(
+            @PathVariable Long instrumentId,
+            @RequestParam (defaultValue = "0") int page,
+            @RequestParam (defaultValue = "20") int size
+    ) {
+        return ApiResponse.ok(usageService.getReagentUsageHistoryByInstrument(instrumentId, page, size));
+    }
 }

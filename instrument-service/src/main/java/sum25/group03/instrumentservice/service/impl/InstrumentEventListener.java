@@ -3,7 +3,6 @@ package sum25.group03.instrumentservice.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import sum25.group03.common.response.events.DeleteConfigEvent;
 import sum25.group03.common.response.events.NewInstrumentEvent;

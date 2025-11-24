@@ -207,6 +207,17 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
                 .build();
     }
 
+    @Override
+    public List<String> getAllReagentByInstrumentId(Long instrumentId) {
+        List<InstalledReagent> reagents = installedReagentRepository.findByInstrumentIdAndStatusIsNot(
+                instrumentId,
+                InstalledReagentStatus.REMOVED
+        );
+        return reagents.stream()
+                .map(InstalledReagent::getReagentName)
+                .toList();
+    }
+
     private void validateStatusTransition(InstalledReagentStatus currentStatus, InstalledReagentStatus newStatus) {
         log.info("Validating status transition from {} to {}", currentStatus, newStatus);
 

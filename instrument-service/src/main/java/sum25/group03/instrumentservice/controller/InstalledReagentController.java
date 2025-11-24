@@ -15,6 +15,9 @@ import sum25.group03.instrumentservice.controller.response.UpdateReagentStatusRe
 import sum25.group03.instrumentservice.service.InstalledReagentService;
 import sum25.group03.instrumentservice.service.InstrumentService;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/instruments/reagents")
 @RequiredArgsConstructor
@@ -76,5 +79,22 @@ public class InstalledReagentController {
             @Valid @RequestBody UpdateReagentStatusRequest request) {
         UpdateReagentStatusResponse response = installedReagentService.updateReagentStatus(request);
         return ResponseEntity.ok(response);
+    }
+
+    //manager,admin, lab,service user
+    @GetMapping("/names/{instrumentId}")
+    @Operation(
+            summary = "Get all reagent names by instrument ID",
+            description = "Retrieves a list of all reagent names installed on a specific instrument.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Reagent names retrieved successfully",
+                            content = @Content(schema = @Schema(implementation = String.class))),
+                    @ApiResponse(responseCode = "404", description = "Instrument not found")
+            }
+    )
+    public ResponseEntity<?> getAllReagentNamesByInstrumentId(@PathVariable Long instrumentId) {
+        List<String> response = installedReagentService.getAllReagentByInstrumentId(instrumentId);
+        Map<String, List<String>> result = Map.of("reagentNames", response);
+        return ResponseEntity.ok(result);
     }
 }
