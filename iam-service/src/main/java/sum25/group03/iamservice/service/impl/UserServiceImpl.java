@@ -337,6 +337,13 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
 
+        boolean isAdmin = user.getUserRoles().stream()
+                .anyMatch(ur -> "ADMIN".equalsIgnoreCase(ur.getRole().getRoleCode()));
+
+        if (isAdmin) {
+            throw new RuntimeException("Cannot delete user with ADMIN role");
+        }
+
 
         userRoleRepository.deleteByUserId(user.getId());
         userRepository.delete(user);
@@ -350,6 +357,7 @@ public class UserServiceImpl implements UserService {
                 "system",
                 "Deleted user with email: " + user.getEmail()
         );
+
         try {
             UserDeletedEvent event = UserDeletedEvent.builder()
                     .id(user.getId())
@@ -374,8 +382,8 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         kafkaProducerService.sendMonitoringLog(log);
-
     }
+
 
     @Override
     public Page<UserResponse> getAllPatients(Pageable pageable) {
