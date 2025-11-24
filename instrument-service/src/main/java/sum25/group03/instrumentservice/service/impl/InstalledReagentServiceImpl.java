@@ -27,6 +27,7 @@ import sum25.group03.instrumentservice.service.InstalledReagentService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -205,6 +206,20 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
                 .message("Reagent status updated successfully from " + previousStatus + " to " + request.getNewStatus())
                 .success(true)
                 .build();
+    }
+
+    @Override
+    public Map<Long, String> getAllReagentByInstrumentId(Long instrumentId) {
+        List<InstalledReagent> reagents = installedReagentRepository.findByInstrumentIdAndStatusIsNot(
+                instrumentId,
+                InstalledReagentStatus.REMOVED
+        );
+
+        // map id reagent with its name
+        Map<Long, String> reagentIdNameMap = reagents.stream()
+                .collect(Collectors.toMap(InstalledReagent::getReagentId, InstalledReagent::getReagentName, (name1, name2) -> name1));
+
+        return reagentIdNameMap;
     }
 
     private void validateStatusTransition(InstalledReagentStatus currentStatus, InstalledReagentStatus newStatus) {

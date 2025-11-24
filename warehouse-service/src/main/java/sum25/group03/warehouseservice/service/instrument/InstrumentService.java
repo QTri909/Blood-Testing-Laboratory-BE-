@@ -2,10 +2,7 @@ package sum25.group03.warehouseservice.service.instrument;
 
 import sum25.group03.warehouseservice.dto.request.AssignConfigAndReagentReq;
 import sum25.group03.warehouseservice.dto.request.InstrumentReq;
-import sum25.group03.warehouseservice.dto.response.InstrumentConfigReagentRes;
-import sum25.group03.warehouseservice.dto.response.InstrumentResponse;
-import sum25.group03.warehouseservice.dto.response.InstrumentStatusResponse;
-import sum25.group03.warehouseservice.dto.response.PageRes;
+import sum25.group03.warehouseservice.dto.response.*;
 
 import java.util.List;
 
