@@ -579,6 +579,18 @@ public class UserServiceImpl implements UserService {
 
         return UserResponse.builder()
                 .id(user.getId())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .gender(user.getGender())
+                .dateOfBirth(user.getDateOfBirth())
+                .identityNumber(user.getIdentityNumber())
+                .address(user.getAddress())
+                .roles(
+                        user.getUserRoles().stream()
+                                .map(ur -> ur.getRole().getRoleCode())
+                                .collect(Collectors.toSet())
+                )
                 .build();
     }
 
