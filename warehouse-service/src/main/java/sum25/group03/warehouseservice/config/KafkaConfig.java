@@ -18,14 +18,11 @@ import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.FixedBackOff;
-<<<<<<< HEAD
 import sum25.group03.warehouseservice.event.*;
-=======
 import sum25.group03.common.response.events.InstrumentModeChangedEvent;
 import sum25.group03.common.response.events.ReagentInstalledEvent;
 import sum25.group03.common.response.events.ReagentUsageHistoryEvent;
 import sum25.group03.common.response.events.UpdateExpiryReagent;
->>>>>>> feature/instrument-service/execute-blood-testing
 
 
 import java.util.HashMap;
