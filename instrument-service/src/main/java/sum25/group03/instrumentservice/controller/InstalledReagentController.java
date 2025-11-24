@@ -92,9 +92,8 @@ public class InstalledReagentController {
                     @ApiResponse(responseCode = "404", description = "Instrument not found")
             }
     )
-    public ResponseEntity<?> getAllReagentNamesByInstrumentId(@PathVariable Long instrumentId) {
-        List<String> response = installedReagentService.getAllReagentByInstrumentId(instrumentId);
-        Map<String, List<String>> result = Map.of("reagentNames", response);
-        return ResponseEntity.ok(result);
+    public sum25.group03.common.response.ApiResponse<?> getAllReagentNamesByInstrumentId(@PathVariable Long instrumentId) {
+        Map<Long, String> response = installedReagentService.getAllReagentByInstrumentId(instrumentId);
+        return sum25.group03.common.response.ApiResponse.add("Reagent names retrieved successfully", response);
     }
 }
