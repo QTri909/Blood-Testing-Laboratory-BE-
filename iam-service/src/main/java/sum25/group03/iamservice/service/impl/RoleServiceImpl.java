@@ -359,4 +359,17 @@ public class RoleServiceImpl implements RoleService {
                         .build()
         );
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Set<String> getPrivilegesByRoleId(Long roleId) {
+
+        Role role = roleRepository.findById(roleId)
+                .orElseThrow(() -> new RuntimeException("Role not found with id: " + roleId));
+
+        return role.getRolePrivileges()
+                .stream()
+                .map(rp -> rp.getPrivilege().getPrivilegeName())
+                .collect(Collectors.toSet());
+    }
 }
