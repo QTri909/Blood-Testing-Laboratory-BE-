@@ -35,6 +35,7 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     private final PayPalService payPalService;
     private final PaymentCacheServiceImpl paymentCacheService;
     private final PaymentTransactionMapper paymentTransactionMapper;
+    private final KafkaPaymentResultProducer kafkaPaymentResultProducer;
 
     @Override
     @Transactional
@@ -65,8 +66,14 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
             }
 
             request.setStatus(PaymentRequestStatus.SUCCESS);
-            paymentRequestRepository.save(request);
-            //write transaction
+            request = paymentRequestRepository.save(request);
+
+            kafkaPaymentResultProducer.sendPaymentResult(
+                    request.getOrderCode(),
+                    PaymentRequestStatus.SUCCESS.name(),
+                    ""
+            );
+
             PaymentTransaction transaction = PaymentTransaction.builder()
                     .paymentRequest(request)
                     .gatewayTransactionId(paypalOrderId)
@@ -118,6 +125,15 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
             request.setStatus(PaymentRequestStatus.FAILED);
             paymentRequestRepository.save(request);
 
+            // Send FAILED message to Kafka
+            /*
+            kafkaPaymentResultProducer.sendPaymentResult(
+                    request.getOrderCode(),
+                    PaymentRequestStatus.FAILED.name(),
+                    reason != null ? reason : "Payment failed"
+            );
+            */
+
             Map<String, Object> failedResponse = Map.of("error", reason);
 
             PaymentTransaction transaction = PaymentTransaction.builder()
@@ -142,7 +158,6 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
 
     @Override
     public Page<PaymentTransactionRes> getAllTransactionsByPaymentRequestId(RequestTransactionsByRequestId request) {
-
         int page = request.page();
         int size = request.size();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
@@ -151,4 +166,3 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
         return paymentTransactionMapper.toTransactionResDTOPage(transactionsPage);
     }
 }
-
