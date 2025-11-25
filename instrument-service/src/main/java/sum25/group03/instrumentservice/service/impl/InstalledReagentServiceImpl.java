@@ -225,7 +225,7 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
 
     @Override
     public void deleteReagents(Long instrumentId, Long reagentId) {
-        InstalledReagent reagent = installedReagentRepository.findByReagentIdAndInstrumentId(reagentId,instrumentId)
+        InstalledReagent reagent = installedReagentRepository.findByReagentIdAndInstrumentIdAndStatus(reagentId,instrumentId, InstalledReagentStatus.AVAILABLE)
                 .orElseThrow(() -> new ResourceNotFoundException("Installed reagent not found with id: " + reagentId));
         reagent.setStatus(InstalledReagentStatus.REMOVED);
         installedReagentRepository.save(reagent);
