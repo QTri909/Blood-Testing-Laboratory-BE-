@@ -13,5 +13,5 @@ public interface InstalledReagentService {
                                                           Integer instrumentId, int page, int size);
     UpdateReagentStatusResponse updateReagentStatus(UpdateReagentStatusRequest request);
     Map<Long, String> getAllReagentByInstrumentId(Long instrumentId);
-    void deleteReagents(Long reagentId);
+    void deleteReagents(Long instrumentId, Long reagentId);
 }

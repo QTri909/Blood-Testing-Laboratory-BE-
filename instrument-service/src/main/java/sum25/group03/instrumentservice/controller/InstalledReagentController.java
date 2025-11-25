@@ -97,7 +97,7 @@ public class InstalledReagentController {
         return sum25.group03.common.response.ApiResponse.add("Reagent names retrieved successfully", response);
     }
 
-    @DeleteMapping("/delete/{reagentId}")
+    @DeleteMapping("/delete")
     @Operation(
             summary = "Delete installed reagents by reagent ID",
             description = "Deletes all installed reagents associated with the specified reagent ID.",
@@ -105,8 +105,8 @@ public class InstalledReagentController {
                     @ApiResponse(responseCode = "200", description = "Installed reagents deleted successfully"),
                     @ApiResponse(responseCode = "404", description = "Reagent not found")
             })
-    public ResponseEntity<?> deleteInstalledReagentsByReagentId(@PathVariable Long reagentId) {
-        installedReagentService.deleteReagents(reagentId);
+    public ResponseEntity<?> deleteInstalledReagentsByReagen( @RequestParam Long instrumentId, @RequestParam Long reagentId) {
+        installedReagentService.deleteReagents(instrumentId,reagentId);
         return ResponseEntity.ok().build();
         }
     

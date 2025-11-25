@@ -309,5 +309,14 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .toList();
     }
 
+    @Override
+    public void removeConfigFromInstrument(Long instrumentId) {
+        Instrument instrument = instrumentRepo.findById(instrumentId)
+                .orElseThrow(() -> new NotFoundException("Instrument not found with id: " + instrumentId));
+        instrument.setConfiguration(null);
+        instrumentRepo.save(instrument);
+        log.info("Removed configuration from instrument id: {}", instrumentId);
+    }
+
 
 }

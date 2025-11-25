@@ -54,7 +54,7 @@ public class InstrumentEventListener {
                             .reagentId(reagentEvent.getReagentId())
                             .reagentName(reagentEvent.getReagentName())
                             .instrument(newInstrument)
-                            .status(InstalledReagentStatus.EMPTY)
+                            .status(InstalledReagentStatus.AVAILABLE)
                             .build())
                     .toList();
         }

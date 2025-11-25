@@ -22,6 +22,7 @@ import sum25.group03.instrumentservice.controller.response.UpdateReagentStatusRe
 import sum25.group03.instrumentservice.exception.InstrumentModeChangeException;
 import sum25.group03.instrumentservice.exception.ResourceNotFoundException;
 import sum25.group03.instrumentservice.model.InstalledReagent;
+import sum25.group03.instrumentservice.model.Instrument;
 import sum25.group03.instrumentservice.repository.InstalledReagentRepository;
 import sum25.group03.instrumentservice.service.InstalledReagentService;
 
@@ -223,8 +224,8 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
     }
 
     @Override
-    public void deleteReagents(Long reagentId) {
-        InstalledReagent reagent = installedReagentRepository.findById(reagentId)
+    public void deleteReagents(Long instrumentId, Long reagentId) {
+        InstalledReagent reagent = installedReagentRepository.findByReagentIdAndInstrumentId(reagentId,instrumentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Installed reagent not found with id: " + reagentId));
         reagent.setStatus(InstalledReagentStatus.REMOVED);
         installedReagentRepository.save(reagent);

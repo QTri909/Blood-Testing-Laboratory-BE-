@@ -32,6 +32,7 @@ public class Instrument {
     @JoinColumn(name = "configuration_id")
     private Configuration configuration;
 
-    @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL)
     private List<InstalledReagent> installedReagents;
+
 }
