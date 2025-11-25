@@ -71,7 +71,7 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
             kafkaPaymentResultProducer.sendPaymentResult(
                     request.getOrderCode(),
                     PaymentRequestStatus.SUCCESS.name(),
-                    "Payment completed successfully"
+                    ""
             );
 
             PaymentTransaction transaction = PaymentTransaction.builder()
@@ -126,11 +126,13 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
             paymentRequestRepository.save(request);
 
             // Send FAILED message to Kafka
+            /*
             kafkaPaymentResultProducer.sendPaymentResult(
                     request.getOrderCode(),
                     PaymentRequestStatus.FAILED.name(),
                     reason != null ? reason : "Payment failed"
             );
+            */
 
             Map<String, Object> failedResponse = Map.of("error", reason);
 
