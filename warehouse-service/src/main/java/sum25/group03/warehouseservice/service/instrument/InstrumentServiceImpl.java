@@ -72,6 +72,9 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .map(r -> NewReagentEvent.builder()
                         .reagentId(r.getReagentId())
                         .reagentName(r.getReagentName())
+                        .unit(r.getUnit().getUnit())
+                        .usageMin(r.getUsageMin())
+                        .usageMax(r.getUsageMax())
                         .build())
                 .toList();
     }

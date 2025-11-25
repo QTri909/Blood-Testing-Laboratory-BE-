@@ -12,5 +12,7 @@ import lombok.NoArgsConstructor;
 public class NewReagentEvent {
     private Long reagentId;
     private String reagentName;
-
+    private String unit;
+    private Double usageMax;
+    private Double usageMin;
 }

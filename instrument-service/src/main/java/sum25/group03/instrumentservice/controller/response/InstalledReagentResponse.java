@@ -22,4 +22,6 @@ public class InstalledReagentResponse {
     private String reagentName;
     private String lotNumber;
     private String unit;
+    private Double usageMax;
+    private Double usageMin;
 }

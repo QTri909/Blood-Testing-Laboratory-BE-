@@ -370,10 +370,12 @@ public class InstrumentServiceImpl implements InstrumentService {
                                 .lotReagentId(reagent.getLotReagentId())
                                 .lotNumber(reagent.getLotNumber())
                                 .unit(reagent.getUnit())
+                                .usageMax(reagent.getUsageMax())
+                                .usageMin(reagent.getUsageMin())
                                 .build())
                         .collect(Collectors.toList());
-
         Configuration config = instrument.getConfiguration();
+        assert config != null;
         return InstrumentResponse.builder()
                 .id(instrument.getId())
                 .instrumentName(instrument.getInstrumentName())

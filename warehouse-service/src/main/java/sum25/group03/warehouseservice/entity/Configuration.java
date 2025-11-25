@@ -41,7 +41,7 @@ public class Configuration {
     @Column(name = "firmware_version", nullable = false)
     private String firmwareVersion;
 
-    @Column(name = "use_per_run", nullable = false)
+    @Column(name = "use_per_run", nullable = true)
     private int usePerRun;
 
     @Column(name = "active", nullable = false)

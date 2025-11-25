@@ -44,7 +44,6 @@ public class InstrumentEventListener {
                     .firmwareVersion(newInstrumentEvent.getConfigEvent().getFirmwareVersion())
                     .mixingSpeed(newInstrumentEvent.getConfigEvent().getMixingSpeed())
                     .supportedTests(newInstrumentEvent.getConfigEvent().getSupportedTests())
-                    .usePerRun(newInstrumentEvent.getConfigEvent().getUsePerRun())
                     .active(true)
                     .build();
         }
@@ -53,6 +52,9 @@ public class InstrumentEventListener {
                     .map(reagentEvent -> InstalledReagent.builder()
                             .reagentId(reagentEvent.getReagentId())
                             .reagentName(reagentEvent.getReagentName())
+                            .unit(reagentEvent.getUnit())
+                            .usageMin(reagentEvent.getUsageMin())
+                            .usageMax(reagentEvent.getUsageMax())
                             .instrument(newInstrument)
                             .status(InstalledReagentStatus.AVAILABLE)
                             .build())
@@ -76,8 +78,6 @@ public class InstrumentEventListener {
         updatedConfig.setCommunicationProtocol(config.getConfigEvent().getCommunicationProtocol());
         updatedConfig.setMixingSpeed(config.getConfigEvent().getMixingSpeed());
         updatedConfig.setFirmwareVersion(config.getConfigEvent().getFirmwareVersion());
-        updatedConfig.setUsePerRun(config.getConfigEvent().getUsePerRun());
-
         instrument.setConfiguration(updatedConfig);
         instrumentRepository.save(instrument);
         log.info("Configuration for Instrument {} has been updated", instrument.getId());
