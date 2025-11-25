@@ -12,4 +12,5 @@ public interface InstalledReagentService {
                                                           Integer instrumentId, int page, int size);
     UpdateReagentStatusResponse updateReagentStatus(UpdateReagentStatusRequest request);
     List<String> getAllReagentByInstrumentId(Long instrumentId);
+    void deleteReagents(Long reagentId);
 }

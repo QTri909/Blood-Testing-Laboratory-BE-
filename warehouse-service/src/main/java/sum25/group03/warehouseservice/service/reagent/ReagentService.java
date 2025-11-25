@@ -20,4 +20,5 @@ public interface ReagentService {
     ReagentDetailRes getReagentDetail(Long reagentId);
     //add reagents
     ReagentRes createReagent(ReagentReq req);
+    ReagentRes getReagentById(Long reagentId);
 }

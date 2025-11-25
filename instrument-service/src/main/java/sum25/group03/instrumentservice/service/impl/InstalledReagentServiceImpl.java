@@ -218,6 +218,15 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
                 .toList();
     }
 
+    @Override
+    public void deleteReagents(Long reagentId) {
+        InstalledReagent reagent = installedReagentRepository.findById(reagentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Installed reagent not found with id: " + reagentId));
+        reagent.setStatus(InstalledReagentStatus.REMOVED);
+        installedReagentRepository.save(reagent);
+        log.info("Installed reagent with id: {} has been marked as REMOVED", reagentId);
+    }
+
     private void validateStatusTransition(InstalledReagentStatus currentStatus, InstalledReagentStatus newStatus) {
         log.info("Validating status transition from {} to {}", currentStatus, newStatus);
 

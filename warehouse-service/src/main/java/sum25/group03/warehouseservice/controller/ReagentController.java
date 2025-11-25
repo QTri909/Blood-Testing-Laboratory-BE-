@@ -92,4 +92,10 @@ public class ReagentController {
     ) {
         return ApiResponse.ok(usageService.getReagentUsageHistoryByInstrument(instrumentId, page, size));
     }
+    @GetMapping("/reagent/{reagentId}")
+    public ApiResponse<?> getReagentById(
+            @PathVariable Long reagentId
+    ) {
+        return ApiResponse.ok(reagentService.getReagentById(reagentId));
+    }
 }

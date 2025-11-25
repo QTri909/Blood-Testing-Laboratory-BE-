@@ -348,4 +348,20 @@ public class ReagentServiceImpl implements ReagentService {
                 .build();
     }
 
+    @Override
+    public ReagentRes getReagentById(Long reagentId) {
+        Reagents reagent = reagentRepo.findById(reagentId)
+                .orElseThrow(() -> new NotFoundException("Reagent not found with id: " + reagentId));
+        ReagentRes res = ReagentRes.builder()
+                .reagentId(reagent.getReagentId())
+                .reagentName(reagent.getReagentName())
+                .catalogNumber(reagent.getCatalogNumber())
+                .casNumber(reagent.getCasNumber())
+                .unit(reagent.getUnit().getUnit())
+                .storageConditions(reagent.getStorageConditions())
+                .createdAt(reagent.getCreatedAt())
+                .build();
+        return res;
+    }
+
 }

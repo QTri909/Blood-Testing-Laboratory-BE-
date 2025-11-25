@@ -97,4 +97,18 @@ public class InstalledReagentController {
         Map<String, List<String>> result = Map.of("reagentNames", response);
         return ResponseEntity.ok(result);
     }
+
+    @DeleteMapping("/delete/{reagentId}")
+    @Operation(
+            summary = "Delete installed reagents by reagent ID",
+            description = "Deletes all installed reagents associated with the specified reagent ID.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Installed reagents deleted successfully"),
+                    @ApiResponse(responseCode = "404", description = "Reagent not found")
+            })
+    public ResponseEntity<?> deleteInstalledReagentsByReagentId(@PathVariable Long reagentId) {
+        installedReagentService.deleteReagents(reagentId);
+        return ResponseEntity.ok().build();
+        }
+    
 }
