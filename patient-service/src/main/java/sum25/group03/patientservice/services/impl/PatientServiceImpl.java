@@ -10,6 +10,7 @@ import sum25.group03.patientservice.dtos.response.PatientResponseDTO;
 import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
 import sum25.group03.patientservice.enums.ActionTypeFeatures;
+import sum25.group03.patientservice.enums.UserSnapshotStatus;
 import sum25.group03.patientservice.exception.user.snapshot.UserNotFoundException;
 import sum25.group03.patientservice.feign.IAMFeignClient;
 import sum25.group03.patientservice.feign.dtos.FeignPatientResponseWrapper;
@@ -65,6 +66,19 @@ public class PatientServiceImpl implements PatientService {
         String role = "\"PATIENT\"";
         Page<UserSnapshotEntity> patientEntities = userSnapshotRepository
                 .findByRolesContaining(role, pageable);
+
+        // debug:
+        return userSnapshotMapper.toResponsePage(patientEntities);
+    }
+
+    @Override
+    public Page<UserSnapshotResponse> getAllExistingPatientsWith(Integer size, Integer page) {
+
+        // find all patients by role:
+        Pageable pageable = PageRequest.of(page, size);
+        String role = "\"PATIENT\"";
+        Page<UserSnapshotEntity> patientEntities = userSnapshotRepository
+                .findByRolesContainingAndStatus(role, UserSnapshotStatus.ACTIVE.name(), pageable);
 
         // debug:
         return userSnapshotMapper.toResponsePage(patientEntities);
