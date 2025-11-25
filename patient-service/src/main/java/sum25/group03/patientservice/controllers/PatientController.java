@@ -32,6 +32,15 @@ public class PatientController {
         return ApiResponse.ok(patientService.getAllPatientsWith(size, page));
     }
 
+    @GetMapping("exists")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Page<UserSnapshotResponse>> getAllExistingPatients( // not 'DELETED'
+            @RequestParam(name = "size", defaultValue = DEFAULT_SIZE) Integer size,
+            @RequestParam(name = "page", defaultValue = DEFAULT_PAGE) Integer page
+    ) {
+        return ApiResponse.ok(patientService.getAllExistingPatientsWith(size, page));
+    }
+
     @GetMapping("iam")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<List<PatientResponseDTO>> getAllPatientsIAM(

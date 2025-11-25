@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 import sum25.group03.common.response.ApiResponse;
-import sum25.group03.payment_service.services.impl.KafkaPaymentResultProducer;
 import sum25.group03.payment_service.services.interfaces.PayPalService;
 import sum25.group03.payment_service.services.interfaces.PaymentTransactionService;
 
@@ -25,7 +24,6 @@ public class PayPalController {
 
     private final PayPalService payPalService;
     private final PaymentTransactionService paymentTransactionService;
-    private final KafkaPaymentResultProducer kafkaPaymentResultProducer;
 
     @Value("${frontend.url}")
     private String frontEndUrl;
@@ -53,10 +51,6 @@ public class PayPalController {
                     orderCode = firstUnit.get("reference_id").getAsString();
                 }
             }
-
-            // 2.5. send message to Kafka about payment result
-            kafkaPaymentResultProducer.sendPaymentResult(orderCode, "", status);
-
             // 3. build redirect URL for frontend
             String redirectUrl = String.format(
                     "%s/payment/result?status=%s&order_code=%s&transaction_id=%s",

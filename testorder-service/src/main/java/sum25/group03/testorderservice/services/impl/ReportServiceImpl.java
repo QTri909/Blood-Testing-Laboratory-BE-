@@ -23,6 +23,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -42,14 +45,13 @@ public class ReportServiceImpl implements ReportService {
             throw new RuntimeException("Cannot export PDF for pending test order");
         }
 
-        // Concatenate TestOrder comments
-        String orderComments = order.getComments() != null
-                ? order.getComments().stream()
+        // 1. Lấy comment của TestOrder thôi
+        String orderComments = Optional.ofNullable(order.getComments())
+                .orElse(List.of())
+                .stream()
                 .map(Comment::getCommentText)
-                .toList().stream()
-                .reduce((c1, c2) -> c1 + ", " + c2)
-                .orElse("")
-                : "";
+                .filter(c -> c != null && !c.isBlank())
+                .collect(Collectors.joining(", "));
 
 
         //mook data patientid=1001
@@ -72,8 +74,9 @@ public class ReportServiceImpl implements ReportService {
                         .flagStatus(r.getFlagStatus())
                         .status(r.getStatus())
                         .createdAt(r.getCreatedAt())
-                        .comments(r.getComments() != null
-                                ? r.getComments().stream()
+                        .comments(Optional.ofNullable(r.getComments())
+                                .orElse(List.of())
+                                .stream()
                                 .map(c -> CommentResponseDTO.builder()
                                         .id(c.getId())
                                         .testOrderId(c.getTestOrder() != null ? c.getTestOrder().getId() : null)
@@ -84,9 +87,9 @@ public class ReportServiceImpl implements ReportService {
                                         .updatedAt(c.getUpdatedAt())
                                         .status(c.getStatus())
                                         .build())
-                                .toList()
-                                : List.of()
-                        )
+                                .toList())
+//                                : List.of()
+
                         .build()
         ).toList();
 
