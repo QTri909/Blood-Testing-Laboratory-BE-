@@ -53,9 +53,12 @@ public class InstrumentEventListener {
             Instrument cloneFromInstrument = instrumentRepository.findById(newInstrumentEvent.getCloneFromInstrumentId())
                     .orElseThrow(() -> new ResourceNotFoundException("Instrument not found with ID: " + newInstrumentEvent.getCloneFromInstrumentId()));
             installedReagents = cloneFromInstrument.getInstalledReagents().stream()
+                    .filter(r -> InstalledReagentStatus.AVAILABLE.equals(r.getStatus()))
                     .map(reagent -> InstalledReagent.builder()
                             .reagentName(reagent.getReagentName())
-                            .lotNumber(reagent.getLotNumber())
+                            .reagentId(reagent.getReagentId())
+                            .lotNumber(reagent.getLotNumber()!=null ? reagent.getLotNumber() : "")
+                            .instrument(newInstrument)
                             .unit(reagent.getUnit())
                             .usageMin(reagent.getUsageMin())
                             .usageMax(reagent.getUsageMax())
