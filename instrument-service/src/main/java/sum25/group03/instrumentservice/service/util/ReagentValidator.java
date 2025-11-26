@@ -18,19 +18,6 @@ public class ReagentValidator {
             List<ReagentResponse> reagentResponses
     ) {
 
-        System.out.println("=== Installed Reagents ===");
-        if (installedReagents != null) {
-            installedReagents.forEach(r ->
-                    System.out.printf("- %s | Status=%s | Volume=%s | Min=%s | Max=%s%n",
-                            r.getReagentName(), r.getStatus(), r.getCurrentVolume(), r.getUsageMin(), r.getUsageMax()));
-        }
-
-        System.out.println("=== Reagent Responses ===");
-        reagentResponses.forEach(r ->
-                System.out.printf("- %s | UsageMax=%.2f%n",
-                        r.getReagentName(), r.getUsageMax()));
-
-
         // ---------------------------------------------------------
         // 1. If no installed reagents → fail
         // ---------------------------------------------------------
@@ -40,49 +27,18 @@ public class ReagentValidator {
         }
 
         // ---------------------------------------------------------
-        // 2. Build map for fast lookup by reagent name
-        // ---------------------------------------------------------
-        Map<String, InstalledReagent> installedMap =
-                installedReagents.stream()
-                        .collect(Collectors.toMap(
-                                InstalledReagent::getReagentName,
-                                r -> r
-                        ));
-
-        // ---------------------------------------------------------
-        // 3. For each reagent response → check installed reagent
-        //    - installed must exist
-        //    - status must NOT be EXPIRED, QUARANTINED, REMOVED
-        //    - currentVolume must be non-null and within [usageMin, usageMax]
-        // ---------------------------------------------------------
-        for (ReagentResponse rr : reagentResponses) {
-            String name = rr.getReagentName();
-
-            InstalledReagent installed = installedMap.get(name);
-
-            if (installed == null) {
-                System.out.printf("[FAIL] Reagent '%s' not installed.%n", name);
-                return false;
-            }
-
-            InstalledReagentStatus st = installed.getStatus();
-            if (st == InstalledReagentStatus.EXPIRED ||
-                    st == InstalledReagentStatus.QUARANTINED ||
-                    st == InstalledReagentStatus.REMOVED) {
-
-                System.out.printf(
-                        "[FAIL] Reagent '%s' is in invalid status: %s%n",
-                        name, st);
-
-                return false;
-            }
-
+        for(InstalledReagent installed : installedReagents){
+            String name = installed.getReagentName();
             Double current = installed.getCurrentVolume();
             Double min = installed.getUsageMin();
             Double max = installed.getUsageMax();
-
             if (current == null) {
                 System.out.printf("[FAIL] Reagent '%s' current volume is null.%n", name);
+                return false;
+            }
+
+            if(installed.getStatus() == InstalledReagentStatus.EXPIRED || installed.getStatus() == InstalledReagentStatus.REMOVED){
+                System.out.println("[FAIL] Reagent is expired or removed." + name);
                 return false;
             }
 
@@ -90,7 +46,6 @@ public class ReagentValidator {
                 System.out.printf("[FAIL] Reagent '%s' has invalid usage bounds: min=%s max=%s%n", name, min, max);
                 return false;
             }
-
             if (current < min || current > max) {
                 System.out.printf(
                         "[FAIL] Reagent '%s' volume out of allowed range. Current=%.2f, Allowed=[%.2f..%.2f]%n",
@@ -98,7 +53,6 @@ public class ReagentValidator {
                 return false;
             }
         }
-
         // All checks passed
         System.out.println("[SUCCESS] All reagents valid.");
         return true;
