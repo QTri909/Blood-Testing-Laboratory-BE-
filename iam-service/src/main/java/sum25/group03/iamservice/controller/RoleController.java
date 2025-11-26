@@ -6,16 +6,19 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.iamservice.dto.request.RoleCreateRequest;
+import sum25.group03.iamservice.dto.request.RoleUpdateRequest;
 import sum25.group03.iamservice.dto.response.PrivilegeResponse;
 import sum25.group03.iamservice.dto.response.RoleResponse;
 import sum25.group03.iamservice.service.Interface.PrivilegeService;
 import sum25.group03.iamservice.service.Interface.RoleService;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/v1/roles")
@@ -36,16 +39,17 @@ public class RoleController {
                 .build();
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ASSIGN_PRIVILEGE')")
-    @PutMapping("/{id}/permissions")
+    @PreAuthorize("hasAuthority('ROLE_UPDATE')")
+    @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ApiResponse<RoleResponse> updateRolePermissions(
+    public ApiResponse<RoleResponse> updateRole(
             @PathVariable Long id,
-            @RequestBody List<Long> privilegeIds) {
+            @RequestBody RoleUpdateRequest request) {
 
-        RoleResponse updatedRole = roleService.updateRolePermissions(id, privilegeIds);
+        RoleResponse updatedRole = roleService.updateRole(id, request);
+
         return ApiResponse.data(updatedRole)
-                .message("Role privileges updated successfully")
+                .message("Role updated successfully")
                 .build();
     }
 
@@ -86,6 +90,18 @@ public class RoleController {
         Page<PrivilegeResponse> data = privilegeService.getAllPrivileges(pageable);
 
         return ApiResponse.data(data)
+                .message("Privileges retrieved successfully")
+                .build();
+    }
+
+    @PreAuthorize("hasAuthority('ROLE_VIEW')")
+    @GetMapping("/{roleId}/privileges")
+    @ResponseStatus(HttpStatus.OK)
+    public ApiResponse<Set<String>> getPrivilegesByRole(@PathVariable Long roleId) {
+
+        Set<String> privileges = roleService.getPrivilegesByRoleId(roleId);
+
+        return ApiResponse.data(privileges)
                 .message("Privileges retrieved successfully")
                 .build();
     }

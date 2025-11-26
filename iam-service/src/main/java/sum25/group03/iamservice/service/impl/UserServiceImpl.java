@@ -337,6 +337,13 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
 
+        boolean isAdmin = user.getUserRoles().stream()
+                .anyMatch(ur -> "ADMIN".equalsIgnoreCase(ur.getRole().getRoleCode()));
+
+        if (isAdmin) {
+            throw new RuntimeException("Cannot delete user with ADMIN role");
+        }
+
 
         userRoleRepository.deleteByUserId(user.getId());
         userRepository.delete(user);
@@ -350,6 +357,7 @@ public class UserServiceImpl implements UserService {
                 "system",
                 "Deleted user with email: " + user.getEmail()
         );
+
         try {
             UserDeletedEvent event = UserDeletedEvent.builder()
                     .id(user.getId())
@@ -374,8 +382,8 @@ public class UserServiceImpl implements UserService {
                 .build();
 
         kafkaProducerService.sendMonitoringLog(log);
-
     }
+
 
     @Override
     public Page<UserResponse> getAllPatients(Pageable pageable) {
@@ -431,7 +439,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {
-        Page<User> usersPage = userRepository.findAll(pageable);
+        Page<User> usersPage = userRepository.findUsersNotHavingRole("PATIENT", pageable);
+
+
         List<UserResponse> responses = usersPage.getContent().stream()
                 .map(user -> UserResponse.builder()
                         .id(user.getId())
@@ -443,8 +453,7 @@ public class UserServiceImpl implements UserService {
                         .dateOfBirth(user.getDateOfBirth())
                         .identityNumber(user.getIdentityNumber())
                         .roles(
-                                user.getUserRoles()
-                                        .stream()
+                                user.getUserRoles().stream()
                                         .map(ur -> ur.getRole().getRoleCode())
                                         .collect(Collectors.toSet())
                         )

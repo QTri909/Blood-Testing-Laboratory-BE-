@@ -10,6 +10,7 @@ import java.util.List;
 public interface PatientService {
     List<PatientResponseDTO> getAllIAMPatientsWith(Integer size, Integer page);
     Page<UserSnapshotResponse> getAllPatientsWith(Integer size, Integer page);
+    Page<UserSnapshotResponse> getAllExistingPatientsWith(Integer size, Integer page);
 
     UserSnapshotResponse getPatientByExternalUserId(Long patientId, Long viewerId);
 

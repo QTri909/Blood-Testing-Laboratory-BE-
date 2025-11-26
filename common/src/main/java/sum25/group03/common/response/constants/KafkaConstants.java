@@ -9,4 +9,7 @@ public class KafkaConstants {
     public static final String USER_CREATED_TOPIC = "iam.user.created";
     public static final String USER_UPDATED_TOPIC = "iam.user.updated";
     public static final String USER_DELETED_TOPIC = "iam.user.deleted";
+
+    // monitoring topics
+    public static final String MONITORING_LOG_TOPIC = "monitoring-log";
 }

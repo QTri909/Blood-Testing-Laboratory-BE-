@@ -12,12 +12,8 @@ import java.time.LocalDate;
 @Setter
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ReagentForInstrumentRes {
-    private Long reagentId;
+public class ReagentHistoryUsageOfInstrumentRes {
     private String reagentName;
-    private String catalogNumber;
-    private String casNumber;
-    private String expirationDate;
     private double quantityUsed;
     private String unit;
     private String lotNumber;

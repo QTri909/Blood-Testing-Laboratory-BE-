@@ -52,6 +52,6 @@ public class KafkaProducerService {
     }
 
     public void sendMonitoringLog(MonitoringLogEvent log) {
-        monitoringKafkaTemplate.send("monitoring-log", log);
+        monitoringKafkaTemplate.send(KafkaConstants.MONITORING_LOG_TOPIC, log);
     }
 }
