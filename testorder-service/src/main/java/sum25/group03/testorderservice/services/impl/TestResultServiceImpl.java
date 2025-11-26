@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.testorderservice.dtos.request.TestResultBulkedRequestDTO;
 import sum25.group03.testorderservice.dtos.request.ReviewRequestDTO;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
+import sum25.group03.testorderservice.dtos.request.TestResultReviewRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entities.Parameter;
 import sum25.group03.testorderservice.entities.TestOrder;
@@ -73,7 +74,7 @@ public class TestResultServiceImpl implements TestResultService {
     }
 
     @Override
-    public String doctorReview(ReviewRequestDTO reviewRequestDTO, Long reviewId){
+    public String doctorReview(TestResultReviewRequestDTO reviewRequestDTO, Long reviewId){
         TestResult testResult;
         Optional<TestResult> testResultOpt = testResultRepository.findById(reviewRequestDTO.getTestResultId());
         if (testResultOpt.isPresent()) {
@@ -84,14 +85,25 @@ public class TestResultServiceImpl implements TestResultService {
         if (testResult.getStatus() != TestResultStatus.COMPLETED && testResult.getStatus() != TestResultStatus.REVIEWED && testResult.getStatus() != TestResultStatus.AI_REVIEWED) {
             throw new IllegalStateException("Only completed results can be reviewed");
         }
-        testResult.setReview(reviewRequestDTO.getReview());
-        testResult.setUpdatedAt(LocalDateTime.now());
-        testResult.setStatus(TestResultStatus.REVIEWED);
+        String newReview;
+        if(reviewRequestDTO.getReview() == null || reviewRequestDTO.getReview().isEmpty()){
+            newReview = reviewRequestDTO.getAbnormalities().toString() + " "  + reviewRequestDTO.getSeverity() + " " + reviewRequestDTO.getSummary() + " " + reviewRequestDTO.getRecommendation();
+            testResult.setStatus(TestResultStatus.AI_REVIEWED);
+            testResult.setReview(newReview);
+            testResult.setUpdatedAt(LocalDateTime.now());
+            testResultRepository.save(testResult);
+        } else {
+            newReview = reviewRequestDTO.getReview();
+            testResult.setStatus(TestResultStatus.REVIEWED);
+            testResult.setReview(newReview);
+            testResult.setUpdatedAt(LocalDateTime.now());
+            testResultRepository.save(testResult);
+        }
         log.info("TestResult id: " + testResult.getId()
                 +"\nReview id: " + reviewId
                 + "\nReview: " + reviewRequestDTO.getReview()
                 + "\nTimestamp: " + testResult.getUpdatedAt());
-        testResultRepository.save(testResult);
+
         return testResult.getReview();
     }
 

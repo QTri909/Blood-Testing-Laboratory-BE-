@@ -1,19 +1,23 @@
 package sum25.group03.testorderservice.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.testorderservice.dtos.request.TestResultBulkedRequestDTO;
 import sum25.group03.testorderservice.dtos.request.ReviewRequestDTO;
 import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
+import sum25.group03.testorderservice.dtos.request.TestResultReviewRequestDTO;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
-import sum25.group03.testorderservice.services.impl.CohereServiceImpl;
+import sum25.group03.testorderservice.dtos.response.TestResultReviewDTO;
+import sum25.group03.testorderservice.services.interfaces.IBedrockService;
+import sum25.group03.testorderservice.services.interfaces.ICohereService;
 import sum25.group03.testorderservice.services.interfaces.TestResultService;
 
 import java.util.List;
@@ -28,7 +32,10 @@ public class TestResultController {
     private TestResultService testResultService;
 
     @Autowired
-    private CohereServiceImpl cohereService;
+    private ICohereService cohereService;
+
+    @Autowired
+    private IBedrockService bedrockService;
 
     @PostMapping("/review-test-result")
     @ResponseStatus(HttpStatus.CREATED)
@@ -44,7 +51,7 @@ public class TestResultController {
     @PostMapping("/doctor-review")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<?> doctorReview(
-            @RequestBody @Valid ReviewRequestDTO reviewRequestDTO,
+            @RequestBody @Valid TestResultReviewRequestDTO reviewRequestDTO,
             @RequestHeader("X-User-Id") @NotNull Long reviewId
     ) {
         testResultService.doctorReview(reviewRequestDTO, reviewId);
@@ -106,6 +113,13 @@ public class TestResultController {
     public ApiResponse<?> aiReview(@PathVariable Long id) {
         String reviewed = cohereService.jugeReview(id);
         return ApiResponse.ok("AI reviewed successfully", reviewed);
+    }
+
+    @PostMapping("/{id}/bedrock-review")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<?> bedrockReview(@PathVariable Long id) throws JsonProcessingException {
+        TestResultReviewDTO result = bedrockService.reviewTestResult(id);
+        return ApiResponse.ok("Bedrock reviewed successfully", result);
     }
 }
 
