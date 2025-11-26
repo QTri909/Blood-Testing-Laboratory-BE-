@@ -46,6 +46,7 @@ public class InstrumentEventListener {
                     .supportedTests(newInstrumentEvent.getConfigEvent().getSupportedTests())
                     .active(true)
                     .build();
+            newInstrument.setConfiguration(config);
         }
         if(newInstrumentEvent.getNewReagentEvents()!=null && !newInstrumentEvent.getNewReagentEvents().isEmpty() ){
             installedReagents = newInstrumentEvent.getNewReagentEvents().stream()
@@ -59,9 +60,9 @@ public class InstrumentEventListener {
                             .status(InstalledReagentStatus.AVAILABLE)
                             .build())
                     .toList();
+            newInstrument.setInstalledReagents(installedReagents);
         }
-        newInstrument.setConfiguration(config);
-        newInstrument.setInstalledReagents(installedReagents);
+
         instrumentRepository.save(newInstrument);
         log.info("Instrument {} has been sync", newInstrument.getId());
     }
