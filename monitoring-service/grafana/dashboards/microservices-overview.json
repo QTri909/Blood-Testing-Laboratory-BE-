@@ -113,11 +113,47 @@
           "legendFormat": "{{job}}"
         }
       ]
+    },
+    {
+      "type": "stat",
+      "title": "Kafka Consumer Rate",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 20, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_consumer_consume_total{job=~\"$service\"}[1m]))",
+          "legendFormat": "Consumed/sec"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Kafka Consumer Lag",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 8, "y": 20, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "expr": "max(kafka_consumer_group_lag{job=~\"$service\"}) by (consumer_group, topic)",
+          "legendFormat": "{{consumer_group}} - {{topic}}"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Kafka Producer Rate",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 16, "y": 20, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_producer_produce_total{job=~\"$service\"}[1m]))",
+          "legendFormat": "Produced/sec"
+        }
+      ]
     }
   ],
   "schemaVersion": 36,
   "style": "dark",
-  "tags": ["microservice", "overview"],
+  "tags": ["microservice", "overview", "kafka"],
   "templating": {
     "list": [
       {
@@ -134,6 +170,6 @@
   },
   "time": { "from": "now-15m", "to": "now" },
   "timezone": "browser",
-  "title": "Microservice Basic Overview",
+  "title": "Microservice + Kafka Overview",
   "version": 1
 }

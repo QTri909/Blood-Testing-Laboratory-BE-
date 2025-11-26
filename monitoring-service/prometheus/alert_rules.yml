@@ -2,9 +2,7 @@ groups:
   - name: KafkaAlerts
     rules:
       - alert: KafkaBrokerDown
-
         expr: kafka_brokers < 1
-
         for: 1m
         labels:
           severity: critical
@@ -12,4 +10,13 @@ groups:
           summary: "Kafka broker is DOWN"
           description: "Kafka exporter unreachable for more than 1 minute."
 
-
+  - name: APIGatewayAlerts
+    rules:
+      - alert: APIGateway5xxErrors
+        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[1m])) by (uri) > 0
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          summary: "API Gateway route returning 5xx errors"
+          description: "Route {{ $labels.uri }} has returned 5xx errors continuously for more than 1 minute."

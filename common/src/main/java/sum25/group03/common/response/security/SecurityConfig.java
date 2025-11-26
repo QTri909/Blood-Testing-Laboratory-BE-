@@ -45,7 +45,7 @@ public class SecurityConfig {
                                 "/api/v1/payments/vnpay/ipn",
                                 "/api/v1/payments/vnpay/return"
                         ).permitAll()
-//                        .requestMatchers("/actuator/prometheus").permitAll()
+                        .requestMatchers("/actuator/prometheus").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
