@@ -28,6 +28,7 @@ import sum25.group03.warehouseservice.repository.ReagentRepo;
 import sum25.group03.warehouseservice.repository.ReagentUsageRepo;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -54,8 +55,8 @@ public class ReagentServiceImpl implements ReagentService {
     }
 
     @Override
-    public List<Reagents> findAllByReagentId(List<Long> reagentId) {
-        return reagentRepo.findAllByReagentId(reagentId);
+    public List<Reagents> findAllByReagentIdAndStatus(List<Long> reagentId, ReagentStatus status) {
+        return reagentRepo.findAllByReagentIdInAndStatus(reagentId,status);
     }
 
     @Override
@@ -362,6 +363,19 @@ public class ReagentServiceImpl implements ReagentService {
                 .createdAt(reagent.getCreatedAt())
                 .build();
         return res;
+    }
+
+    @Override
+    public List<ReagentInventoryRes> getListLotNumberByReagentId(Long reagentId) {
+        List<ReagentInventory> inventories = reagentInventoryRepo.findAllByReagentId(reagentId,ReagentInventoryStatus.AVAILABLE);
+
+        return inventories.stream()
+                .map(r -> ReagentInventoryRes.builder()
+                        .reagentInventoryId(r.getReagentInventoryId())
+                        .lotNumber(r.getLotNumber())
+                        .quantityAvailable(r.getQuantityAvailable())
+                        .build())
+                .toList();
     }
 
 }

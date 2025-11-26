@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.instrumentservice.controller.request.UpdateReagentStatusRequest;
@@ -98,6 +99,7 @@ public class InstalledReagentController {
     }
 
     @DeleteMapping("/delete")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(
             summary = "Delete installed reagents by reagent ID",
             description = "Deletes all installed reagents associated with the specified reagent ID.",

@@ -53,4 +53,13 @@ public interface ReagentRepo extends JpaRepository<Reagents, Long> {
     boolean existsByCatalogNumber(String catalogNumber);
 
     boolean existsByReagentName(String reagentName);
+
+    List<Reagents> findAllByReagentIdAndStatus(Long reagentId, ReagentStatus status);
+
+    @Query("""
+        SELECT r
+        FROM Reagents r
+        WHERE r.reagentId IN :reagentId AND r.status = :status
+     """)
+    List<Reagents> findAllByReagentIdInAndStatus(@Param("reagentId") List<Long> reagentId, @Param("status")ReagentStatus status);
 }

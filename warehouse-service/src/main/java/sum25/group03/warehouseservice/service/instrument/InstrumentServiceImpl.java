@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.response.events.AssignConfigAndReagentEvent;
 import sum25.group03.common.response.events.ConfigEvent;
 import sum25.group03.common.response.events.NewInstrumentEvent;
 import sum25.group03.common.response.events.NewReagentEvent;
@@ -18,6 +19,7 @@ import sum25.group03.warehouseservice.dto.response.*;
 import sum25.group03.warehouseservice.entity.*;
 import sum25.group03.warehouseservice.entity.enums.InstrumentStatus;
 
+import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
 import sum25.group03.warehouseservice.exception.MissingRequiredFieldsException;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.ConfigMapper;
@@ -43,7 +45,7 @@ public class InstrumentServiceImpl implements InstrumentService {
     private final ConfigService configService;
     private final ReagentService reagentService;
     private final KafkaTemplate<String, NewInstrumentEvent> kafkaTemplate;
-
+    private final KafkaTemplate<String, AssignConfigAndReagentEvent> kafkaAssignTemplate;
 
     public boolean isDuplicateSerialNumber(String serialNumber) {
         return instrumentRepo.existsBySerialNumber(serialNumber);
@@ -87,8 +89,10 @@ public class InstrumentServiceImpl implements InstrumentService {
         }
         ConfigEvent configEvent = null;
         List<NewReagentEvent> reagentEvents = null;
+        Long cloneFromInstrumentId = null;
         // Clone from an existing instrument
         if(instrument.getCloneFromInstrumentId() != null) {
+            cloneFromInstrumentId = instrument.getCloneFromInstrumentId();
             Configuration configuration = configService.getConfigByInstrumentId(instrument.getCloneFromInstrumentId());
             if(configuration == null){
                 log.info("No configuration found to clone for instrument id: {}", instrument.getCloneFromInstrumentId());
@@ -105,14 +109,14 @@ public class InstrumentServiceImpl implements InstrumentService {
                 newInstrument.setConfiguration(newConfig);
                 configEvent = buildConfigEventFromConfiguration(newConfig);
             }
-            List<Reagents> reagentUsages = reagentService.findAllByInstrumentId(instrument.getCloneFromInstrumentId());
-            if(reagentUsages.isEmpty()) {
-                log.info("No reagents found to clone for instrument id: {}", instrument.getCloneFromInstrumentId());
-            }else{
-                List<ReagentHistoryUsage> newReagentUsages = buildReagentHistoryUsagesFromReagents(newInstrument, reagentUsages);
-                newInstrument.setReagentHistoryUsages(newReagentUsages);
-                reagentEvents = buildNewReagentEventsFromReagents(reagentUsages);
-            }
+//            List<Reagents> reagentUsages = reagentService.findAllByInstrumentId(instrument.getCloneFromInstrumentId());
+//            if(reagentUsages.isEmpty()) {
+//                log.info("No reagents found to clone for instrument id: {}", instrument.getCloneFromInstrumentId());
+//            }else{
+//                List<ReagentHistoryUsage> newReagentUsages = buildReagentHistoryUsagesFromReagents(newInstrument, reagentUsages);
+//                newInstrument.setReagentHistoryUsages(newReagentUsages);
+//                reagentEvents = buildNewReagentEventsFromReagents(reagentUsages);
+//            }
         }
         // Save instrument with reagents and config if exist
         Instrument saveInstrument = instrumentRepo.save(newInstrument);
@@ -122,7 +126,8 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .instrumentId(saveInstrument.getInstrumentId())
                 .instrumentName(saveInstrument.getInstrumentName())
                 .configEvent(configEvent)
-                .newReagentEvents(reagentEvents)
+                .cloneFromInstrumentId(cloneFromInstrumentId)
+                //.newReagentEvents(reagentEvents)
                 .build();
         kafkaTemplate.send("new-instrument-events", event);
         log.info("Published Kafka event (new-instrument-events): {}", event);
@@ -168,10 +173,10 @@ public class InstrumentServiceImpl implements InstrumentService {
             configEvent = buildConfigEventFromConfiguration(config);
         }
 
-        List<Reagents> reagents = reagentService.findAllByReagentId(assignConfigAndReagentReq.getReagentIds());
+        List<Reagents> reagents = reagentService.findAllByReagentIdAndStatus(assignConfigAndReagentReq.getReagentIds(), ReagentStatus.ACTIVE);
         if(!reagents.isEmpty()){
-            List<ReagentHistoryUsage> reagentHistoryUsages = buildReagentHistoryUsagesFromReagents(instrument, reagents);
-            instrument.setReagentHistoryUsages(reagentHistoryUsages);
+            //List<ReagentHistoryUsage> reagentHistoryUsages = buildReagentHistoryUsagesFromReagents(instrument, reagents);
+            //instrument.setReagentHistoryUsages(reagentHistoryUsages);
             reagentEvents = buildNewReagentEventsFromReagents(reagents);
             reagentForInstrumentResList = reagents.stream()
                     .map(r -> ReagentForInstrumentRes.builder()
@@ -185,13 +190,12 @@ public class InstrumentServiceImpl implements InstrumentService {
         Instrument savedInstrument = instrumentRepo.save(instrument);
         log.info("Assigned configuration and reagents to instrument id: {}", instrument.getInstrumentId());
 
-        NewInstrumentEvent event = NewInstrumentEvent.builder()
+        AssignConfigAndReagentEvent event = AssignConfigAndReagentEvent.builder()
                 .instrumentId(savedInstrument.getInstrumentId())
-                .instrumentName(savedInstrument.getInstrumentName())
                 .configEvent(configEvent)
-                .newReagentEvents(reagentEvents)
+                .reagentEvents(reagentEvents)
                 .build();
-        kafkaTemplate.send("new-instrument-events", event);
+        kafkaAssignTemplate.send("assign-config-reagent-events", event);
         log.info("Published Kafka event (update instrument): {}", event);
 
         return InstrumentConfigReagentRes.builder()
