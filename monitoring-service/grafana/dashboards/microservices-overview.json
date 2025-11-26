@@ -31,37 +31,64 @@
       ]
     },
     {
-      "type": "stat",
-      "title": "Error Rate (%)",
+      "type": "gauge",
+      "title": "Error Rate - Service Health",
       "datasource": "Prometheus",
       "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 1 },
+              { "color": "orange", "value": 5 },
+              { "color": "red", "value": 10 }
+            ]
+          },
+          "unit": "percent",
+          "max": 100,
+          "min": 0,
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0-1": { "text": "❤️ Healthy", "color": "green" },
+                "1-5": { "text": "💛 Warning", "color": "yellow" },
+                "5-10": { "text": "💔 Degraded", "color": "orange" },
+                "10-100": { "text": "💥 Critical", "color": "red" }
+              }
+            }
+          ]
+        }
+      },
       "targets": [
         {
-          "expr": "100 * sum(rate(http_server_requests_seconds_count{job=~\"$service\", status!~\"2..\"}[5m])) / sum(rate(http_server_requests_seconds_count{job=~\"$service\"}[5m]))",
-          "legendFormat": "Errors"
+          "expr": "100 * sum(rate(http_server_requests_seconds_count{job=~\"$service\", status=~\"5..\"}[1m])) / clamp_min(sum(rate(http_server_requests_seconds_count{job=~\"$service\"}[1m])), 0.0001)",
+          "legendFormat": "Error %"
         }
       ]
     },
     {
       "type": "graph",
-      "title": "Latency (95th percentile)",
+      "title": "Average Latency (ms)",
       "datasource": "Prometheus",
       "gridPos": { "x": 12, "y": 0, "w": 12, "h": 4 },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=~\"$service\"}[5m])) by (le))",
-          "legendFormat": "p95"
+          "expr": "1000 * (sum(rate(http_server_requests_seconds_sum{job=~\"$service\"}[1m])) by (job) / sum(rate(http_server_requests_seconds_count{job=~\"$service\"}[1m])) by (job))",
+          "legendFormat": "{{job}}"
         }
       ]
     },
     {
       "type": "graph",
-      "title": "CPU Usage",
+      "title": "Heap Memory Used (MB)",
       "datasource": "Prometheus",
       "gridPos": { "x": 0, "y": 4, "w": 12, "h": 6 },
       "targets": [
         {
-          "expr": "sum(rate(process_cpu_seconds_total{job=~\"$service\"}[1m])) by (job)",
+          "expr": "sum(jvm_memory_used_bytes{job=~\"$service\", area=\"heap\"}) by (job) / 1024 / 1024",
           "legendFormat": "{{job}}"
         }
       ]
@@ -113,63 +140,31 @@
           "legendFormat": "{{job}}"
         }
       ]
-    },
-    {
-      "type": "stat",
-      "title": "Kafka Consumer Rate",
-      "datasource": "Prometheus",
-      "gridPos": { "x": 0, "y": 20, "w": 8, "h": 4 },
-      "targets": [
-        {
-          "expr": "sum(rate(kafka_consumer_consume_total{job=~\"$service\"}[1m]))",
-          "legendFormat": "Consumed/sec"
-        }
-      ]
-    },
-    {
-      "type": "graph",
-      "title": "Kafka Consumer Lag",
-      "datasource": "Prometheus",
-      "gridPos": { "x": 8, "y": 20, "w": 8, "h": 4 },
-      "targets": [
-        {
-          "expr": "max(kafka_consumer_group_lag{job=~\"$service\"}) by (consumer_group, topic)",
-          "legendFormat": "{{consumer_group}} - {{topic}}"
-        }
-      ]
-    },
-    {
-      "type": "stat",
-      "title": "Kafka Producer Rate",
-      "datasource": "Prometheus",
-      "gridPos": { "x": 16, "y": 20, "w": 8, "h": 4 },
-      "targets": [
-        {
-          "expr": "sum(rate(kafka_producer_produce_total{job=~\"$service\"}[1m]))",
-          "legendFormat": "Produced/sec"
-        }
-      ]
     }
   ],
   "schemaVersion": 36,
   "style": "dark",
-  "tags": ["microservice", "overview", "kafka"],
+  "tags": ["microservice", "overview"],
   "templating": {
     "list": [
       {
         "name": "service",
         "type": "query",
         "datasource": "Prometheus",
-        "query": "label_values(job)",
+        "query": "label_values(up{job!=\"kafka-exporter\"}, job)",
         "refresh": 2,
-        "includeAll": true,
-        "multi": true,
-        "sort": 1
+        "includeAll": false,
+        "multi": false,
+        "sort": 1,
+        "current": {
+          "text": "iam-service",
+          "value": "iam-service"
+        }
       }
     ]
   },
   "time": { "from": "now-15m", "to": "now" },
   "timezone": "browser",
-  "title": "Microservice + Kafka Overview",
+  "title": "Microservice Overview",
   "version": 1
 }

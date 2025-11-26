@@ -10,13 +10,22 @@ groups:
           summary: "Kafka broker is DOWN"
           description: "Kafka exporter unreachable for more than 1 minute."
 
-  - name: APIGatewayAlerts
+  - name: MicroserviceAlerts
     rules:
-      - alert: APIGateway5xxErrors
-        expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[1m])) by (uri) > 0
-        for: 10s
+      - alert: ServiceHttp5xxErrors
+        expr: rate(http_server_requests_seconds_count{status=~"5..",job!="api-gateway"}[1m]) > 0
+        for: 1m
         labels:
           severity: critical
         annotations:
-          summary: "API Gateway route returning 5xx errors"
-          description: "Route {{ $labels.uri }} has returned 5xx errors continuously for more than 1 minute."
+          summary: "Service {{ $labels.job }} returning 5xx errors"
+          description: "Service: {{ $labels.job }}\nEndpoint: {{ $labels.uri }}\nStatus Code: {{ $labels.status }}\nError Rate: {{ printf \"%.2f\" $value }} requests/sec"
+
+      - alert: ServiceDown
+        expr: up{job!="api-gateway"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is DOWN"
+          description: "Service {{ $labels.job }} is unreachable and not responding to metrics scrape for more than 1 minute. This is likely causing API Gateway requests to fail."

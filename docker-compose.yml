@@ -87,6 +87,7 @@ services:
     container_name: alert-manager
     volumes:
       - ./monitoring-service/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+      - ./monitoring-service/alertmanager/alert_manager.yml:/etc/alertmanager/alertmanager.yml:ro
     ports:
       - "9093:9093"
     networks:

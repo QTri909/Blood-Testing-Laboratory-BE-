@@ -1,0 +1,153 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Kafka Brokers Online",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "count(kafka_server_brokerstate_value{job=\"kafka-exporter\"})",
+          "legendFormat": "Online Brokers"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Total Topics",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "count(count(kafka_topic_partitions{job=\"kafka-exporter\"}) by (topic))",
+          "legendFormat": "Topics"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Total Partitions",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(kafka_topic_partitions{job=\"kafka-exporter\"})",
+          "legendFormat": "Partitions"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Under-replicated Partitions",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(kafka_topic_partition_under_replicated_partition{job=\"kafka-exporter\"})",
+          "legendFormat": "Under-replicated"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Messages In Rate by Topic",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "rate(kafka_topic_partition_current_offset{job=\"kafka-exporter\"}[1m]) * 1000",
+          "legendFormat": "{{topic}}"
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "title": "Consumer Lag by Group & Topic",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 6 },
+      "targets": [
+        {
+          "expr": "kafka_consumergroup_lag{job=\"kafka-exporter\"}",
+          "legendFormat": "{{consumergroup}} - {{topic}}"
+        }
+      ]
+    },
+    {
+      "type": "table",
+      "title": "Consumer Group Status",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 10, "w": 24, "h": 6 },
+      "targets": [
+        {
+          "expr": "kafka_consumergroup_members{job=\"kafka-exporter\"}",
+          "format": "table",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Offline Partitions",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 0, "y": 16, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "expr": "sum(kafka_topic_partition_in_sync_replica{job=\"kafka-exporter\"} == 0)",
+          "legendFormat": "Offline"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Total Consumer Groups",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 8, "y": 16, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "expr": "count(count(kafka_consumergroup_lag{job=\"kafka-exporter\"}) by (consumergroup))",
+          "legendFormat": "Groups"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Rebalancing Status",
+      "datasource": "Prometheus",
+      "gridPos": { "x": 16, "y": 16, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "expr": "count(kafka_consumergroup_members_id{job=\"kafka-exporter\"})",
+          "legendFormat": "Active Members"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": ["kafka", "monitoring"],
+  "templating": {
+    "list": []
+  },
+  "time": { "from": "now-15m", "to": "now" },
+  "timezone": "browser",
+  "title": "Kafka Monitoring",
+  "version": 1
+}

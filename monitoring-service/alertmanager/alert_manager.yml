@@ -2,7 +2,7 @@ global:
   resolve_timeout: 5m
 
 route:
-  group_by: ['alertname']
+  group_by: ['alertname', 'job']
   group_wait: 10s
   group_interval: 10m
   repeat_interval: 1h
@@ -15,7 +15,15 @@ receivers:
         chat_id: -4821904329
         message: >-
           🚨 *{{ .CommonAnnotations.summary }}*
+          
           {{ .CommonAnnotations.description }}
-          *Alert:* {{ .CommonLabels.alertname }}
-          *Severity:* {{ index .CommonLabels "severity" }}
+          
+          *Alert Details:*
+          • *Alert Type:* {{ .CommonLabels.alertname }}
+          • *Service:* {{ .CommonLabels.job }}
+          {{ if .CommonLabels.uri }}• *Endpoint:* {{ .CommonLabels.uri }}{{ end }}
+          {{ if .CommonLabels.status }}• *Status Code:* {{ .CommonLabels.status }}{{ end }}
+          • *Severity:* {{ index .CommonLabels "severity" }}
+          • *Timestamp:* {{ .Alerts.Firing | len }} firing
         parse_mode: "Markdown"
+
