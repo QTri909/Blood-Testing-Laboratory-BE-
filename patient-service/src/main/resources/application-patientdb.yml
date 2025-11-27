@@ -1,9 +1,17 @@
 
 spring:
   datasource:
-    url: ${PATIENT_DB_URL:jdbc:postgresql://localhost:5433/patientdb}
-    username: ${PATIENT_DB_USERNAME:postgres}
-    password: ${PATIENT_DB_PASSWORD:12345}
+
+    # localdb configuration
+#    url: ${PATIENT_DB_URL:jdbc:postgresql://localhost:5433/patientdb}
+#    username: ${PATIENT_DB_USERNAME:postgres}
+#    password: ${PATIENT_DB_PASSWORD:12345}
+
+    # postgres - huy hoang - aiven
+    url: ${PATIENT_DB_URL:jdbc:postgresql://pg-1500ffdb-huyacsp3-94f1.g.aivencloud.com:25974/defaultdb}
+    username: ${PATIENT_DB_USERNAME:avnadmin}
+    password: ${PATIENT_DB_PASSWORD:AVNS_rNiw0Vt0U2mCg7NGce5}
+
     driver-class-name: "org.postgresql.Driver"
     hikari:
       pool-name: PatientHikariCP
