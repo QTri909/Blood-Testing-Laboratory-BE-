@@ -6,10 +6,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.testorderservice.dtos.request.CommentRequestDTO;
 import sum25.group03.testorderservice.dtos.response.CommentResponseDTO;
+import sum25.group03.testorderservice.dtos.response.GrpcUserInfo;
 import sum25.group03.testorderservice.entities.Comment;
 import sum25.group03.testorderservice.enums.ActionCommentsLog;
 import sum25.group03.testorderservice.enums.CommentStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
+import sum25.group03.testorderservice.grpc.PatientGrpcClient;
 import sum25.group03.testorderservice.mapper.CommentMapper;
 import sum25.group03.testorderservice.repositories.CommentRepository;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
@@ -18,6 +20,7 @@ import sum25.group03.testorderservice.services.interfaces.CommentService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +34,7 @@ public class CommentServiceImpl implements CommentService {
     private final TestResultRepository testResultRepository;
     private final CommentMapper commentMapper;
     private final  CommentLogServiceImpl commentLogService;
+    private final PatientGrpcClient patientGrpcClient;
 
 
     @Override
@@ -150,6 +154,30 @@ public class CommentServiceImpl implements CommentService {
         return commentMapper.toResponseDto(comment);
     }
 
+    private List<CommentResponseDTO> handleConvertListCommentToDtos(List<Comment> comments) {
+        // fill externalId with real user information:
+        List<Long> externalUserIds = comments.stream()
+                .map(Comment::getUserId).toList();
+
+        Map<Long, GrpcUserInfo> userInfoMap = Map.of();
+        try {
+            userInfoMap = patientGrpcClient.mappingExternalUserIdsToUserInfos(externalUserIds);
+        } catch(Exception e) {
+            log.error("Failed to fetch user information via gRPC: {}", e.getMessage());
+        }
+
+        List<CommentResponseDTO> responseList = comments.stream()
+                .map(commentMapper::toResponseDto)
+                .toList();
+
+        for (CommentResponseDTO dto: responseList) {
+            GrpcUserInfo userInfo = userInfoMap.get(dto.getUserId());
+            dto.setCreatorInfo(userInfo);
+        }
+
+        return responseList;
+    }
+
     @Override
     @Transactional(readOnly = true)
     public List<CommentResponseDTO> getCommentsByTestOrderId(Long testOrderId) {
@@ -160,9 +188,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         List<Comment> comments = commentRepository.findByTestOrderIdAndStatus(testOrderId, CommentStatus.ACTIVE);
-        return comments.stream()
-                .map(commentMapper::toResponseDto)
-                .collect(Collectors.toList());
+        return handleConvertListCommentToDtos(comments);
     }
 
     @Override
@@ -175,9 +201,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         List<Comment> comments = commentRepository.findByTestResultIdAndStatus(testResultId, CommentStatus.ACTIVE);
-        return comments.stream()
-                .map(commentMapper::toResponseDto)
-                .collect(Collectors.toList());
+        return handleConvertListCommentToDtos(comments);
     }
 
     private void validateCommentRequest(CommentRequestDTO requestDTO) {

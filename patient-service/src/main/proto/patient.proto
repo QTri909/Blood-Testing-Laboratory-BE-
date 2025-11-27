@@ -9,6 +9,7 @@ service PatientService {
   rpc autoCreateMedicalRecord (AutoCreateMedicalRecordRequest) returns (CreatedMedicalRecordResponse);
   rpc assignPatientIdToMedicalRecord (AssignPatientIdToMedicalRecordRequest) returns (EmptyMsg);
   rpc mappingPatientIdAndCreatorIdToTheirName(MappingPatientIdAndCreatorIdToTheirNameRequest) returns (MappingPatientIdAndCreatorIdToTheirNameResponse);
+  rpc GetUserInformationByExternalIds (UserInformationByExternalIdsRequest) returns (UserInformationByExternalIdsResponse);
 }
 
 message EmptyMsg {}
@@ -60,4 +61,20 @@ message GetPatientByIdResponse {
 
 message CreatedMedicalRecordResponse {
   int64 recordId = 1;
+}
+
+// message for getting user information by external IDs
+message UserInformationByExternalIdsRequest {
+  repeated int64 externalUserIds = 1;
+}
+
+message UserInfo {
+  int64 externalUserId = 1;
+  string fullName = 2;
+  string email = 3;
+  repeated string roles = 4;
+}
+
+message UserInformationByExternalIdsResponse {
+  repeated UserInfo users = 1;
 }

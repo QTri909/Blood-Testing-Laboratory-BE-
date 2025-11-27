@@ -7,6 +7,7 @@ import sum25.group03.patientservice.dtos.request.GrpcMappingPatientAndCreatorIdR
 import sum25.group03.patientservice.dtos.request.UserSnapshotRequest;
 import sum25.group03.patientservice.dtos.response.GrpcMappingPatientAndCreatorIdResponse;
 import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
+import sum25.group03.patientservice.entities.UserSnapshotEntity;
 
 import java.util.List;
 
@@ -29,4 +30,6 @@ public interface UserSnapshotService {
     void handleCreateUserFromIAM(UserCreatedEvent kafkaUserDTO);
     void handleUpdateUserFromUserFromIAM(UserUpdatedEvent userUpdatedEvent);
     void handleDeleteUserFromIAM(UserDeletedEvent userDeletedEvent);
+
+    List<UserSnapshotEntity> getUserInformationByExternalUserIds(List<Long> externalUserIds);
 }

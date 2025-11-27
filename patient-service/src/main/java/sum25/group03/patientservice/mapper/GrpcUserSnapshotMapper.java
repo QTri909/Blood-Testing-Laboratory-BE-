@@ -3,10 +3,8 @@ package sum25.group03.patientservice.mapper;
 import org.mapstruct.Mapper;
 import sum25.group03.patientservice.dtos.request.GrpcMappingPatientAndCreatorIdRequest;
 import sum25.group03.patientservice.dtos.response.GrpcMappingPatientAndCreatorIdResponse;
-import sum25.group03.patientservice.grpc.CreatorIdList;
-import sum25.group03.patientservice.grpc.MappingPatientIdAndCreatorIdToTheirNameRequest;
-import sum25.group03.patientservice.grpc.MappingPatientIdAndCreatorIdToTheirNameResponse;
-import sum25.group03.patientservice.grpc.PatientIdList;
+import sum25.group03.patientservice.entities.UserSnapshotEntity;
+import sum25.group03.patientservice.grpc.*;
 
 import java.util.*;
 
@@ -86,5 +84,32 @@ public interface GrpcUserSnapshotMapper {
                 .build();
     }
 
+    // ----------------------- User Information Mapping by External User Ids -----------------------
+
+
+    // map from UserSnapshotEntity to UserInfo:
+    default UserInfo mapUserSnapshotToGrpcUserInfo(UserSnapshotEntity userSnapshotEntity) {
+
+        return UserInfo.newBuilder()
+                .setExternalUserId(userSnapshotEntity.getExternalUserId())
+                .setFullName(userSnapshotEntity.getFullName())
+                .setEmail(userSnapshotEntity.getEmail())
+                .addAllRoles(
+                        userSnapshotEntity.getRoles() == null ? List.of() : userSnapshotEntity.getRoles()
+                )
+                .build();
+    }
+
+    // map from List<UserSnapshotEntity> to UserInformationByExternalIdsResponse:
+    default UserInformationByExternalIdsResponse mapToGrpcUserInformationResponse(List<UserSnapshotEntity> userSnapshots) {
+
+        UserInformationByExternalIdsResponse.Builder responseBuilder = UserInformationByExternalIdsResponse.newBuilder();
+        List<UserInfo> userInfoList = userSnapshots.stream()
+                .map(this::mapUserSnapshotToGrpcUserInfo)
+                .toList();
+
+        responseBuilder.addAllUsers(userInfoList);
+        return responseBuilder.build();
+    }
 
 }

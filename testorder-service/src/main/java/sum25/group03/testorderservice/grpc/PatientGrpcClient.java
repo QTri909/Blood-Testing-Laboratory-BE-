@@ -7,12 +7,16 @@ import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 import sum25.group03.testorderservice.dtos.request.GrpcMappingPatientAndCreatorIdRequest;
 import sum25.group03.testorderservice.dtos.response.GrpcMappingPatientAndCreatorIdResponse;
+import sum25.group03.testorderservice.dtos.response.GrpcUserInfo;
 import sum25.group03.testorderservice.grpc.GetPatientByIdRequest;
 import sum25.group03.testorderservice.grpc.GetPatientByIdResponse;
 import sum25.group03.testorderservice.grpc.PatientServiceGrpc;
 import sum25.group03.testorderservice.mapper.GrpcUserSnapshotMapper;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -93,4 +97,34 @@ public class PatientGrpcClient {
             throw new RuntimeException("Failed to map patient and creator IDs to names via gRPC", e);
         }
     }
+
+    public Map<Long, GrpcUserInfo> mappingExternalUserIdsToUserInfos(List<Long> externalUserIds) {
+
+        if (externalUserIds == null || externalUserIds.isEmpty()) {
+            return Map.of();
+        }
+
+        try {
+            UserInformationByExternalIdsRequest request = UserInformationByExternalIdsRequest.newBuilder()
+                    .addAllExternalUserIds(externalUserIds)
+                    .build();
+
+            UserInformationByExternalIdsResponse response = patientStub.getUserInformationByExternalIds(request);
+
+            List<GrpcUserInfo> userInfoList = grpcUserSnapshotMapper.mapToGrpcUserInfoList(response);
+            if (userInfoList == null || userInfoList.isEmpty()) {
+                return Map.of();
+            }
+
+            return userInfoList.stream()
+                    .collect(
+                            Collectors.toMap(GrpcUserInfo::getExternalUserId, userInfo -> userInfo)
+                    );
+
+        } catch(Exception ex) {
+            throw new RuntimeException("Failed to map external user IDs to user infos via gRPC", ex);
+        }
+    }
+
+
 }
