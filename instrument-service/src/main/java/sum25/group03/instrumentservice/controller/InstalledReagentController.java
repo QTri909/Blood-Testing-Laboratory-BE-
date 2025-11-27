@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.instrumentservice.controller.request.UpdateReagentStatusRequest;
@@ -96,4 +97,19 @@ public class InstalledReagentController {
         Map<Long, String> response = installedReagentService.getAllReagentByInstrumentId(instrumentId);
         return sum25.group03.common.response.ApiResponse.add("Reagent names retrieved successfully", response);
     }
+
+    @DeleteMapping("/delete")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(
+            summary = "Delete installed reagents by reagent ID",
+            description = "Deletes all installed reagents associated with the specified reagent ID.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "Installed reagents deleted successfully"),
+                    @ApiResponse(responseCode = "404", description = "Reagent not found")
+            })
+    public ResponseEntity<?> deleteInstalledReagentsByReagen( @RequestParam Long instrumentId, @RequestParam Long reagentId) {
+        installedReagentService.deleteReagents(instrumentId,reagentId);
+        return ResponseEntity.ok().build();
+        }
+    
 }

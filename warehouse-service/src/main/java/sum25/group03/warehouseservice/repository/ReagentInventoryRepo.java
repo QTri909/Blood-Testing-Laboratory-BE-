@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import sum25.group03.warehouseservice.entity.ReagentInventory;
+import sum25.group03.warehouseservice.entity.enums.ReagentInventoryStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -42,4 +43,7 @@ public interface ReagentInventoryRepo extends JpaRepository<ReagentInventory, Lo
     // Batch fetch inventories for given reagent ids
     @Query("SELECT ri FROM ReagentInventory ri WHERE ri.reagent.reagentId IN :ids")
     List<ReagentInventory> findAllByReagentIdIn(@Param("ids") List<Long> ids);
+
+    @Query("SELECT ri FROM ReagentInventory ri WHERE ri.reagent.reagentId = :reagentId AND COALESCE(ri.quantityAvailable, 0) > 0 AND ri.status = :status ORDER BY ri.expiryDate ASC ")
+    List<ReagentInventory> findAllByReagentId(@Param("reagentId") Long reagentId, @Param("status")ReagentInventoryStatus status);
 }

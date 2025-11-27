@@ -53,7 +53,11 @@ public class InstalledReagent {
     @Column(name = "lot_number", nullable = true)
     private String lotNumber;
 
+    @Column(name = "usage_min", nullable = false)
+    private Double usageMin;
 
+    @Column(name = "usage_max", nullable = false)
+    private Double usageMax;
 
 
 }

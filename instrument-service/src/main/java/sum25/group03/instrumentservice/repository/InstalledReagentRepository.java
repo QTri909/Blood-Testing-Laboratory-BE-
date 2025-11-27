@@ -88,5 +88,6 @@ public interface InstalledReagentRepository extends JpaRepository<InstalledReage
             InstalledReagentStatus status
     );
 
+    Optional<InstalledReagent> findByReagentIdAndInstrumentIdAndStatus(Long reagentId, Long instrumentId, InstalledReagentStatus status);
 }
 

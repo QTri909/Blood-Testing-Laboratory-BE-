@@ -58,4 +58,9 @@ public interface ReagentUsageRepo extends JpaRepository<ReagentHistoryUsage, Lon
     @EntityGraph(attributePaths = {"reagent"})
     Page<ReagentHistoryUsage> findAllByInstrument_InstrumentId(Long instrumentId, Pageable pageable);
 
+    // New: only return usages for an instrument where quantityUsed > 0
+    @EntityGraph(attributePaths = {"reagent"})
+    @Query("SELECT rhu FROM ReagentHistoryUsage rhu WHERE rhu.instrument.instrumentId = :instrumentId AND COALESCE(rhu.quantityUsed, 0) > 0 ORDER BY rhu.usedAt DESC")
+    Page<ReagentHistoryUsage> findAllByInstrumentWithPositiveUsage(@Param("instrumentId") Long instrumentId, Pageable pageable);
+
 }

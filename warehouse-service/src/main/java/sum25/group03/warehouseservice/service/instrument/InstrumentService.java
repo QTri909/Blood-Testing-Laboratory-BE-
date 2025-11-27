@@ -13,4 +13,5 @@ public interface InstrumentService {
     InstrumentConfigReagentRes getInstrumentById(Long instrumentId);
     PageRes<InstrumentResponse> getAllInstruments(int page, int size, String key);
     List<InstrumentResponse> getList();
+    void removeConfigFromInstrument(Long instrumentId);
 }

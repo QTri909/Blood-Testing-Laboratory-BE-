@@ -5,14 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NewReagentEvent {
-    private Long reagentId;
-    private String reagentName;
-    private String unit;
-    private Double usageMax;
-    private Double usageMin;
+public class AssignConfigAndReagentEvent {
+    private Long instrumentId;
+    private ConfigEvent configEvent;
+    private List<NewReagentEvent> reagentEvents;
 }

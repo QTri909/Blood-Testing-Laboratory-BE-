@@ -203,6 +203,33 @@ public class KafkaConfig {
         return factory;
     }
 
+    @Bean
+    public ConsumerFactory<String,  AssignConfigAndReagentEvent> assignConsumerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+        configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
+
+        configProps.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
+
+        configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE,  AssignConfigAndReagentEvent.class.getName());
+        configProps.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
+        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+
+        configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        return new DefaultKafkaConsumerFactory<>(configProps);
+    }
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String,  AssignConfigAndReagentEvent> assignConfigReagentEventListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String,  AssignConfigAndReagentEvent> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+
+        factory.setConsumerFactory(assignConsumerFactory());
+        factory.setCommonErrorHandler(errorHandler());
+
+        return factory;
+    }
 
 
     @Bean

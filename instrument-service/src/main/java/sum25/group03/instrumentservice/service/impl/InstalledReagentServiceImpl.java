@@ -22,6 +22,7 @@ import sum25.group03.instrumentservice.controller.response.UpdateReagentStatusRe
 import sum25.group03.instrumentservice.exception.InstrumentModeChangeException;
 import sum25.group03.instrumentservice.exception.ResourceNotFoundException;
 import sum25.group03.instrumentservice.model.InstalledReagent;
+import sum25.group03.instrumentservice.model.Instrument;
 import sum25.group03.instrumentservice.repository.InstalledReagentRepository;
 import sum25.group03.instrumentservice.service.InstalledReagentService;
 
@@ -220,6 +221,15 @@ public class InstalledReagentServiceImpl implements InstalledReagentService {
                 .collect(Collectors.toMap(InstalledReagent::getReagentId, InstalledReagent::getReagentName, (name1, name2) -> name1));
 
         return reagentIdNameMap;
+    }
+
+    @Override
+    public void deleteReagents(Long instrumentId, Long reagentId) {
+        InstalledReagent reagent = installedReagentRepository.findByReagentIdAndInstrumentIdAndStatus(reagentId,instrumentId, InstalledReagentStatus.AVAILABLE)
+                .orElseThrow(() -> new ResourceNotFoundException("Installed reagent not found with id: " + reagentId));
+        reagent.setStatus(InstalledReagentStatus.REMOVED);
+        installedReagentRepository.save(reagent);
+        log.info("Installed reagent with id: {} has been marked as REMOVED", reagentId);
     }
 
     private void validateStatusTransition(InstalledReagentStatus currentStatus, InstalledReagentStatus newStatus) {

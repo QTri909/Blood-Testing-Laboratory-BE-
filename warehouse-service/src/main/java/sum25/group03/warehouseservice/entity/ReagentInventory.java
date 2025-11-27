@@ -22,7 +22,7 @@ public class ReagentInventory {
     @Column(name = "reagent_inventory_id")
     private Long reagentInventoryId;
 
-    @Column(name = "lot_number", nullable = false)
+    @Column(name = "lot_number", nullable = false, unique = true)
     private String lotNumber;
 
     @Column(name = "quantity_available", nullable = false)

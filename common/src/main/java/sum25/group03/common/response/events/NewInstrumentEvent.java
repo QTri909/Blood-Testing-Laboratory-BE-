@@ -16,6 +16,6 @@ public class NewInstrumentEvent {
     private Long instrumentId;
     private String instrumentName;
     private ConfigEvent configEvent;
-    private List<NewReagentEvent> newReagentEvents;
+    private Long cloneFromInstrumentId;
 
 }

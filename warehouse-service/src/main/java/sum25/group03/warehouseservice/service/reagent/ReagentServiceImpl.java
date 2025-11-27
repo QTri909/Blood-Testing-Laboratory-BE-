@@ -28,6 +28,7 @@ import sum25.group03.warehouseservice.repository.ReagentRepo;
 import sum25.group03.warehouseservice.repository.ReagentUsageRepo;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -54,8 +55,8 @@ public class ReagentServiceImpl implements ReagentService {
     }
 
     @Override
-    public List<Reagents> findAllByReagentId(List<Long> reagentId) {
-        return reagentRepo.findAllByReagentId(reagentId);
+    public List<Reagents> findAllByReagentIdAndStatus(List<Long> reagentId, ReagentStatus status) {
+        return reagentRepo.findAllByReagentIdInAndStatus(reagentId,status);
     }
 
     @Override
@@ -346,6 +347,35 @@ public class ReagentServiceImpl implements ReagentService {
                 .unit(saved.getUnit().getUnit())
                 .quantity(0)
                 .build();
+    }
+
+    @Override
+    public ReagentRes getReagentById(Long reagentId) {
+        Reagents reagent = reagentRepo.findById(reagentId)
+                .orElseThrow(() -> new NotFoundException("Reagent not found with id: " + reagentId));
+        ReagentRes res = ReagentRes.builder()
+                .reagentId(reagent.getReagentId())
+                .reagentName(reagent.getReagentName())
+                .catalogNumber(reagent.getCatalogNumber())
+                .casNumber(reagent.getCasNumber())
+                .unit(reagent.getUnit().getUnit())
+                .storageConditions(reagent.getStorageConditions())
+                .createdAt(reagent.getCreatedAt())
+                .build();
+        return res;
+    }
+
+    @Override
+    public List<ReagentInventoryRes> getListLotNumberByReagentId(Long reagentId) {
+        List<ReagentInventory> inventories = reagentInventoryRepo.findAllByReagentId(reagentId,ReagentInventoryStatus.AVAILABLE);
+
+        return inventories.stream()
+                .map(r -> ReagentInventoryRes.builder()
+                        .reagentInventoryId(r.getReagentInventoryId())
+                        .lotNumber(r.getLotNumber())
+                        .quantityAvailable(r.getQuantityAvailable())
+                        .build())
+                .toList();
     }
 
 }

@@ -14,7 +14,8 @@ import lombok.NoArgsConstructor;
 public class InstallReagentRequest {
     @NotNull(message = "Instrument ID is required")
     private Long instrumentId;
-
+    @NotNull(message = "Reagent ID is required")
+    private Long reagentId;
     @NotBlank(message = "Batch number/barcode is required")
     private String lotNumber;
 

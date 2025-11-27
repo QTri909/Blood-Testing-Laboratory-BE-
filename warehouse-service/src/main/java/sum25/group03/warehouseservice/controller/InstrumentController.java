@@ -60,4 +60,9 @@ public class InstrumentController {
         return ApiResponse.ok(instrumentService.getList());
     }
 
+    @DeleteMapping("/{instrumentId}/config")
+    public ApiResponse<?> deleteConfig(@PathVariable Long instrumentId) {
+        instrumentService.removeConfigFromInstrument(instrumentId);
+        return ApiResponse.ok("Configuration removed from instrument successfully");
+    }
 }
