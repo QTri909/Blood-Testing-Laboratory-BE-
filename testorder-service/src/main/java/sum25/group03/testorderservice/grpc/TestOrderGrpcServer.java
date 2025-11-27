@@ -1,5 +1,6 @@
 package sum25.group03.testorderservice.grpc;
 
+import io.grpc.Status;
 import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
 import sum25.group03.common.response.dtos.grpc.ParameterGrpc;
 import sum25.group03.common.response.dtos.grpc.ParameterGrpcResponse;
@@ -196,17 +197,80 @@ public class TestOrderGrpcServer extends TestOrderServiceGrpc.TestOrderServiceIm
             SyncParameterRequestList request,
             StreamObserver<SyncParameterResponse> responseObserver
     ) {
-        // mapping get list of ParameterGrpc for handling
-        List<ParameterGrpc> parameterGrpc = parameterMapper.toParameterListFromSyncedGrpcList(request);
+        try {
+            // 1. Map gRPC request to domain
+            List<ParameterGrpc> parameterGrpc =
+                    parameterMapper.toParameterListFromSyncedGrpcList(request);
 
-        // handle sync parameter
-        ParameterGrpcResponse response = parameterService.syncParameterFromWarehouse(parameterGrpc);
+            if (parameterGrpc == null || parameterGrpc.isEmpty()) {
+                throw new IllegalArgumentException("Parameter list is empty");
+            }
 
-        // map to SyncParameterResponse for gRPC response
-        SyncParameterResponse grpcResponse = parameterMapper.toGrpcResponseFromParameter(response);
+            // 2. Sync from warehouse
+            ParameterGrpcResponse response =
+                    parameterService.syncParameterFromWarehouse(parameterGrpc);
 
-        responseObserver.onNext(grpcResponse);
-        responseObserver.onCompleted();
+            if (response == null) {
+                throw new IllegalStateException("Sync result is null");
+            }
+
+            // 3. Map domain to gRPC response
+            SyncParameterResponse grpcResponse =
+                    parameterMapper.toGrpcResponseFromParameter(response);
+
+            responseObserver.onNext(grpcResponse);
+            responseObserver.onCompleted();
+
+        } catch (IllegalArgumentException e) {
+            // Client sent bad data
+            responseObserver.onError(
+                    Status.INVALID_ARGUMENT
+                            .withDescription(e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // Duplicate, FK constraint, etc.
+            responseObserver.onError(
+                    Status.ALREADY_EXISTS
+                            .withDescription("Duplicate or conflicting parameter data")
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+
+        } catch (jakarta.persistence.EntityNotFoundException e) {
+            // Missing referenced entity
+            responseObserver.onError(
+                    Status.NOT_FOUND
+                            .withDescription("Referenced entity not found")
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+
+        } catch (org.springframework.transaction.TransactionSystemException e) {
+            // Transaction rollback / flush error
+            log.error("Transaction error while syncing parameters", e);
+
+            responseObserver.onError(
+                    Status.ABORTED
+                            .withDescription("Transaction failed while syncing parameters")
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+
+        } catch (Exception e) {
+            // Absolute fallback (NPE, mapping error, timeout, etc.)
+            log.error("Unhandled gRPC error in syncParameter", e);
+
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Internal error while syncing parameters")
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
     }
+
 
 }
