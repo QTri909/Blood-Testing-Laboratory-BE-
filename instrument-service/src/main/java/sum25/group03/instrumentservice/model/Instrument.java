@@ -35,4 +35,7 @@ public class Instrument {
     @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL)
     private List<InstalledReagent> installedReagents;
 
+    @OneToMany(mappedBy = "instrument", cascade = CascadeType.ALL)
+    private List<ReagentHistoryUsage> reagentHistoryUsages;
+
 }

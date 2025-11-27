@@ -19,6 +19,5 @@ public class InstallReagentRequest {
     @NotBlank(message = "Batch number/barcode is required")
     private String lotNumber;
 
-    @NotNull(message = "Current volume is required")
     private Double currentVolume;
 }

@@ -15,6 +15,7 @@ import sum25.group03.instrumentservice.client.response.ReagentResponse;
 import sum25.group03.instrumentservice.client.response.TestOrderResponse;
 import sum25.group03.instrumentservice.common.InstalledReagentStatus;
 import sum25.group03.instrumentservice.common.InstrumentStatus;
+import sum25.group03.instrumentservice.common.UsageType;
 import sum25.group03.instrumentservice.controller.request.BloodTestingRequest;
 import sum25.group03.instrumentservice.controller.response.RawTestResultResponse;
 import sum25.group03.instrumentservice.exception.BarcodeAlreadyTestedException;
@@ -23,9 +24,11 @@ import sum25.group03.instrumentservice.exception.InsufficientReagentException;
 import sum25.group03.instrumentservice.model.Instrument;
 import sum25.group03.instrumentservice.model.InstalledReagent;
 import sum25.group03.instrumentservice.model.RawTestResult;
+import sum25.group03.instrumentservice.model.ReagentHistoryUsage;
 import sum25.group03.instrumentservice.repository.InstalledReagentRepository;
 import sum25.group03.instrumentservice.repository.InstrumentRepository;
 import sum25.group03.instrumentservice.repository.RawTestResultRepository;
+import sum25.group03.instrumentservice.repository.ReagentHistoryUsageRepository;
 import sum25.group03.instrumentservice.service.KafkaEventPublisher;
 import sum25.group03.instrumentservice.service.SimulatorService;
 import sum25.group03.instrumentservice.service.util.ReagentValidator;
@@ -52,17 +55,17 @@ public class SimulatorServiceImpl implements SimulatorService {
     private final WarehouseServiceClient warehouseServiceClient;
     private final TestOrderServiceClient testOrderServiceClient;
     private final AuditLogService auditLogService;
+    private final ReagentHistoryUsageRepository reagentHistoryUsageRepository;
 
     @Override
 //    @Async("taskExecutor")
     public CompletableFuture<RawTestResultResponse> startTest(BloodTestingRequest request) {
         TestOrderResponse testOrderResponse = null;
         try {
-            if (instrumentRepository.existsByIdAndStatusIsNot(request.getInstrumentId(), InstrumentStatus.READY)) {
-                String errorMessage = "Instrument ID: " + request.getInstrumentId() + " is not READY";
-                log.warn(errorMessage);
-                throw new InstrumentNotReadyException(errorMessage);
-            }
+                Instrument instrument = instrumentRepository.findByIdAndStatus(request.getInstrumentId(), InstrumentStatus.READY)
+                        .orElseThrow(() -> new InstrumentNotReadyException(
+                                "Instrument ID: " + request.getInstrumentId() + " is not READY"));
+
             log.info("Starting Blood Analyser simulator for barcode: {} on instrument: {}",
                     request.getBarcode(), request.getInstrumentId());
 
@@ -83,8 +86,8 @@ public class SimulatorServiceImpl implements SimulatorService {
             }
 
 
-            List<ReagentResponse> listReagentResponses = warehouseServiceClient.reagentResponseReagentList();
-            if (!ReagentValidator.validateReagentVolume(installedReagents,listReagentResponses)) {
+            //List<ReagentResponse> listReagentResponses = warehouseServiceClient.reagentResponseReagentList();
+            if (!ReagentValidator.validateReagentVolume(installedReagents)) {
                 throw new InsufficientReagentException(
                         "Insufficient reagent volume for barcode: " + request.getBarcode());
             }
@@ -115,30 +118,33 @@ public class SimulatorServiceImpl implements SimulatorService {
             long simulationTime = 10_000 + (long) (Math.random() * 5_000);
             Thread.sleep(simulationTime);
 
-            for(ReagentResponse reagentResponse: listReagentResponses){
-                Double usageVolume = reagentResponse.getUsageMin()+ (reagentResponse.getUsageMax()-reagentResponse.getUsageMin())*rand.nextDouble();
-                InstalledReagent installedReagent = installedReagentRepository.findByReagentIdAndInstrumentIdAndStatusNot(reagentResponse.getReagentId(), request.getInstrumentId(), InstalledReagentStatus.REMOVED)
-                        .orElseThrow(() -> new RuntimeException("Installed reagent not found for reagent ID: " + reagentResponse.getReagentId()));
+            for(InstalledReagent installedReagent: installedReagents){
+                Double usageVolume = installedReagent.getUsageMin()+ (installedReagent.getUsageMax()-installedReagent.getUsageMin())*rand.nextDouble();
+
                 Double currentVolume = installedReagent.getCurrentVolume();
+                if(currentVolume < usageVolume){
+                    log.error("INSUFFICIENT REAGENT DURING USAGE");
+                    throw new InsufficientReagentException(
+                            "Insufficient reagent volume during usage for barcode: " + request.getBarcode());
+                }
                 installedReagentRepository.updateCurrentVolumeById(currentVolume-usageVolume,installedReagent.getId());
-                ReagentUsageHistoryEvent usageEvent = ReagentUsageHistoryEvent.builder()
-                        .instrumentId(request.getInstrumentId())
+                ReagentHistoryUsage usage = ReagentHistoryUsage.builder()
+                        .instrument(instrument)
                         .reagentId(installedReagent.getReagentId())
                         .testOrderId(testOrderResponse.getId())
-                        .usageType("TEST_USAGE")
-                        .lotReagentId(installedReagent.getLotReagentId())
+                        .usageType(UsageType.TEST)
                         .reagentName(installedReagent.getReagentName())
                         .lotNumber(installedReagent.getLotNumber())
-                        .quantityUsed(usageVolume)
+                        .volumeUsed(usageVolume)
                         .unit(installedReagent.getUnit())
-                        .usedAt(LocalDate.now())
                         .usedBy(2)
                         .notes("Reagent name: " + installedReagent.getReagentName() +
                                 " used for test order ID: " + testOrderResponse.getId() + " | Barcode: " + request.getBarcode()+"Usage volume: "+usageVolume+installedReagent.getUnit())
                         .build();
-                kafkaEventPublisher.publishReagentUsageHistoryEvent(usageEvent);
-                log.info("Publish reagent usage event for reagent: {} | Barcode: {}",
-                        installedReagent.getReagentName(), request.getBarcode());
+                reagentHistoryUsageRepository.save(usage);
+                //kafkaEventPublisher.publishReagentUsageHistoryEvent(usageEvent);
+//                log.info("Publish reagent usage event for reagent: {} | Barcode: {}",
+//                        installedReagent.getReagentName(), request.getBarcode());
                 log.info("REAGENT: {} | Initial Volume: {} {} | Used: {} {} | Final Volume: {} {}",
                         installedReagent.getReagentName(),
                         currentVolume, installedReagent.getUnit(),
@@ -151,9 +157,6 @@ public class SimulatorServiceImpl implements SimulatorService {
 
             String rawDataJson = objectMapper.writeValueAsString(rawCbc);
             String finalHl7Message = buildHl7Message(request.getBarcode(), HL7Message);
-
-            Instrument instrument = instrumentRepository.findById(request.getInstrumentId())
-                    .orElseThrow(() -> new RuntimeException("Instrument not found with ID: " + request.getInstrumentId()));
 
             RawTestResult newResult = RawTestResult.builder()
                     .testOrderId(testOrderResponse.getId())

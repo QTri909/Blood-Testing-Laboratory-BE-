@@ -16,6 +16,7 @@ import sum25.group03.instrumentservice.controller.request.InstallReagentRequest;
 import sum25.group03.instrumentservice.controller.request.UpdateReagentStatusRequest;
 import sum25.group03.instrumentservice.controller.response.*;
 import sum25.group03.instrumentservice.service.InstrumentService;
+import sum25.group03.instrumentservice.service.UsageService;
 
 @RestController
 @RequestMapping("/api/v1/instruments")
@@ -23,6 +24,7 @@ import sum25.group03.instrumentservice.service.InstrumentService;
 @Tag(name = "Instrument Management", description = "APIs for managing laboratory instruments")
 public class InstrumentController {
     private final InstrumentService instrumentService;
+    private final UsageService usageService;
 
     @GetMapping("/{id}")
     @Operation(
@@ -100,5 +102,12 @@ public class InstrumentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-
+    @GetMapping("/instrument/{instrumentId}/usage-history")
+    public sum25.group03.common.response.ApiResponse<?> getReagentUsageHistoryByInstrument(
+            @PathVariable Long instrumentId,
+            @RequestParam (defaultValue = "0") int page,
+            @RequestParam (defaultValue = "20") int size
+    ) {
+        return sum25.group03.common.response.ApiResponse.ok(usageService.getReagentUsageHistoryByInstrument(instrumentId, page, size));
+    }
 }

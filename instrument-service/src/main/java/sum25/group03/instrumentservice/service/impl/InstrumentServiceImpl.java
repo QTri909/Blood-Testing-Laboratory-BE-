@@ -132,13 +132,29 @@ public class InstrumentServiceImpl implements InstrumentService {
     public InstallReagentResponse installReagent(InstallReagentRequest request) {
         log.info("Starting reagent installation process for instrument ID: {}", request.getInstrumentId());
 
-        Instrument instrument = instrumentRepository.findById(request.getInstrumentId())
+        Instrument instrument = instrumentRepository.findByIdAndStatus(request.getInstrumentId(), InstrumentStatus.READY)
                 .orElseThrow(() -> {
                     log.error("Instrument not found with ID : {}", request.getInstrumentId());
                     return new ResourceNotFoundException(
                             "Instrument not found with id: " + request.getInstrumentId());
                 });
-
+        if(instrument.getConfiguration() == null){
+            log.error("Instrument configuration not found for instrument ID : {}", request.getInstrumentId());
+            throw new ResourceNotFoundException(
+                    "Instrument not assigned configuration with id: " + request.getInstrumentId());
+        }
+        Double currentVolume = request.getCurrentVolume()!= null ? request.getCurrentVolume() : 0.0;
+        if(currentVolume.doubleValue() == instrument.getConfiguration().getLoadThreshold()){
+            log.error("Current volume {} fullc can't load reagent {} for instrument ID : {}",
+                    request.getCurrentVolume(),
+                    instrument.getConfiguration().getLoadThreshold(),
+                    request.getInstrumentId());
+            throw new RuntimeException(
+                    "Current volume full load threshold of the instrument configuration");
+        }
+        System.out.println("currentVolume: " + currentVolume);
+        System.out.println("loadThreshold: " + instrument.getConfiguration().getLoadThreshold());
+        Double volumeToLoad = instrument.getConfiguration().getLoadThreshold() - currentVolume;
 
         log.info("Instrument found: {}", instrument.getInstrumentName());
 
@@ -146,7 +162,7 @@ public class InstrumentServiceImpl implements InstrumentService {
         log.info("Validating reagent with Warehouse Service - batch number: {}", request.getLotNumber());
         ReagentValidationResponse reagentValidation;
         try {
-            reagentValidation = warehouseServiceClient.validateReagent(request.getLotNumber(), request.getCurrentVolume());
+            reagentValidation = warehouseServiceClient.validateReagent(request.getLotNumber(),volumeToLoad);
         } catch (WarehouseServiceException e) {
             log.error("Warehouse Service validation failed: {}", e.getMessage());
             throw new WarehouseServiceException(
@@ -164,10 +180,6 @@ public class InstrumentServiceImpl implements InstrumentService {
                     "Cannot install reagent: " + reagentValidation.getMessage());
         }
         log.info("Reagent validation successful - reagent is valid and ready for use");
-        if (request.getCurrentVolume() == null || request.getCurrentVolume() <= 0) {
-            log.warn("Invalid current volume: {}", request.getCurrentVolume());
-            throw new InstrumentModeChangeException("Current volume must be greater than 0");
-        }
 
 //        List<InstalledReagent> reagents = installedReagentRepository
 //                .findByInstrumentIdAndStatusIsNot(request.getInstrumentId(), InstalledReagentStatus.REMOVED);
@@ -183,7 +195,7 @@ public class InstrumentServiceImpl implements InstrumentService {
         InstalledReagent installedReagent = installedReagentRepository.findByReagentIdAndInstrumentIdAndStatus(
                         request.getReagentId(), request.getInstrumentId(), InstalledReagentStatus.AVAILABLE)
                 .orElseThrow(() -> new ResourceNotFoundException("Installed reagent not found "));
-        installedReagent.setCurrentVolume(request.getCurrentVolume());
+        installedReagent.setCurrentVolume(currentVolume + volumeToLoad);
         installedReagent.setLotNumber(reagentValidation.getLotNumber());
         installedReagent.setLotReagentId(reagentValidation.getReagentId().intValue());
 //         installedReagent = InstalledReagent.builder()
@@ -380,13 +392,13 @@ public class InstrumentServiceImpl implements InstrumentService {
                                 .build())
                         .collect(Collectors.toList());
         Configuration config = instrument.getConfiguration();
-        assert config != null;
         return InstrumentResponse.builder()
                 .id(instrument.getId())
                 .instrumentName(instrument.getInstrumentName())
                 .status(instrument.getStatus())
-                .configurationId(config != null ? config.getId() : null)
-                //.configurationName(config != null ? config.getConfigKey() : null)
+                .configurationId(config!=null ? config.getId() : null)
+                .configurationName(config!= null ? config.getConfigurationName() : null)
+                .loadThreshold(config!=null ? config.getLoadThreshold() : null)
                 .installedReagents(reagentResponses)
                 .build();
     }

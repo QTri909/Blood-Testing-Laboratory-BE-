@@ -5,14 +5,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.common.response.events.ReagentInstalledEvent;
 import sum25.group03.common.response.events.UpdateExpiryReagent;
+import sum25.group03.warehouseservice.entity.Instrument;
+import sum25.group03.warehouseservice.entity.ReagentHistoryUsage;
 import sum25.group03.warehouseservice.entity.ReagentInventory;
 import sum25.group03.warehouseservice.entity.enums.ReagentInventoryStatus;
 import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
 import sum25.group03.warehouseservice.entity.Reagents;
+import sum25.group03.warehouseservice.exception.NotFoundException;
+import sum25.group03.warehouseservice.repository.InstrumentRepo;
 import sum25.group03.warehouseservice.repository.ReagentInventoryRepo;
 import sum25.group03.warehouseservice.repository.ReagentRepo;
+import sum25.group03.warehouseservice.repository.ReagentUsageRepo;
 
 import java.math.BigDecimal;
 
@@ -23,7 +29,10 @@ public class ReagentEventListener {
 
     private final ReagentRepo reagentRepo;
     private final ReagentInventoryRepo reagentInventoryRepo;
+    private final ReagentUsageRepo reagentUsageRepo;
+    private final InstrumentRepo instrumentRepo;
 
+    @Transactional
     @KafkaListener(
             topics = "reagent-installed-events",
             groupId = "warehouse-service-group",
@@ -33,7 +42,8 @@ public class ReagentEventListener {
         try {
             log.info("Received reagent installed event for reagent ID: {} (Batch: {})",
                     event.getReagentId(), event.getLotNumber());
-
+            Reagents reagent = reagentRepo.findById(event.getReagentId()).orElseThrow(() -> new NotFoundException("Reagent ID: " + event.getReagentId()));
+            Instrument instrument = instrumentRepo.findById(event.getInstrumentId()).orElseThrow(() -> new NotFoundException("Instrument ID: " + event.getInstrumentId()));
             ReagentInventory reagentInventory = reagentInventoryRepo.findByLotNumber(event.getLotNumber())
                     .orElseThrow(() -> {
                         log.error("Reagent not found in lot: {}", event.getLotNumber());
@@ -47,12 +57,19 @@ public class ReagentEventListener {
             if (newQuantity < 0) {
                 log.warn("Quantity would be negative after installation. Current: {}, Required: {}",
                         reagentInventory.getQuantityAvailable(), event.getRequiredVolume());
-                newQuantity = 0;
+                throw new RuntimeException("Insufficient reagent quantity for installation");
             }
 
             reagentInventory.setQuantityAvailable(newQuantity);
             ReagentInventory updatedReagentInventory = reagentInventoryRepo.save(reagentInventory);
-
+            ReagentHistoryUsage reagentUsage = ReagentHistoryUsage.builder()
+                    .instrument(instrument)
+                    .reagent(reagent)
+                    .lotNumber(event.getLotNumber())
+                    .quantityUsed(event.getRequiredVolume())
+                    .unit(reagent.getUnit().getUnit())
+                    .build();
+            reagentUsageRepo.save(reagentUsage);
             log.info("Reagent quantity updated successfully - Reagent ID: {}, New quantity: {}, " +
                             "Installed on instrument: {} (ID: {})",
                     event.getReagentId(), updatedReagentInventory.getQuantityAvailable(),

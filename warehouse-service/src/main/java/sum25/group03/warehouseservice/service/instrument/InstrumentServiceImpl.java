@@ -58,6 +58,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                 .communicationProtocol(configuration.getCommunicationProtocol())
                 .mixingSpeed(configuration.getMixingSpeed())
                 .firmwareVersion(configuration.getFirmwareVersion())
+                .loadThreshold(configuration.getLoadThreshold())
                 .build();
     }
     public List<ReagentHistoryUsage> buildReagentHistoryUsagesFromReagents(Instrument instrument, List<Reagents> reagents) {
@@ -104,19 +105,13 @@ public class InstrumentServiceImpl implements InstrumentService {
                         .communicationProtocol(configuration.getCommunicationProtocol())
                         .mixingSpeed(configuration.getMixingSpeed())
                         .firmwareVersion(configuration.getFirmwareVersion())
+                        .loadThreshold(configuration.getLoadThreshold())
                         .active(true)
                         .build();
                 newInstrument.setConfiguration(newConfig);
                 configEvent = buildConfigEventFromConfiguration(newConfig);
             }
-//            List<Reagents> reagentUsages = reagentService.findAllByInstrumentId(instrument.getCloneFromInstrumentId());
-//            if(reagentUsages.isEmpty()) {
-//                log.info("No reagents found to clone for instrument id: {}", instrument.getCloneFromInstrumentId());
-//            }else{
-//                List<ReagentHistoryUsage> newReagentUsages = buildReagentHistoryUsagesFromReagents(newInstrument, reagentUsages);
-//                newInstrument.setReagentHistoryUsages(newReagentUsages);
-//                reagentEvents = buildNewReagentEventsFromReagents(reagentUsages);
-//            }
+
         }
         // Save instrument with reagents and config if exist
         Instrument saveInstrument = instrumentRepo.save(newInstrument);
@@ -165,6 +160,7 @@ public class InstrumentServiceImpl implements InstrumentService {
                         .communicationProtocol(config.getCommunicationProtocol())
                         .mixingSpeed(config.getMixingSpeed())
                         .firmwareVersion(config.getFirmwareVersion())
+                        .loadThreshold(config.getLoadThreshold())
                         .active(true)
                         .build();
             }

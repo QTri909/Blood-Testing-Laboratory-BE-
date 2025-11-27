@@ -43,6 +43,9 @@ public class Configuration {
     @Column(name = "use_per_run", nullable = true)
     private int usePerRun;
 
+    @Column(name = "load_threshold", nullable = false)
+    private Double loadThreshold;
+
     @Column(name = "active", nullable = false)
     private boolean active;
 

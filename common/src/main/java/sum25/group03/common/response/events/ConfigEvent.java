@@ -16,4 +16,5 @@ public class ConfigEvent {
     private String communicationProtocol;
     private int  mixingSpeed;
     private String firmwareVersion;
+    private Double loadThreshold;
 }

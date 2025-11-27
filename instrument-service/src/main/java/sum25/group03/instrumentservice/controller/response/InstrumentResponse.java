@@ -1,5 +1,6 @@
 package sum25.group03.instrumentservice.controller.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,11 +13,13 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class InstrumentResponse {
     private Long id;
     private String instrumentName;
     private InstrumentStatus status;
     private Long configurationId;
     private String configurationName;
+    private Double loadThreshold;
     private List<InstalledReagentResponse> installedReagents;
 }

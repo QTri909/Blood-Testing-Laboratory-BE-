@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import sum25.group03.instrumentservice.common.UsageType;
 
 import java.time.LocalDateTime;
@@ -24,7 +25,7 @@ public class ReagentHistoryUsage {
     private Integer lotReagentId;
 
     @Column(name = "lot_number")
-    private Integer lotNumber;
+    private String lotNumber;
 
     @Column(name = "volume_used")
     private Double volumeUsed;
@@ -37,16 +38,23 @@ public class ReagentHistoryUsage {
     private UsageType usageType;
 
     @Column(name = "test_order_id")
-    private Integer testOrderId;
+    private Long testOrderId;
 
     @ManyToOne
     @JoinColumn(name = "instrument_id")
     private Instrument instrument;
 
+    @Column(name = "reagent_id")
+    private Long reagentId;
+
+    @Column(name = "reagent_name")
+    private String reagentName;
+
     @Column(name = "used_by")
     private Integer usedBy;
 
     @Column(name = "used_at")
+    @CreationTimestamp
     private LocalDateTime usedAt;
 
     @Column(name = "notes", columnDefinition = "TEXT")

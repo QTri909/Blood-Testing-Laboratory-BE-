@@ -69,9 +69,9 @@ public class WarehouseServiceClient {
             result.setInInventory(response.getIsInInventory());
             result.setNotExpired(response.getIsNotExpired());
             result.setMessage(response.getMessage());
-            if (response.getExpirationDate() != null && !response.getExpirationDate().isEmpty()) {
-                result.setExpirationDate(java.time.LocalDate.parse(response.getExpirationDate()));
-            }
+//            if (response.getExpirationDate() != null && !response.getExpirationDate().isEmpty()) {
+//                result.setExpirationDate(java.time.LocalDate.parse(response.getExpirationDate()));
+//            }
 
             log.info("Reagent validation result - Valid: {}, Message: {}", result.isValid(), result.getMessage());
             return result;

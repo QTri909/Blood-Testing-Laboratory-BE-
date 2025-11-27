@@ -45,6 +45,7 @@ public class InstrumentEventListener {
                     .firmwareVersion(newInstrumentEvent.getConfigEvent().getFirmwareVersion())
                     .mixingSpeed(newInstrumentEvent.getConfigEvent().getMixingSpeed())
                     .supportedTests(newInstrumentEvent.getConfigEvent().getSupportedTests())
+                     .loadThreshold(newInstrumentEvent.getConfigEvent().getLoadThreshold())
                     .active(true)
                     .build();
             newInstrument.setConfiguration(config);
@@ -111,6 +112,7 @@ public class InstrumentEventListener {
                     .firmwareVersion(event.getConfigEvent().getFirmwareVersion())
                     .mixingSpeed(event.getConfigEvent().getMixingSpeed())
                     .supportedTests(event.getConfigEvent().getSupportedTests())
+                    .loadThreshold(event.getConfigEvent().getLoadThreshold())
                     .active(true)
                     .build();
             instrument.setConfiguration(config);
