@@ -19,4 +19,5 @@ public class CommentResponseDTO {
     private LocalDateTime updatedAt;
     private CommentStatus status;
 
+    private GrpcUserInfo creatorInfo;
 }

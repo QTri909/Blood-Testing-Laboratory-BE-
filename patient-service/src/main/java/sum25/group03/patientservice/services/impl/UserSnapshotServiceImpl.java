@@ -226,4 +226,16 @@ public class UserSnapshotServiceImpl implements UserSnapshotService {
 
         repository.save(searchedEntity); // explicit save
     }
+
+    @Override
+    public List<UserSnapshotEntity> getUserInformationByExternalUserIds(List<Long> externalUserIds) {
+
+        if (externalUserIds == null || externalUserIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        Collection<UserSnapshotEntity> userInfos = repository.findByExternalUserIdIn(externalUserIds);
+        return userInfos.stream().toList();
+    }
+
+
 }

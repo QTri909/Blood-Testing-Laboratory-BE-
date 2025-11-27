@@ -3,10 +3,8 @@ package sum25.group03.testorderservice.mapper;
 import org.mapstruct.Mapper;
 import sum25.group03.testorderservice.dtos.request.GrpcMappingPatientAndCreatorIdRequest;
 import sum25.group03.testorderservice.dtos.response.GrpcMappingPatientAndCreatorIdResponse;
-import sum25.group03.testorderservice.grpc.CreatorIdList;
-import sum25.group03.testorderservice.grpc.MappingPatientIdAndCreatorIdToTheirNameRequest;
-import sum25.group03.testorderservice.grpc.MappingPatientIdAndCreatorIdToTheirNameResponse;
-import sum25.group03.testorderservice.grpc.PatientIdList;
+import sum25.group03.testorderservice.dtos.response.GrpcUserInfo;
+import sum25.group03.testorderservice.grpc.*;
 
 import java.util.*;
 
@@ -86,5 +84,27 @@ public interface GrpcUserSnapshotMapper {
                 .build();
     }
 
+    // --------------- grpc mapping for get user infos from external user IDs --------------
 
+    // map 'UserInfo' (proto) to 'GrpcUserInfo' (java)
+    default GrpcUserInfo mapToGrpcUserInfo(UserInfo userInfo) {
+        return GrpcUserInfo.builder()
+                .externalUserId(userInfo.getExternalUserId())
+                .fullName(userInfo.getFullName())
+                .email(userInfo.getEmail())
+                .roles(new ArrayList<String>(userInfo.getRolesList())) // protoStringList to java List<String> conversion
+                .build();
+    }
+
+    // map 'UserInformationByExternalIdsResponse' to List<UserInfo>
+    default List<GrpcUserInfo> mapToGrpcUserInfoList(UserInformationByExternalIdsResponse response) {
+        List<UserInfo> rawUserInfos = response.getUsersList();
+        if (rawUserInfos.isEmpty())
+            return List.of();
+
+        // else:
+        return rawUserInfos.stream()
+                .map(this::mapToGrpcUserInfo)
+                .toList();
+    }
 }

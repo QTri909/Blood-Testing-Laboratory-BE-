@@ -1,10 +1,12 @@
 package sum25.group03.patientservice.grpc;
 
 import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
+import org.springframework.dao.DataAccessException;
 import sum25.group03.patientservice.dtos.request.GrpcMappingPatientAndCreatorIdRequest;
 import sum25.group03.patientservice.dtos.response.GrpcMappingPatientAndCreatorIdResponse;
 import sum25.group03.patientservice.mapper.GrpcUserSnapshotMapper;
@@ -12,6 +14,8 @@ import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 import sum25.group03.patientservice.services.interfaces.UserSnapshotService;
+
+import java.util.List;
 
 @GrpcService
 @RequiredArgsConstructor
@@ -132,4 +136,59 @@ public class PatientGrpcServer extends PatientServiceGrpc.PatientServiceImplBase
         responseObserver.onNext(grpcResponse);
         responseObserver.onCompleted();
     }
+
+    @Override
+    public void getUserInformationByExternalIds(
+            UserInformationByExternalIdsRequest request,
+            StreamObserver<UserInformationByExternalIdsResponse> responseObserver
+    ) {
+        try {
+            // 1. Validate input
+            List<Long> externalUserIds = request.getExternalUserIdsList();
+
+            // 2. Fetch from database
+            List<UserSnapshotEntity> userSnapshots =
+                    userSnapshotService.getUserInformationByExternalUserIds(externalUserIds);
+
+            // 3. Map to gRPC response
+            UserInformationByExternalIdsResponse response =
+                    grpcUserSnapshotMapper.mapToGrpcUserInformationResponse(userSnapshots);
+
+            // 4. Return result
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        } catch (StatusRuntimeException grpcEx) {
+            //  If a downstream gRPC call already threw a Status error
+            responseObserver.onError(grpcEx);
+
+        } catch (IllegalArgumentException ex) {
+            //  For validation / bad input cases
+            responseObserver.onError(
+                    Status.INVALID_ARGUMENT
+                            .withDescription(ex.getMessage())
+                            .withCause(ex)
+                            .asRuntimeException()
+            );
+
+        } catch (DataAccessException ex) {
+            //  For database failures (Spring)
+            responseObserver.onError(
+                    Status.UNAVAILABLE
+                            .withDescription("Database temporarily unavailable")
+                            .withCause(ex)
+                            .asRuntimeException()
+            );
+
+        } catch (Exception ex) {
+            //  Absolute safety net for all unexpected errors
+            responseObserver.onError(
+                    Status.INTERNAL
+                            .withDescription("Unexpected server error while fetching user information")
+                            .withCause(ex)
+                            .asRuntimeException()
+            );
+        }
+    }
+
 }
