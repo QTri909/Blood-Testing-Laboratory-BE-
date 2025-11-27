@@ -121,7 +121,14 @@ public class TestParameterServiceImpl implements  TestParameterService {
     }
 
     @Override
+    @Transactional
     public TestParameterRes addTestParameter(TestParameterReq req) {
+
+        // check if the abbreviation already exists or not
+        boolean isAbbreviationExists = testParamRepo.existsByAbbreviation(req.getAbbreviation());
+        if (isAbbreviationExists) {
+            throw new IllegalArgumentException("Test Parameter with abbreviation " + req.getAbbreviation() + " already exists.");
+        }
 
         TestParameter testParameter = TestParameter.builder()
                 .parameterName(req.getParameterName())

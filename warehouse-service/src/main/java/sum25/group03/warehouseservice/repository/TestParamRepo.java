@@ -20,9 +20,9 @@ public interface TestParamRepo extends JpaRepository<TestParameter,Long> {
 """)
     List<TestParameter> findAllByIdsWithNormalRanges(@Param("ids") List<Long> testParameterIds);
 
-
-
     List<TestParameter> findAllByIdInAndStatus(List<Long> id, ParameterStatus parameterStatus);
 
     List<TestParameter> findAllByStatus(ParameterStatus parameterStatus);
+
+    boolean existsByAbbreviation(String abbreviation);
 }
