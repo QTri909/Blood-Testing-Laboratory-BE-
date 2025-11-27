@@ -1,7 +1,9 @@
 package sum25.group03.patientservice.grpc;
 
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.server.service.GrpcService;
 import sum25.group03.patientservice.dtos.request.GrpcMappingPatientAndCreatorIdRequest;
 import sum25.group03.patientservice.dtos.response.GrpcMappingPatientAndCreatorIdResponse;
@@ -13,6 +15,7 @@ import sum25.group03.patientservice.services.interfaces.UserSnapshotService;
 
 @GrpcService
 @RequiredArgsConstructor
+@Slf4j
 public class PatientGrpcServer extends PatientServiceGrpc.PatientServiceImplBase {
 
     private final UserSnapshotRepository userSnapshotRepository;
@@ -50,17 +53,57 @@ public class PatientGrpcServer extends PatientServiceGrpc.PatientServiceImplBase
             AutoCreateMedicalRecordRequest request,
             StreamObserver<CreatedMedicalRecordResponse> createdRecordInfo
     ) {
-        Long createdMedicalRecordId = medicalRecordService.autoCreateNewMedicalRecordByTestOrder(
-                request.getCreatedBy(),
-                request.getPatientId()
-        );
-        CreatedMedicalRecordResponse response = CreatedMedicalRecordResponse.newBuilder()
-                .setRecordId(createdMedicalRecordId)
-                .build();
+        try {
+            Long createdMedicalRecordId =
+                    medicalRecordService.autoCreateNewMedicalRecordByTestOrder(
+                            request.getCreatedBy(),
+                            request.getPatientId()
+                    );
 
-        createdRecordInfo.onNext(response);
-        createdRecordInfo.onCompleted();
+            CreatedMedicalRecordResponse response =
+                    CreatedMedicalRecordResponse.newBuilder()
+                            .setRecordId(createdMedicalRecordId)
+                            .build();
+
+            createdRecordInfo.onNext(response);
+            createdRecordInfo.onCompleted();
+
+        } catch (IllegalArgumentException e) {
+            createdRecordInfo.onError(
+                    Status.INVALID_ARGUMENT
+                            .withDescription(e.getMessage())
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            createdRecordInfo.onError(
+                    Status.ALREADY_EXISTS
+                            .withDescription("Medical record already exists")
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+
+        } catch (jakarta.persistence.EntityNotFoundException e) {
+            createdRecordInfo.onError(
+                    Status.NOT_FOUND
+                            .withDescription("Patient not found")
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+
+        } catch (Exception e) {
+            log.error("Unhandled gRPC error in autoCreateMedicalRecord", e);
+
+            createdRecordInfo.onError(
+                    Status.INTERNAL
+                            .withDescription("Internal server error while creating medical record")
+                            .withCause(e)
+                            .asRuntimeException()
+            );
+        }
     }
+
 
     @Override
     public void assignPatientIdToMedicalRecord(

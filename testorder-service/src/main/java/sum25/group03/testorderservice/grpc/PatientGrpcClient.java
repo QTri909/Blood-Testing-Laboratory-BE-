@@ -2,6 +2,7 @@ package sum25.group03.testorderservice.grpc;
 
 import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 import sum25.group03.testorderservice.dtos.request.GrpcMappingPatientAndCreatorIdRequest;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PatientGrpcClient {
 
     private final GrpcUserSnapshotMapper grpcUserSnapshotMapper;
@@ -42,7 +44,22 @@ public class PatientGrpcClient {
 
             return patientStub.autoCreateMedicalRecord(request);
         } catch (StatusRuntimeException e) {
-            throw new RuntimeException("Failed to create medical record via gRPC", e);
+            io.grpc.Status status = io.grpc.Status.fromThrowable(e);
+
+            log.error("gRPC failed. Code={}, Description={}, Cause={}",
+                    status.getCode(),
+                    status.getDescription(),
+                    e.getCause(),
+                    e
+            );
+
+            String detailedMessage = String.format(
+                    "gRPC error: %s - %s",
+                    status.getCode(),
+                    status.getDescription()
+            );
+
+            throw new RuntimeException(detailedMessage, e);
         }
     }
 
