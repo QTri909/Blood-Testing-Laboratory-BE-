@@ -11,6 +11,7 @@ public interface RawTestResultRepositoryCustom {
             String testOrderId,
             String instrumentId,
             String status,
+            String barcode,
             Instant from,
             Instant to,
             Pageable pageable

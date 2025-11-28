@@ -25,6 +25,7 @@ public class RawTestResultService {
             String testOrderId,
             String instrumentId,
             String status,
+            String barcode,
             String fromStr,
             String toStr
     ) {
@@ -42,7 +43,7 @@ public class RawTestResultService {
         }
 
         Pageable pageable = PageRequest.of(page, size);
-        return repository.searchRawTests(testOrderId, instrumentId, status, from, to, pageable);
+        return repository.searchRawTests(testOrderId, instrumentId, status, barcode, from, to, pageable);
     }
 
 

@@ -11,6 +11,8 @@ services:
       - MONGO_INITDB_DATABASE=monitoring_db
     ports:
       - "27017:27017"
+    volumes:
+      - ./mongodb-init/init.js:/docker-entrypoint-initdb.d/init.js
     networks:
       - internal
 
