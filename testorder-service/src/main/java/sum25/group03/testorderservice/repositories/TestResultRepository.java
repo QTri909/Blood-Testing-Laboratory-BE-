@@ -14,4 +14,6 @@ public interface TestResultRepository extends JpaRepository<TestResult,Long> {
 
     List<TestResult> findByIdInOrderByCreatedAtDesc(List<Long> ids);
     List<TestResult> findByTestOrderAndParameter_IdInOrderByCreatedAtDesc(TestOrder testOrder, List<Long> parameterIds);
+
+    List<TestResult> findAllByTestOrder_Barcode(String barcode);
 }

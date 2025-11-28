@@ -9,6 +9,7 @@ public enum TestOrderStatus {
     UNMATCHED,
     ONGOING, // can not be canceled, or must be mechanism for refund
     WAITING,
+    FAILED,
     CANCELED,
     COMPLETED, // ready for review
     REVIEWED,
