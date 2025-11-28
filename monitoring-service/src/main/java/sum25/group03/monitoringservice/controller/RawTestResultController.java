@@ -26,11 +26,12 @@ public class RawTestResultController {
             @RequestParam(required = false) String testOrderId,
             @RequestParam(required = false) String instrumentId,
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String barcode,
             @RequestParam(required = false) String from,
             @RequestParam(required = false) String to
     ) {
         Page<RawTestResult> pageResult =
-                service.getFiltered(page, size, testOrderId, instrumentId, status, from, to);
+                service.getFiltered(page, size, testOrderId, instrumentId, status, barcode, from, to);
 
         return ApiResponse.add("Fetched raw test results successfully",
                 PagedResponse.fromPage(pageResult));

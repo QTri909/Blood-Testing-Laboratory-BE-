@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
@@ -22,6 +23,7 @@ public class RawTestResult {
     private String testOrderId;
     private String instrumentId;
     private String hl7Message;
+    @Indexed(expireAfterSeconds = 2592000)  // 30 days: 30 * 24 * 60 * 60 = 2592000 seconds
     private Instant receivedAt;
     private String barcode;
     private String rawData;

@@ -1,8 +1,12 @@
 package sum25.group03.testorderservice.services.impl;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -13,22 +17,20 @@ import sum25.group03.testorderservice.dtos.request.TestResultPublishedEventDTO;
 import sum25.group03.testorderservice.entities.TestResult;
 import sum25.group03.testorderservice.repositories.TestResultRepository;
 import sum25.group03.testorderservice.services.interfaces.IKafkaConsumer;
+import sum25.group03.testorderservice.services.interfaces.TestResultService;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class KafkaConsumerImpl implements IKafkaConsumer {
     private final KafkaTemplate<String, String> kafkaTemplate;
-    @Autowired
-    private Hl7Parser  hl7Parser;
-
-    @Autowired
-    private TestResultRepository testResultRepository;
-
-    public KafkaConsumerImpl(KafkaTemplate<String, String> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
-    }
+    private final Hl7Parser  hl7Parser;
+    private final TestResultRepository testResultRepository;
+    private final TestResultService testResultService;
 
     @Override
     @KafkaListener(
@@ -39,7 +41,8 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
     public void listen(TestResultPublishedEventDTO eventDTO, Acknowledgment ack) throws IOException {
         System.out.println("📥 Received HL7 message: " + eventDTO);
         try {
-            process(eventDTO);
+            // process(eventDTO);
+            processOnNonHL7(eventDTO);
         } catch (Exception e) {
             System.err.println("Error while processing message: " + e.getMessage());
         } finally {
@@ -77,6 +80,42 @@ public class KafkaConsumerImpl implements IKafkaConsumer {
             sendToQuarantine(message, e.getMessage());
         }
     }
+
+    public void processOnNonHL7(Object message) {
+
+        if (!(message instanceof TestResultPublishedEventDTO dto)) {
+            log.error("Sync test result failed: Message is not TestResultPublishedEventDTO");
+            throw new IllegalArgumentException("Sync test result failed!");
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Double> resultsMap = mapper.readValue(
+                    dto.getRawData(),
+                    new TypeReference<Map<String, Double>>() {}
+            );
+
+            // sync to database:
+            testResultService.syncTestResultsFromInstruments(resultsMap, dto);
+
+        } catch (JsonProcessingException jpe) {
+            log.error("Sync test result failed: Invalid raw data format");
+            sendToQuarantine(message, jpe.getMessage());
+        } catch (Exception e) {
+            log.error("Sync test result failed: " + e.getMessage());
+            sendToQuarantine(message, e.getMessage());
+        }
+
+    }
+    /*
+        private Long testOrderId;
+    private Long instrumentId;
+    private String barcode;
+    private String rawData;
+    private String hl7Message;
+    private LocalDateTime timestamp;
+    private String status;
+     */
 
     @Override
     public void sendToQuarantine(Object message, String reason) {

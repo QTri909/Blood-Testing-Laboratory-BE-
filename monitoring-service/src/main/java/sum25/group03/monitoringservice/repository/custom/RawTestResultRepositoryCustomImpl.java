@@ -25,6 +25,7 @@ public class RawTestResultRepositoryCustomImpl implements RawTestResultRepositor
             String testOrderId,
             String instrumentId,
             String status,
+            String barcode,
             Instant from,
             Instant to,
             Pageable pageable
@@ -39,6 +40,9 @@ public class RawTestResultRepositoryCustomImpl implements RawTestResultRepositor
         }
         if (status != null && !status.isEmpty()) {
             criteriaList.add(Criteria.where("status").is(status));
+        }
+        if (barcode != null && !barcode.isEmpty()) {
+            criteriaList.add(Criteria.where("barcode").is(barcode));
         }
         if (from != null) {
             criteriaList.add(Criteria.where("receivedAt").gte(from));

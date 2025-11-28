@@ -5,15 +5,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import sum25.group03.testorderservice.dtos.request.TestResultBulkedRequestDTO;
-import sum25.group03.testorderservice.dtos.request.ReviewRequestDTO;
-import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
-import sum25.group03.testorderservice.dtos.request.TestResultReviewRequestDTO;
+import sum25.group03.testorderservice.dtos.request.*;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entities.Parameter;
 import sum25.group03.testorderservice.entities.TestOrder;
 import sum25.group03.testorderservice.entities.TestResult;
 import sum25.group03.testorderservice.enums.ActionTypeFeatures;
+import sum25.group03.testorderservice.enums.FlagStatus;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.enums.TestResultStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
@@ -404,5 +402,73 @@ public class TestResultServiceImpl implements TestResultService {
         return testResults.stream()
                 .map(testResultMapper::toResponseDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void syncTestResultsFromInstruments(Map<String, Double> results, TestResultPublishedEventDTO otherInfos) {
+        Long testOrderId = otherInfos.getTestOrderId();
+        Long instrumentId = otherInfos.getInstrumentId();
+        String barcode = otherInfos.getBarcode();
+        String rawData = otherInfos.getRawData();
+        LocalDateTime executionTimestampStr = otherInfos.getTimestamp();
+        String status = otherInfos.getStatus();
+        boolean successStatus = (status != null && status.equalsIgnoreCase("success"));
+
+        // search for testOrder:
+        TestOrder testOrder = null;
+        if (testOrderId != null) {
+            testOrder = testOrderRepository.findById(testOrderId).orElse(null);
+        } else if (barcode != null) {
+            testOrder = testOrderRepository.findByBarcode(barcode).orElse(null);
+        }
+
+        if (testOrder == null) {
+            throw new IllegalArgumentException("Test order not found for the given test order ID or barcode.");
+        }
+
+        List<TestResult> testResults = testResultRepository.findByTestOrderId(testOrder.getId());
+        if (testResults == null || testResults.isEmpty()) {
+            throw new ResourceNotFoundException("No test results found for the given test order ID or barcode.");
+        }
+        //else:
+        testOrder.setInstrumentId(instrumentId);
+        boolean atLeast1Failed = false;
+        for (TestResult tr : testResults) {
+            String paramCode = tr.getParameter().getParamCode();
+            Double value = results.get(paramCode);
+            FlagStatus flag = calculateFlag(tr.getParameter(), value);
+
+            tr.setValue(value);
+            tr.setFlagStatus(flag);
+
+            if (successStatus) {
+                tr.setStatus(TestResultStatus.COMPLETED);
+            }
+            else {
+                tr.setStatus(TestResultStatus.FAILED);
+                atLeast1Failed = true;
+            }
+        }
+        if (atLeast1Failed)
+            testOrder.setStatus(TestOrderStatus.FAILED);
+        else
+            testOrder.setStatus(TestOrderStatus.COMPLETED);
+
+        // explicitly save:
+        testResultRepository.saveAll(testResults);
+        testOrderRepository.save(testOrder); // why it's not save?
+    }
+
+    private FlagStatus calculateFlag(Parameter parameter, Double value) {
+        if (parameter == null || value == null) return null;
+
+        double criticalLow = parameter.getMin() * 0.8;
+        double criticalHigh = parameter.getMax() * 1.2;
+
+        if (value < criticalLow || value > criticalHigh) return FlagStatus.C;
+        if (value >= parameter.getMin() && value <= parameter.getMax()) return FlagStatus.N;
+        if (value < parameter.getMin()) return FlagStatus.L;
+        return FlagStatus.H;
     }
 }

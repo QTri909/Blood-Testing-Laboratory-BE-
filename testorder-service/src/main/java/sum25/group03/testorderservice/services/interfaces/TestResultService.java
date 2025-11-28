@@ -1,12 +1,11 @@
 package sum25.group03.testorderservice.services.interfaces;
 
-import sum25.group03.testorderservice.dtos.request.ReviewRequestDTO;
-import sum25.group03.testorderservice.dtos.request.TestResultBulkedRequestDTO;
-import sum25.group03.testorderservice.dtos.request.TestResultRequestDTO;
-import sum25.group03.testorderservice.dtos.request.TestResultReviewRequestDTO;
+import sum25.group03.testorderservice.dtos.request.*;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
+import sum25.group03.testorderservice.entities.TestResult;
 
 import java.util.List;
+import java.util.Map;
 
 public interface TestResultService {
 
@@ -22,4 +21,6 @@ public interface TestResultService {
     TestResultResponseDTO updateTestResult(Long id, TestResultRequestDTO requestDTO);
     void deleteTestResult(Long id);
     List<TestResultResponseDTO> getTestResultsByParameterId(Long parameterId);
+
+    void syncTestResultsFromInstruments(Map<String, Double> results, TestResultPublishedEventDTO otherInfos);
 }
