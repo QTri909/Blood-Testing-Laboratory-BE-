@@ -31,7 +31,7 @@ public class VendorServiceImpl implements VendorService {
                     .map(vendor -> VendorRes.builder()
                             .vendorId(vendor.getVendorId())
                             .vendorName(vendor.getVendorName())
-                            .contactPerson(vendor.getContactPerson())
+                            .contactPerson(vendor.getContactPerson()!=null ? vendor.getContactPerson() : "")
                             .email(vendor.getEmail())
                             .phoneNumber(vendor.getPhoneNumber())
                             .address(vendor.getAddress())
