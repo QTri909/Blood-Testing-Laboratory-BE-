@@ -16,6 +16,7 @@ import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
+import sum25.group03.common.response.events.MonitoringLogEvent;
 import sum25.group03.testorderservice.constants.KafkaVariables;
 import sum25.group03.testorderservice.dtos.request.TestResultPublishedEventDTO;
 
@@ -64,11 +65,6 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, String> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
-    }
-
-    @Bean
     public ProducerFactory<String, Object> objectProducerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
@@ -78,9 +74,28 @@ public class KafkaConfig {
     }
 
     @Bean
+    public ProducerFactory<String, MonitoringLogEvent> monitoringLogEventProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
+    public KafkaTemplate<String, String> kafkaTemplate() {
+        return new KafkaTemplate<>(producerFactory());
+    }
+
+    @Bean
     @Qualifier("objectKafkaTemplate")
     public KafkaTemplate<String, Object> objectKafkaTemplate() {
         return new KafkaTemplate<>(objectProducerFactory());
+    }
+
+    @Bean
+    public KafkaTemplate<String, MonitoringLogEvent> monitoringLogEventKafkaTemplate() {
+        return new KafkaTemplate<>(monitoringLogEventProducerFactory());
     }
 
     @Bean
