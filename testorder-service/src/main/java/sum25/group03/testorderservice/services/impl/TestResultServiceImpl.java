@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.common.response.events.MonitoringLogEvent;
 import sum25.group03.testorderservice.dtos.request.*;
 import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entities.Parameter;
@@ -19,6 +20,7 @@ import sum25.group03.testorderservice.mapper.TestResultMapper;
 import sum25.group03.testorderservice.repositories.ParameterRepository;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
 import sum25.group03.testorderservice.repositories.TestResultRepository;
+import sum25.group03.testorderservice.services.interfaces.IKafkaMonitoringLog;
 import sum25.group03.testorderservice.services.interfaces.TestResultService;
 import sum25.group03.testorderservice.utils.SetUtils;
 
@@ -38,6 +40,7 @@ public class TestResultServiceImpl implements TestResultService {
     private final TestOrderRepository testOrderRepository;
     private final ParameterRepository parameterRepository;
     private final ActionLogService actionLogService;
+    private final IKafkaMonitoringLog kafkaMonitoringLog;
 
     // Tai
     @Override
@@ -64,10 +67,22 @@ public class TestResultServiceImpl implements TestResultService {
         }
         testResult.setStatus(TestResultStatus.REVIEWED);
         testResult.setUpdatedAt(LocalDateTime.now());
-        log.info("TestResult id: " + testResult.getId()
-        +"\nReview id: " + reviewId
-        + "\nAdjusted value: " + adjustedValue
-        + "\nTimestamp: " + testResult.getUpdatedAt());
+
+        // send to kafka monitoring log
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                ActionTypeFeatures.REVIEW_TEST_RESULT.toString(),
+                "ViewerId: " + reviewId,
+                "Reviewed TestResult id: " + testResult.getId(),
+                "TestOrderService",
+                Map.of(
+                        "testResultId", testResult.getId(),
+                        "adjustedValue", (adjustedValue == null) ? "Undefined" : adjustedValue,
+                        "reviewId", reviewId,
+                        "timestamp", LocalDateTime.now().toString()
+                )
+        );
+        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+
         testResultRepository.save(testResult);
     }
 
@@ -97,10 +112,20 @@ public class TestResultServiceImpl implements TestResultService {
             testResult.setUpdatedAt(LocalDateTime.now());
             testResultRepository.save(testResult);
         }
-        log.info("TestResult id: " + testResult.getId()
-                +"\nReview id: " + reviewId
-                + "\nReview: " + reviewRequestDTO.getReview()
-                + "\nTimestamp: " + testResult.getUpdatedAt());
+
+        // send to kafka monitoring log
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                ActionTypeFeatures.REVIEW_TEST_RESULT.toString(),
+                "ViewerId: " + reviewId,
+                "Reviewed TestResult id: " + testResult.getId(),
+                "TestOrderService",
+                Map.of(
+                        "testResultId", testResult.getId(),
+                        "review", newReview,
+                        "timestamp", LocalDateTime.now().toString()
+                )
+        );
+        kafkaMonitoringLog.publishMonitoringLog(logEvent);
 
         return testResult.getReview();
     }
@@ -121,6 +146,20 @@ public class TestResultServiceImpl implements TestResultService {
             testOrder.setStatus(TestOrderStatus.UNPUBLISHED);
             testOrderRepository.save(testOrder);
         }
+
+        // send to kafka monitoring log
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                ActionTypeFeatures.CREATE_TEST_ORDER.toString(),
+                "CreatorId: " + testOrder.getCreatedBy(),
+                "Created TestResult id: " + savedResult.getId(),
+                "TestOrderService",
+                Map.of(
+                        "testResultId", savedResult.getId(),
+                        "testOrderId", testOrderID,
+                        "timestamp", LocalDateTime.now().toString()
+                )
+        );
+        kafkaMonitoringLog.publishMonitoringLog(logEvent);
 
         return testResultMapper.toResponseDto(savedResult);
     }
@@ -307,6 +346,21 @@ public class TestResultServiceImpl implements TestResultService {
                 creatorId, ActionTypeFeatures.CREATE_BULK_TEST_RESULTS, null
         );
 
+
+        // send to kafka monitoring log
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                ActionTypeFeatures.CREATE_BULK_TEST_RESULTS.toString(),
+                "CreatorId: " + creatorId,
+                "Created bulk TestResults for TestOrder id: " + testOrder.getId(),
+                "TestOrderService",
+                Map.of(
+                        "testOrderId", testOrder.getId(),
+                        "numberOfTestResultsCreated", testResults.size(),
+                        "timestamp", LocalDateTime.now().toString()
+                )
+        );
+        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+
         return testResults;
     }
 
@@ -347,8 +401,6 @@ public class TestResultServiceImpl implements TestResultService {
     @Override
     @Transactional(readOnly = true)
     public TestResultResponseDTO getTestResultById(Long id) {
-        log.info("Retrieving test result with id: {}", id);
-
         TestResult testResult = testResultRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Test result not found with id: " + id));
 
@@ -358,8 +410,6 @@ public class TestResultServiceImpl implements TestResultService {
     @Override
     @Transactional(readOnly = true)
     public List<TestResultResponseDTO> getTestResultsByTestOrderId(Long testOrderId) {
-        log.info("Retrieving test results for test order id: {}", testOrderId);
-
         List<TestResult> testResults = testResultRepository.findByTestOrderId(testOrderId);
         return testResults.stream()
                 .map(testResultMapper::toResponseDto)
@@ -368,8 +418,6 @@ public class TestResultServiceImpl implements TestResultService {
 
     @Override
     public TestResultResponseDTO updateTestResult(Long id, TestResultRequestDTO requestDTO) {
-        log.info("Updating test result with id: {}", id);
-
         TestResult existingResult = testResultRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Test result not found with id: " + id));
 
@@ -377,27 +425,20 @@ public class TestResultServiceImpl implements TestResultService {
         existingResult.setUpdatedAt(LocalDateTime.now());
 
         TestResult updatedResult = testResultRepository.save(existingResult);
-        log.info("Test result updated successfully with id: {}", id);
-
         return testResultMapper.toResponseDto(updatedResult);
     }
 
     @Override
     public void deleteTestResult(Long id) {
-        log.info("Deleting test result with id: {}", id);
-
         TestResult testResult = testResultRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Test result not found with id: " + id));
 
         testResultRepository.delete(testResult);
-        log.info("Test result deleted successfully with id: {}", id);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TestResultResponseDTO> getTestResultsByParameterId(Long parameterId) {
-        log.info("Retrieving test results for parameter id: {}", parameterId);
-
         List<TestResult> testResults = testResultRepository.findByParameterId(parameterId);
         return testResults.stream()
                 .map(testResultMapper::toResponseDto)
@@ -457,7 +498,22 @@ public class TestResultServiceImpl implements TestResultService {
 
         // explicitly save:
         testResultRepository.saveAll(testResults);
-        testOrderRepository.save(testOrder); // why it's not save?
+        testOrderRepository.save(testOrder);
+
+        // send to kafka monitoring log
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                "SYNC_TEST_RESULTS_FROM_INSTRUMENTS",
+                "System",
+                "Synchronized TestResults for TestOrder id: " + testOrder.getId(),
+                "TestOrderService",
+                Map.of(
+                        "testOrderId", testOrder.getId(),
+                        "numberOfTestResultsSynchronized", testResults.size(),
+                        "timestamp", LocalDateTime.now().toString()
+                )
+        );
+        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+
     }
 
     private FlagStatus calculateFlag(Parameter parameter, Double value) {

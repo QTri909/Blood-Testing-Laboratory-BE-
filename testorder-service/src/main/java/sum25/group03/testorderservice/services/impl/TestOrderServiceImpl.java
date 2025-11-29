@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.common.response.dtos.grpc.CleanTestOrderResponse;
 import sum25.group03.common.response.dtos.rest.CustomPaginationDTO;
+import sum25.group03.common.response.events.MonitoringLogEvent;
 import sum25.group03.common.response.events.UserCreatedEvent;
 import sum25.group03.testorderservice.dtos.request.TestOrderRequestDTO;
 import sum25.group03.testorderservice.dtos.response.*;
@@ -25,10 +26,12 @@ import sum25.group03.testorderservice.helpers.ParameterHelpers;
 import sum25.group03.testorderservice.mapper.TestOrderMapper;
 import sum25.group03.testorderservice.mapper.TestResultMapper;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
+import sum25.group03.testorderservice.services.interfaces.IKafkaMonitoringLog;
 import sum25.group03.testorderservice.services.interfaces.TestOrderKafkaProducer;
 import sum25.group03.testorderservice.services.interfaces.TestOrderService;
 import sum25.group03.testorderservice.specification.TestOrderSpecification;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,6 +54,15 @@ public class TestOrderServiceImpl implements TestOrderService {
 
     private final ParameterHelpers parameterHelpers;
 
+    private final IKafkaMonitoringLog kafkaMonitoringLog;
+
+    /*
+      private String action;
+    private String operator;
+    private String message;
+    private String sourceService;
+    private Map<String, Object> data;
+     */
 
     // -------- THUYEN--------
     // TODO 1: Write a function call to IAM service to verify viewerId exists in the system
@@ -86,6 +98,24 @@ public class TestOrderServiceImpl implements TestOrderService {
         if (result.getType() == null && entity.getType() != null)
             result.setType(entity.getType().toString());
         result.setTotalPrice(totalPrice);
+
+        // send monitoring log to kafka
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                ActionTypeFeatures.VIEW_TEST_ORDER_DETAIL.toString(),
+                viewerId.toString(),
+                "Viewed test order with id " + id,
+                "TestOrderService",
+                Map.of(
+                        "viewerId", viewerId,
+                        "testOrderId", id,
+                        "patientName", result.getPatientName(),
+                        "createdBy", result.getCreatedByName(),
+                        "timestamp", LocalDateTime.now().toString()
+                )
+
+        );
+        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+
         return result;
     }
 
@@ -159,6 +189,21 @@ public class TestOrderServiceImpl implements TestOrderService {
                 dto.setType(entityType);
         }
 
+        // send monitoring log to kafka
+        MonitoringLogEvent.MonitoringLogEventBuilder logEvent = MonitoringLogEvent.builder();
+        logEvent.action(ActionTypeFeatures.VIEW_TEST_ORDER_LIST.toString());
+        logEvent.sourceService("TestOrderService");
+        logEvent.operator(viewerId.toString());
+        logEvent.message("Viewed all test orders, page: " + page + ", size: " + size);
+        logEvent.data(Map.of(
+                "viewerId", viewerId,
+                "page", page,
+                "size", size,
+                "totalOrders", result.getContent().size(),
+                "timestamp", LocalDateTime.now().toString()
+        ));
+        kafkaMonitoringLog.publishMonitoringLog(logEvent.build());
+
         return result;
     }
 
@@ -168,6 +213,22 @@ public class TestOrderServiceImpl implements TestOrderService {
         actionLogService.logAction(viewerId, ActionTypeFeatures.VIEW_TEST_ORDER_LIST, null);
 
         List<TestOrder> orders = repository.findAllByExternalMedicalRecordId(medicalRecordId, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        // send monitoring log to kafka
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                ActionTypeFeatures.VIEW_TEST_ORDER_LIST.toString(),
+                viewerId.toString(),
+                "Viewed test orders for medical record id " + medicalRecordId,
+                "TestOrderService",
+                Map.of(
+                        "viewerId", viewerId,
+                        "medicalRecordId", medicalRecordId,
+                        "totalOrders", orders.size(),
+                        "timestamp", LocalDateTime.now().toString()
+                )
+        );
+        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+
         return testOrderMapper.toResponseDtoList(orders);
     }
 
@@ -186,6 +247,21 @@ public class TestOrderServiceImpl implements TestOrderService {
                         .and(TestOrderSpecification.createdBetween(filterInfo.fromDate(), filterInfo.toDate()));
 
         List<TestOrder> results = repository.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        // send monitoring log to kafka
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                ActionTypeFeatures.VIEW_TEST_ORDER_LIST.toString(),
+                viewerId.toString(),
+                "Filtered test orders with criteria: " + filterInfo.toString(),
+                "TestOrderService",
+                Map.of(
+                        "viewerId", viewerId,
+                        "searchedBy", filterInfo,
+                        "totalResults", results.size(),
+                        "timestamp", LocalDateTime.now().toString()
+                )
+        );
+
         return results.stream().map(testOrderMapper::toResponseDto).toList();
     }
 
@@ -229,12 +305,28 @@ public class TestOrderServiceImpl implements TestOrderService {
         if (patientInfo.getId() == null)
             testOrderKafkaProducer.sendPatientInfoMessage("patient-info", patientInfo);
 
+        // send monitoring log to kafka
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                ActionTypeFeatures.CREATE_TEST_ORDER.toString(),
+                createdBy.toString(),
+                "Created new test order with id " + savedTestOrder.getId(),
+                "TestOrderService",
+                Map.of(
+                    "testOrderId", savedTestOrder.getId(),
+                    "testType", savedTestOrder.getType(),
+                    "patientId", patientId,
+                    "patientName", patientInfo.getFullName(),
+                    "createdBy", createdBy,
+                    "timestamp", LocalDateTime.now().toString()
+                )
+        );
+        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+
         return testOrderMapper.toResponseDto(savedTestOrder);
     }
 
     @Override
     public TestOrderResponseDTO updateTestOrder(Long id, TestOrderRequestDTO requestDTO, Long updatedBy) {
-        log.info("Updating test order with id: {} by user: {}", id, updatedBy);
 
         TestOrder existingTestOrder = testOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Test order not found with id: " + id));
@@ -253,8 +345,24 @@ public class TestOrderServiceImpl implements TestOrderService {
         }
 
         TestOrder updatedTestOrder = testOrderRepository.save(existingTestOrder);
-        log.info("Test order updated successfully. ID: {}, UpdatedBy: {}, UpdateStatus: {}, PatientId changed: {} -> {}",
-                id, updatedBy, originalPatientId, originalStatus, updatedTestOrder.getPatientId());
+
+        // send monitoring log to kafka
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                ActionTypeFeatures.UPDATE_TEST_ORDER_INFO.toString(),
+                updatedBy.toString(),
+                "Updated test order with id " + id,
+                "TestOrderService",
+                Map.of(
+                        "testOrderId", id,
+                        "updatedBy", updatedBy,
+                        "originalStatus", originalStatus,
+                        "newStatus", updatedTestOrder.getStatus(),
+                        "originalPatientId", originalPatientId,
+                        "newPatientId", updatedTestOrder.getPatientId(),
+                        "timestamp", LocalDateTime.now().toString()
+                )
+        );
+        kafkaMonitoringLog.publishMonitoringLog(logEvent);
 
         return testOrderMapper.toResponseDto(updatedTestOrder);
     }
@@ -274,13 +382,25 @@ public class TestOrderServiceImpl implements TestOrderService {
             throw new IllegalStateException("Cannot delete completed test order");
         }
 
-        log.info("Audit Log - DeletedBy: {}, TestOrderId: {}, PatientId: {}, Status: {}, CreatedBy: {}",
-                deletedBy, id, testOrder.getPatientId(), testOrder.getStatus(), testOrder.getCreatedBy());
-
         testOrder.setStatus(TestOrderStatus.CANCELED);
 
+        // send monitoring log to kafka
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                ActionTypeFeatures.DELETE_TEST_ORDER.toString(),
+                deletedBy.toString(),
+                "Deleted (soft) test order with id " + id,
+                "TestOrderService",
+                Map.of(
+                        "testOrderId", id,
+                        "deletedBy", deletedBy,
+                        "patientId", testOrder.getPatientId(),
+                        "originalStatus", testOrder.getStatus(),
+                        "timestamp", LocalDateTime.now().toString()
+                )
+        );
+        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+
         testOrderRepository.save(testOrder);
-        log.info("Test order soft deleted (cancelled) successfully. ID: {}, DeletedBy: {}", id, deletedBy);
     }
 
     @Override
@@ -292,6 +412,23 @@ public class TestOrderServiceImpl implements TestOrderService {
         // get all test orders by patientId with pagination
         Page<TestOrder> testOrders = testOrderRepository.findByPatientId(patientId, pageable);
 
+        // send monitoring log to kafka
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                ActionTypeFeatures.VIEW_TEST_ORDER_LIST.toString(),
+                viewerId.toString(),
+                "Viewed test orders for patient id " + patientId,
+                "TestOrderService",
+                Map.of(
+                        "viewerId", viewerId,
+                        "patientId", patientId,
+                        "page", page,
+                        "size", size,
+                        "totalOrders", testOrders.getTotalElements(),
+                        "timestamp", LocalDateTime.now().toString()
+                )
+        );
+        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+
         // map to Page<TestOrderResponseDTO>
         return testOrderMapper.toResponseDtoPage(testOrders);
     }
@@ -299,8 +436,6 @@ public class TestOrderServiceImpl implements TestOrderService {
     @Override
     @Transactional(readOnly = true)
     public List<TestOrderResponseDTO> getTestOrdersByStatus(TestOrderStatus status) {
-        log.info("Fetching test orders with status: {}", status);
-
         List<TestOrder> testOrders = testOrderRepository.findByStatus(status);
         return testOrders.stream()
                 .map(testOrderMapper::toResponseDto)
@@ -330,8 +465,6 @@ public class TestOrderServiceImpl implements TestOrderService {
     @Override
     public TestOrderStatusUpdateResponse updateTestOrderStatus(Long id, TestOrderStatus newStatus, Long updatedBy) {
 
-        log.info("Updating test order status to {} for id: {} by user: {}", newStatus, id, updatedBy);
-
         TestOrder testOrder = testOrderRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Test order not found with id: " + id));
 
@@ -349,8 +482,23 @@ public class TestOrderServiceImpl implements TestOrderService {
                 .build();
 
         TestOrder updatedTestOrder = testOrderRepository.save(testOrder);
-        log.info("Test order status updated successfully. ID: {}, Status changed: {} -> {}, UpdatedBy: {}",
-                id, oldStatus, newStatus, updatedBy);
+
+        // send monitoring log to kafka
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                ActionTypeFeatures.UPDATE_TEST_ORDER_STATUS.toString(),
+                updatedBy.toString(),
+                "Updated test order status for id " + id + " from " + oldStatus +
+                        " to " + newStatus,
+                "TestOrderService",
+                Map.of(
+                        "testOrderId", id,
+                        "updatedBy", updatedBy,
+                        "oldStatus", oldStatus,
+                        "newStatus", newStatus,
+                        "timestamp", LocalDateTime.now().toString()
+                )
+        );
+        kafkaMonitoringLog.publishMonitoringLog(logEvent);
 
         return response;
     }
@@ -358,8 +506,6 @@ public class TestOrderServiceImpl implements TestOrderService {
     @Override
     @Transactional(readOnly = true)
     public List<TestOrderResponseDTO> getTestOrdersByCreatedBy(Long createdBy) {
-        log.info("Fetching test orders created by user: {}", createdBy);
-
         List<TestOrder> testOrders = testOrderRepository.findByCreatedBy(createdBy);
         return testOrders.stream()
                 .map(testOrderMapper::toResponseDto)
@@ -416,6 +562,20 @@ public class TestOrderServiceImpl implements TestOrderService {
                 ActionTypeFeatures.UPDATE_TEST_ORDER_STATUS,
                 testOrder.getId()
         );
+
+        // 4. send monitoring log to kafka
+        MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                ActionTypeFeatures.UPDATE_TEST_ORDER_STATUS.toString(),
+                "SYSTEM",
+                "Updated test order status with code " + testOrderCode,
+                "TestOrderService",
+                Map.of(
+                        "testOrderCode", testOrderCode,
+                        "newStatus", testOrderStatus,
+                        "timestamp", LocalDateTime.now().toString()
+                )
+        );
+        kafkaMonitoringLog.publishMonitoringLog(logEvent);
     }
 
     @Override
