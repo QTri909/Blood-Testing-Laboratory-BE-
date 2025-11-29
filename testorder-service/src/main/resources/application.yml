@@ -1,6 +1,6 @@
 spring:
   profiles:
-    active: testorderdb,grpc,kafka
+    active: testorderdb,grpc,kafka,smtp
   kafka:
     listener:
       ack-mode: manual

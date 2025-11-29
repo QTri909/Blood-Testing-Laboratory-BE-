@@ -1,0 +1,15 @@
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 588
+    username: hhc9104@gmail.com
+    password: dfav zkri xtki kovt
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
