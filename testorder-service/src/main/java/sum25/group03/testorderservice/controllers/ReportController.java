@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
+import sum25.group03.testorderservice.dtos.request.TestOrderPdfEmailRequest;
+import sum25.group03.testorderservice.services.interfaces.MailService;
 import sum25.group03.testorderservice.services.interfaces.ReportService;
 
 @RestController
@@ -13,6 +15,7 @@ import sum25.group03.testorderservice.services.interfaces.ReportService;
 public class ReportController {
 
     private final ReportService reportService;
+    private final MailService mailService;
 
     //  Export PDF
     @GetMapping("/test-orders/pdf/{testOrderId}")
@@ -23,6 +26,26 @@ public class ReportController {
         } catch (Exception e) {
             response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             throw new RuntimeException("Failed to export PDF: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/test-orders/pdf/via-email")
+    @ResponseStatus(HttpStatus.OK)
+    public void exportPdfViaEmail(
+            @RequestBody TestOrderPdfEmailRequest request
+    ) {
+        String toEmail = request.getEmail();
+        String receiverName = request.getReceiverName();
+        Long testOrderId = request.getTestOrderId();
+
+        try {
+            byte[] pdfAttachment = reportService.exportPdfToBytes(testOrderId);
+
+            mailService.sendPdfAttachmentEmail(toEmail, receiverName,
+                    "Your Test Order Report", pdfAttachment);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to generate PDF for email: " + e.getMessage());
         }
     }
 
