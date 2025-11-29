@@ -99,22 +99,26 @@ public class TestOrderServiceImpl implements TestOrderService {
             result.setType(entity.getType().toString());
         result.setTotalPrice(totalPrice);
 
-        // send monitoring log to kafka
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                ActionTypeFeatures.VIEW_TEST_ORDER_DETAIL.toString(),
-                viewerId.toString(),
-                "Viewed test order with id " + id,
-                "TestOrderService",
-                Map.of(
-                        "viewerId", viewerId,
-                        "testOrderId", id,
-                        "patientName", result.getPatientName(),
-                        "createdBy", result.getCreatedByName(),
-                        "timestamp", LocalDateTime.now().toString()
-                )
+        try {
+            // send monitoring log to kafka
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.VIEW_TEST_ORDER_DETAIL.toString(),
+                    viewerId.toString(),
+                    "Viewed test order with id " + id,
+                    "TestOrderService",
+                    Map.of(
+                            "viewerId", viewerId,
+                            "testOrderId", id,
+                            "patientName", result.getPatientName(),
+                            "createdBy", result.getCreatedByName(),
+                            "timestamp", LocalDateTime.now().toString()
+                    )
 
-        );
-        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for viewing test order status. Error: {}", e.getMessage());
+        }
 
         return result;
     }
@@ -189,20 +193,24 @@ public class TestOrderServiceImpl implements TestOrderService {
                 dto.setType(entityType);
         }
 
-        // send monitoring log to kafka
-        MonitoringLogEvent.MonitoringLogEventBuilder logEvent = MonitoringLogEvent.builder();
-        logEvent.action(ActionTypeFeatures.VIEW_TEST_ORDER_LIST.toString());
-        logEvent.sourceService("TestOrderService");
-        logEvent.operator(viewerId.toString());
-        logEvent.message("Viewed all test orders, page: " + page + ", size: " + size);
-        logEvent.data(Map.of(
-                "viewerId", viewerId,
-                "page", page,
-                "size", size,
-                "totalOrders", result.getContent().size(),
-                "timestamp", LocalDateTime.now().toString()
-        ));
-        kafkaMonitoringLog.publishMonitoringLog(logEvent.build());
+        try {
+            // send monitoring log to kafka
+            MonitoringLogEvent.MonitoringLogEventBuilder logEvent = MonitoringLogEvent.builder();
+            logEvent.action(ActionTypeFeatures.VIEW_TEST_ORDER_LIST.toString());
+            logEvent.sourceService("TestOrderService");
+            logEvent.operator(viewerId.toString());
+            logEvent.message("Viewed all test orders, page: " + page + ", size: " + size);
+            logEvent.data(Map.of(
+                    "viewerId", viewerId,
+                    "page", page,
+                    "size", size,
+                    "totalOrders", result.getContent().size(),
+                    "timestamp", LocalDateTime.now().toString()
+            ));
+            kafkaMonitoringLog.publishMonitoringLog(logEvent.build());
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for viewing all test orders. Error: {}", e.getMessage());
+        }
 
         return result;
     }
@@ -214,20 +222,25 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         List<TestOrder> orders = repository.findAllByExternalMedicalRecordId(medicalRecordId, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        // send monitoring log to kafka
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                ActionTypeFeatures.VIEW_TEST_ORDER_LIST.toString(),
-                viewerId.toString(),
-                "Viewed test orders for medical record id " + medicalRecordId,
-                "TestOrderService",
-                Map.of(
-                        "viewerId", viewerId,
-                        "medicalRecordId", medicalRecordId,
-                        "totalOrders", orders.size(),
-                        "timestamp", LocalDateTime.now().toString()
-                )
-        );
-        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        try {
+            // send monitoring log to kafka
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.VIEW_TEST_ORDER_LIST.toString(),
+                    viewerId.toString(),
+                    "Viewed test orders for medical record id " + medicalRecordId,
+                    "TestOrderService",
+                    Map.of(
+                            "viewerId", viewerId,
+                            "medicalRecordId", medicalRecordId,
+                            "totalOrders", orders.size(),
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for viewing test orders by medical record id. Error: {}", e.getMessage());
+        }
 
         return testOrderMapper.toResponseDtoList(orders);
     }
@@ -248,19 +261,24 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         List<TestOrder> results = repository.findAll(spec, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        // send monitoring log to kafka
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                ActionTypeFeatures.VIEW_TEST_ORDER_LIST.toString(),
-                viewerId.toString(),
-                "Filtered test orders with criteria: " + filterInfo.toString(),
-                "TestOrderService",
-                Map.of(
-                        "viewerId", viewerId,
-                        "searchedBy", filterInfo,
-                        "totalResults", results.size(),
-                        "timestamp", LocalDateTime.now().toString()
-                )
-        );
+        try {
+            // send monitoring log to kafka
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.VIEW_TEST_ORDER_LIST.toString(),
+                    viewerId.toString(),
+                    "Filtered test orders with criteria: " + filterInfo.toString(),
+                    "TestOrderService",
+                    Map.of(
+                            "viewerId", viewerId,
+                            "searchedBy", filterInfo,
+                            "totalResults", results.size(),
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for filtering test orders. Error: {}", e.getMessage());
+        }
 
         return results.stream().map(testOrderMapper::toResponseDto).toList();
     }
@@ -305,22 +323,26 @@ public class TestOrderServiceImpl implements TestOrderService {
         if (patientInfo.getId() == null)
             testOrderKafkaProducer.sendPatientInfoMessage("patient-info", patientInfo);
 
-        // send monitoring log to kafka
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                ActionTypeFeatures.CREATE_TEST_ORDER.toString(),
-                createdBy.toString(),
-                "Created new test order with id " + savedTestOrder.getId(),
-                "TestOrderService",
-                Map.of(
-                    "testOrderId", savedTestOrder.getId(),
-                    "testType", savedTestOrder.getType(),
-                    "patientId", patientId,
-                    "patientName", patientInfo.getFullName(),
-                    "createdBy", createdBy,
-                    "timestamp", LocalDateTime.now().toString()
-                )
-        );
-        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        try {
+            // send monitoring log to kafka
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.CREATE_TEST_ORDER.toString(),
+                    createdBy.toString(),
+                    "Created new test order with id " + savedTestOrder.getId(),
+                    "TestOrderService",
+                    Map.of(
+                            "testOrderId", savedTestOrder.getId(),
+                            "testType", savedTestOrder.getType(),
+                            "patientId", patientId,
+                            "patientName", patientInfo.getFullName(),
+                            "createdBy", createdBy,
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for creating test order. Error: {}", e.getMessage());
+        }
 
         return testOrderMapper.toResponseDto(savedTestOrder);
     }
@@ -346,23 +368,27 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         TestOrder updatedTestOrder = testOrderRepository.save(existingTestOrder);
 
-        // send monitoring log to kafka
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                ActionTypeFeatures.UPDATE_TEST_ORDER_INFO.toString(),
-                updatedBy.toString(),
-                "Updated test order with id " + id,
-                "TestOrderService",
-                Map.of(
-                        "testOrderId", id,
-                        "updatedBy", updatedBy,
-                        "originalStatus", originalStatus,
-                        "newStatus", updatedTestOrder.getStatus(),
-                        "originalPatientId", originalPatientId,
-                        "newPatientId", updatedTestOrder.getPatientId(),
-                        "timestamp", LocalDateTime.now().toString()
-                )
-        );
-        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        try {
+            // send monitoring log to kafka
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.UPDATE_TEST_ORDER_INFO.toString(),
+                    updatedBy.toString(),
+                    "Updated test order with id " + id,
+                    "TestOrderService",
+                    Map.of(
+                            "testOrderId", id,
+                            "updatedBy", updatedBy,
+                            "originalStatus", originalStatus,
+                            "newStatus", updatedTestOrder.getStatus(),
+                            "originalPatientId", originalPatientId,
+                            "newPatientId", updatedTestOrder.getPatientId(),
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for updating test order. Error: {}", e.getMessage());
+        }
 
         return testOrderMapper.toResponseDto(updatedTestOrder);
     }
@@ -384,21 +410,25 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         testOrder.setStatus(TestOrderStatus.CANCELED);
 
-        // send monitoring log to kafka
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                ActionTypeFeatures.DELETE_TEST_ORDER.toString(),
-                deletedBy.toString(),
-                "Deleted (soft) test order with id " + id,
-                "TestOrderService",
-                Map.of(
-                        "testOrderId", id,
-                        "deletedBy", deletedBy,
-                        "patientId", testOrder.getPatientId(),
-                        "originalStatus", testOrder.getStatus(),
-                        "timestamp", LocalDateTime.now().toString()
-                )
-        );
-        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        try {
+            // send monitoring log to kafka
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.DELETE_TEST_ORDER.toString(),
+                    deletedBy.toString(),
+                    "Deleted (soft) test order with id " + id,
+                    "TestOrderService",
+                    Map.of(
+                            "testOrderId", id,
+                            "deletedBy", deletedBy,
+                            "patientId", testOrder.getPatientId(),
+                            "originalStatus", testOrder.getStatus(),
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for deleting test order. Error: {}", e.getMessage());
+        }
 
         testOrderRepository.save(testOrder);
     }
@@ -412,22 +442,26 @@ public class TestOrderServiceImpl implements TestOrderService {
         // get all test orders by patientId with pagination
         Page<TestOrder> testOrders = testOrderRepository.findByPatientId(patientId, pageable);
 
-        // send monitoring log to kafka
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                ActionTypeFeatures.VIEW_TEST_ORDER_LIST.toString(),
-                viewerId.toString(),
-                "Viewed test orders for patient id " + patientId,
-                "TestOrderService",
-                Map.of(
-                        "viewerId", viewerId,
-                        "patientId", patientId,
-                        "page", page,
-                        "size", size,
-                        "totalOrders", testOrders.getTotalElements(),
-                        "timestamp", LocalDateTime.now().toString()
-                )
-        );
-        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        try {
+            // send monitoring log to kafka
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.VIEW_TEST_ORDER_LIST.toString(),
+                    viewerId.toString(),
+                    "Viewed test orders for patient id " + patientId,
+                    "TestOrderService",
+                    Map.of(
+                            "viewerId", viewerId,
+                            "patientId", patientId,
+                            "page", page,
+                            "size", size,
+                            "totalOrders", testOrders.getTotalElements(),
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for viewing test orders by patient id. Error: {}", e.getMessage());
+        }
 
         // map to Page<TestOrderResponseDTO>
         return testOrderMapper.toResponseDtoPage(testOrders);
@@ -483,22 +517,26 @@ public class TestOrderServiceImpl implements TestOrderService {
 
         TestOrder updatedTestOrder = testOrderRepository.save(testOrder);
 
-        // send monitoring log to kafka
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                ActionTypeFeatures.UPDATE_TEST_ORDER_STATUS.toString(),
-                updatedBy.toString(),
-                "Updated test order status for id " + id + " from " + oldStatus +
-                        " to " + newStatus,
-                "TestOrderService",
-                Map.of(
-                        "testOrderId", id,
-                        "updatedBy", updatedBy,
-                        "oldStatus", oldStatus,
-                        "newStatus", newStatus,
-                        "timestamp", LocalDateTime.now().toString()
-                )
-        );
-        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        try {
+            // send monitoring log to kafka
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.UPDATE_TEST_ORDER_STATUS.toString(),
+                    updatedBy.toString(),
+                    "Updated test order status for id " + id + " from " + oldStatus +
+                            " to " + newStatus,
+                    "TestOrderService",
+                    Map.of(
+                            "testOrderId", id,
+                            "updatedBy", updatedBy,
+                            "oldStatus", oldStatus,
+                            "newStatus", newStatus,
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for updating test order status. Error: {}", e.getMessage());
+        }
 
         return response;
     }
@@ -563,19 +601,23 @@ public class TestOrderServiceImpl implements TestOrderService {
                 testOrder.getId()
         );
 
-        // 4. send monitoring log to kafka
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                ActionTypeFeatures.UPDATE_TEST_ORDER_STATUS.toString(),
-                "SYSTEM",
-                "Updated test order status with code " + testOrderCode,
-                "TestOrderService",
-                Map.of(
-                        "testOrderCode", testOrderCode,
-                        "newStatus", testOrderStatus,
-                        "timestamp", LocalDateTime.now().toString()
-                )
-        );
-        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        try {
+            // 4. send monitoring log to kafka
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.UPDATE_TEST_ORDER_STATUS.toString(),
+                    "SYSTEM",
+                    "Updated test order status with code " + testOrderCode,
+                    "TestOrderService",
+                    Map.of(
+                            "testOrderCode", testOrderCode,
+                            "newStatus", testOrderStatus,
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for updating test order status by code. Error: {}", e.getMessage());
+        }
     }
 
     @Override

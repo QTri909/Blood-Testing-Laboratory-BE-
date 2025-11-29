@@ -68,20 +68,24 @@ public class TestResultServiceImpl implements TestResultService {
         testResult.setStatus(TestResultStatus.REVIEWED);
         testResult.setUpdatedAt(LocalDateTime.now());
 
-        // send to kafka monitoring log
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                ActionTypeFeatures.REVIEW_TEST_RESULT.toString(),
-                "ViewerId: " + reviewId,
-                "Reviewed TestResult id: " + testResult.getId(),
-                "TestOrderService",
-                Map.of(
-                        "testResultId", testResult.getId(),
-                        "adjustedValue", (adjustedValue == null) ? "Undefined" : adjustedValue,
-                        "reviewId", reviewId,
-                        "timestamp", LocalDateTime.now().toString()
-                )
-        );
-        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        try {
+            // send to kafka monitoring log
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.REVIEW_TEST_RESULT.toString(),
+                    "ViewerId: " + reviewId,
+                    "Reviewed TestResult id: " + testResult.getId(),
+                    "TestOrderService",
+                    Map.of(
+                            "testResultId", testResult.getId(),
+                            "adjustedValue", (adjustedValue == null) ? "Undefined" : adjustedValue,
+                            "reviewId", reviewId,
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to publish monitoring log for reviewing test result. TestResultId: " + testResult.getId(), e);
+        }
 
         testResultRepository.save(testResult);
     }
@@ -113,19 +117,23 @@ public class TestResultServiceImpl implements TestResultService {
             testResultRepository.save(testResult);
         }
 
-        // send to kafka monitoring log
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                ActionTypeFeatures.REVIEW_TEST_RESULT.toString(),
-                "ViewerId: " + reviewId,
-                "Reviewed TestResult id: " + testResult.getId(),
-                "TestOrderService",
-                Map.of(
-                        "testResultId", testResult.getId(),
-                        "review", newReview,
-                        "timestamp", LocalDateTime.now().toString()
-                )
-        );
-        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        try {
+            // send to kafka monitoring log
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.REVIEW_TEST_RESULT.toString(),
+                    "ViewerId: " + reviewId,
+                    "Reviewed TestResult id: " + testResult.getId(),
+                    "TestOrderService",
+                    Map.of(
+                            "testResultId", testResult.getId(),
+                            "review", newReview,
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to publish monitoring log for reviewing test result. TestResultId: " + testResult.getId(), e);
+        }
 
         return testResult.getReview();
     }
@@ -147,19 +155,23 @@ public class TestResultServiceImpl implements TestResultService {
             testOrderRepository.save(testOrder);
         }
 
-        // send to kafka monitoring log
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                ActionTypeFeatures.CREATE_TEST_ORDER.toString(),
-                "CreatorId: " + testOrder.getCreatedBy(),
-                "Created TestResult id: " + savedResult.getId(),
-                "TestOrderService",
-                Map.of(
-                        "testResultId", savedResult.getId(),
-                        "testOrderId", testOrderID,
-                        "timestamp", LocalDateTime.now().toString()
-                )
-        );
-        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        try {
+            // send to kafka monitoring log
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.CREATE_TEST_ORDER.toString(),
+                    "CreatorId: " + testOrder.getCreatedBy(),
+                    "Created TestResult id: " + savedResult.getId(),
+                    "TestOrderService",
+                    Map.of(
+                            "testResultId", savedResult.getId(),
+                            "testOrderId", testOrderID,
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to publish monitoring log for creating test result. TestResultId: " + savedResult.getId(), e);
+        }
 
         return testResultMapper.toResponseDto(savedResult);
     }
@@ -347,19 +359,23 @@ public class TestResultServiceImpl implements TestResultService {
         );
 
 
-        // send to kafka monitoring log
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                ActionTypeFeatures.CREATE_BULK_TEST_RESULTS.toString(),
-                "CreatorId: " + creatorId,
-                "Created bulk TestResults for TestOrder id: " + testOrder.getId(),
-                "TestOrderService",
-                Map.of(
-                        "testOrderId", testOrder.getId(),
-                        "numberOfTestResultsCreated", testResults.size(),
-                        "timestamp", LocalDateTime.now().toString()
-                )
-        );
-        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        try {
+            // send to kafka monitoring log
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.CREATE_BULK_TEST_RESULTS.toString(),
+                    "CreatorId: " + creatorId,
+                    "Created bulk TestResults for TestOrder id: " + testOrder.getId(),
+                    "TestOrderService",
+                    Map.of(
+                            "testOrderId", testOrder.getId(),
+                            "numberOfTestResultsCreated", testResults.size(),
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to publish monitoring log for creating bulk test results. TestOrderId: " + testOrder.getId(), e);
+        }
 
         return testResults;
     }
@@ -500,19 +516,23 @@ public class TestResultServiceImpl implements TestResultService {
         testResultRepository.saveAll(testResults);
         testOrderRepository.save(testOrder);
 
-        // send to kafka monitoring log
-        MonitoringLogEvent logEvent = new MonitoringLogEvent(
-                "SYNC_TEST_RESULTS_FROM_INSTRUMENTS",
-                "System",
-                "Synchronized TestResults for TestOrder id: " + testOrder.getId(),
-                "TestOrderService",
-                Map.of(
-                        "testOrderId", testOrder.getId(),
-                        "numberOfTestResultsSynchronized", testResults.size(),
-                        "timestamp", LocalDateTime.now().toString()
-                )
-        );
-        kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        try {
+            // send to kafka monitoring log
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    "SYNC_TEST_RESULTS_FROM_INSTRUMENTS",
+                    "System",
+                    "Synchronized TestResults for TestOrder id: " + testOrder.getId(),
+                    "TestOrderService",
+                    Map.of(
+                            "testOrderId", testOrder.getId(),
+                            "numberOfTestResultsSynchronized", testResults.size(),
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.publishMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to publish monitoring log for syncing test results. TestOrderId: " + testOrder.getId(), e);
+        }
 
     }
 

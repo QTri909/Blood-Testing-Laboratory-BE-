@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.common.response.events.MonitoringLogEvent;
 import sum25.group03.patientservice.documents.AuditEntryDocument;
 import sum25.group03.patientservice.dtos.response.AuditEntryResponseDTO;
 import sum25.group03.patientservice.enums.ActionTypeFeatures;
@@ -14,8 +15,11 @@ import sum25.group03.patientservice.enums.DocumentType;
 import sum25.group03.patientservice.mapper.AuditEntryMapper;
 import sum25.group03.patientservice.repositories.mongo.AuditEntryMongoRepository;
 import sum25.group03.patientservice.services.interfaces.AuditEntryMongoService;
+import sum25.group03.patientservice.services.interfaces.IKafkaMonitoringLog;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ public class AuditEntryMongoServiceImpl implements AuditEntryMongoService {
     private final AuditEntryMongoRepository auditEntryMongoRepository;
     private final AuditEntryMapper auditEntryMapper;
     private final ActionLogService actionLogService;
+    private final IKafkaMonitoringLog kafkaMonitoringLog;
 
     @Transactional
     public void saveAuditEntry(AuditEntryDocument auditEntryDocument) {
@@ -46,6 +51,26 @@ public class AuditEntryMongoServiceImpl implements AuditEntryMongoService {
         List<AuditEntryResponseDTO> dtoList = documentPage.getContent().stream()
                 .map(auditEntryMapper::toDto)
                 .toList();
+
+        try {
+            // send log to monitoring service via kafka:
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.VIEW_AUDIT_LOGS.toString(),
+                    "Viewer ID: " + viewerId,
+                    "Queried audit logs of type: " + documentType,
+                    "PatientService",
+                    Map.of(
+                            "totalLogs", documentPage.getTotalElements(),
+                            "pageNumber", pageable.getPageNumber(),
+                            "pageSize", pageable.getPageSize(),
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.sendMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for viewing audit logs: {}", e.getMessage());
+        }
+
 
         return new PageImpl<>(dtoList, documentPage.getPageable(), documentPage.getTotalElements());
     }
