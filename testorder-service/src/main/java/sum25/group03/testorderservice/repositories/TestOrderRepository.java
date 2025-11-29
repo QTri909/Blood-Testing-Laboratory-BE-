@@ -6,10 +6,13 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.util.Streamable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
+import sum25.group03.testorderservice.dtos.response.TestOrderSummaryChart;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 
 import java.time.LocalDate;
@@ -51,4 +54,18 @@ public interface TestOrderRepository extends JpaRepository<TestOrder,Long>, JpaS
     List<TestOrder> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
 
     Optional<TestOrder> findByBarcode(String barcode);
+
+
+    @Query("""
+    SELECT new sum25.group03.testorderservice.dtos.response.TestOrderSummaryChart(
+        CAST(t.createdAt AS date),
+        COUNT(t),
+        t.type
+    )
+    FROM TestOrder t
+    GROUP BY CAST(t.createdAt AS date), t.type
+    ORDER BY CAST(t.createdAt AS date), t.type
+""")
+    List<TestOrderSummaryChart> getTestOrderSummaryByType();
+
 }
