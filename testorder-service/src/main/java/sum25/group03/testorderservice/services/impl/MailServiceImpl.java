@@ -2,6 +2,7 @@ package sum25.group03.testorderservice.services.impl;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -15,9 +16,12 @@ public class MailServiceImpl implements MailService {
 
     private final JavaMailSender mailSender;
 
+    @Value("${spring.mail.username}")
+    private String fromEmail;
+
     @Override
     public void sendPdfAttachmentEmail(
-            String to, String subject, String bodyText, byte[] pdfAttachment
+            String toEmail, String receiverName, String subject, byte[] pdfAttachment
     ) {
 
         try {
@@ -28,9 +32,13 @@ public class MailServiceImpl implements MailService {
                     message, true, "UTF-8"
             );
 
-            helper.setTo(to);
+            helper.setTo(toEmail);
             helper.setSubject(subject);
-            helper.setText(bodyText, true);
+            helper.setText(buildEmailBody(receiverName), true);
+            helper.setFrom(fromEmail);
+
+
+            // Generate a simple PDF as byte array (for demonstration purposes)
             helper.addAttachment(
                     "test-order-attachment.pdf",
                     new ByteArrayResource(pdfAttachment)
@@ -46,5 +54,12 @@ public class MailServiceImpl implements MailService {
         }
 
 
+    }
+
+    private String buildEmailBody(String receiverName) {
+        // html:
+        return "<p>Dear " + receiverName + ",</p>"
+                + "<p>You're receiving test order't results, please check it.</p>"
+                + "<p>Best regards,<br/>LIS Team</p>";
     }
 }

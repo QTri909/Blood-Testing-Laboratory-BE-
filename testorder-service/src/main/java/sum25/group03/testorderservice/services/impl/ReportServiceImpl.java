@@ -137,6 +137,92 @@ public class ReportServiceImpl implements ReportService {
         JasperExportManager.exportReportToPdfStream(jasperPrint, response.getOutputStream());
     }
 
+    @Transactional(readOnly = true)
+    public byte[] exportPdfToBytes(Long testOrderId) throws Exception {
+
+        TestOrder order = testOrderRepository.findById(testOrderId)
+                .orElseThrow(() -> new RuntimeException("Test order not found"));
+
+        if (order.getStatus() != TestOrderStatus.COMPLETED) {
+            throw new RuntimeException("Cannot export PDF for pending test order");
+        }
+
+        String orderComments = Optional.ofNullable(order.getComments())
+                .orElse(List.of())
+                .stream()
+                .map(Comment::getCommentText)
+                .filter(c -> c != null && !c.isBlank())
+                .collect(Collectors.joining(", "));
+
+        GetPatientByIdResponse patient =
+                patientGrpcClient.getPatientById(order.getPatientId());
+
+        List<TestResultResponseExportPDFDTO> resultsDTO =
+                order.getTestResults().stream().map(r ->
+                        TestResultResponseExportPDFDTO.builder()
+                                .id(r.getId())
+                                .parameterName(r.getParameter().getName())
+                                .value(r.getValue())
+                                .flagStatus(r.getFlagStatus())
+                                .status(r.getStatus())
+                                .createdAt(r.getCreatedAt())
+                                .comments(Optional.ofNullable(r.getComments())
+                                        .orElse(List.of())
+                                        .stream()
+                                        .map(c -> CommentResponseDTO.builder()
+                                                .id(c.getId())
+                                                .testOrderId(c.getTestOrder() != null ? c.getTestOrder().getId() : null)
+                                                .testResultId(c.getTestResult() != null ? c.getTestResult().getId() : null)
+                                                .userId(c.getUserId())
+                                                .commentText(c.getCommentText())
+                                                .createdAt(c.getCreatedAt())
+                                                .updatedAt(c.getUpdatedAt())
+                                                .status(c.getStatus())
+                                                .build())
+                                        .toList())
+                                .build()
+                ).toList();
+
+        TestOrderResponseExportExcelDTO dto =
+                TestOrderResponseExportExcelDTO.builder()
+                        .id(order.getId())
+                        .patientName(patient.getFullName())
+                        .phoneNumber(patient.getPhoneNumber())
+                        .gender(patient.getGender())
+                        .dateOfBirth(!patient.getDateOfBirth().isEmpty()
+                                ? LocalDate.parse(patient.getDateOfBirth())
+                                : null)
+                        .status(order.getStatus())
+                        .createdBy(order.getCreatedBy())
+                        .createdAt(order.getCreatedAt())
+                        .runBy(order.getRunBy())
+                        .runOn(order.getRunDate())
+                        .results(resultsDTO)
+                        .orderComments(orderComments)
+                        .build();
+
+        JRBeanCollectionDataSource dataSource =
+                new JRBeanCollectionDataSource(List.of(dto));
+
+        JasperReport report = JasperCompileManager.compileReport(
+                getClass().getResourceAsStream("/reports/test_order_detail.jrxml")
+        );
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("PATIENT_NAME", patient.getFullName());
+        params.put("REPORT_DATE", LocalDate.now().toString());
+
+        JasperPrint jasperPrint =
+                JasperFillManager.fillReport(report, params, dataSource);
+
+        // ✅ ✅ THIS IS YOUR PDF byte[]
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            JasperExportManager.exportReportToPdfStream(jasperPrint, baos);
+            return baos.toByteArray();
+        }
+    }
+
+
     //  EXPORT EXCEL (Danh sách test order của 1 bệnh nhân)
     @Override
     public void exportExcel(Long patientId, HttpServletResponse response) throws Exception {
