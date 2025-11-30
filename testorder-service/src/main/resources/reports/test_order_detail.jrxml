@@ -25,7 +25,8 @@
         <field name="value" class="java.lang.Double"/>
         <field name="flagStatus" class="sum25.group03.testorderservice.enums.FlagStatus"/>
         <field name="status" class="sum25.group03.testorderservice.enums.TestResultStatus"/>
-        <field name="commentTexts" class="java.lang.String"/>
+<!--        <field name="commentTexts" class="java.lang.String"/>-->
+        <field name="reviewText" class="java.lang.String"/>
     </subDataset>
 
 
@@ -389,7 +390,7 @@
                                           pdfEncoding="Identity-H"
                                           isPdfEmbedded="true"/>
                                 </textElement>
-                                <textFieldExpression><![CDATA[$F{commentTexts} != null ? $F{commentTexts} : ""]]></textFieldExpression>
+                                <textFieldExpression><![CDATA[$F{reviewText} != null ? $F{reviewText} : ""]]></textFieldExpression>
                             </textField>
                         </c:detailCell>
                     </c:column>

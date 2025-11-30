@@ -23,18 +23,23 @@ public class TestResultResponseExportPDFDTO {
     private FlagStatus flagStatus;
     private TestResultStatus status;
     private LocalDateTime createdAt;
-    private List<CommentResponseDTO> comments;
+//    private List<CommentResponseDTO> comments;
+    private String review;
+    // Optional helper cho Jasper (tránh null)
+    public String getReviewText() {
+        return review == null ? "" : review;
+    }
 
     /**
      * Trả về tất cả comment của TestResult nối bằng ", "
      */
-    public String getCommentTexts() {
-        if (comments == null || comments.isEmpty()) return "";
-        return comments.stream()
-                .map(CommentResponseDTO::getCommentText)
-                .filter(c -> c != null && !c.isBlank())
-                .collect(Collectors.joining(", "));
-    }
+//    public String getCommentTexts() {
+//        if (comments == null || comments.isEmpty()) return "";
+//        return comments.stream()
+//                .map(CommentResponseDTO::getCommentText)
+//                .filter(c -> c != null && !c.isBlank())
+//                .collect(Collectors.joining(", "));
+//    }
 
 
 }
