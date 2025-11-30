@@ -118,11 +118,11 @@ public class AuthServiceImpl implements AuthService {
 
             // store accessToken in redis:
             commonRedisService.saveValue(
-                    userEmail,
+                    user.getCognitoUserId(),
                     loginResponse.getAccessToken(),
                     loginResponse.getExpiresIn()
             );
-            System.out.println("Saved accessToken in Redis for user: " + userEmail);
+            System.out.println("Saved accessToken in Redis for user: " + user.getCognitoUserId());
 
             return new LoginWithRefresh(loginResponse, refreshToken);
 

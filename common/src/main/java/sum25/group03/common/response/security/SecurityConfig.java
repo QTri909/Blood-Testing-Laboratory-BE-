@@ -6,20 +6,22 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import sum25.group03.common.response.configs.RedisTokenCheckFilter;
 
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
-
     private final CustomJwtConverter customJwtConverter;
+    private final RedisTokenCheckFilter redisTokenCheckFilter;
 
-    public SecurityConfig(CustomJwtConverter customJwtConverter) {
+    public SecurityConfig(CustomJwtConverter customJwtConverter, RedisTokenCheckFilter redisTokenCheckFilter) {
         this.customJwtConverter = customJwtConverter;
+        this.redisTokenCheckFilter = redisTokenCheckFilter;
     }
-
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -59,6 +61,8 @@ public class SecurityConfig {
                                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
                         )
                 );
+
+        http.addFilterAfter(redisTokenCheckFilter, BearerTokenAuthenticationFilter.class);
 
         return http.build();
     }
