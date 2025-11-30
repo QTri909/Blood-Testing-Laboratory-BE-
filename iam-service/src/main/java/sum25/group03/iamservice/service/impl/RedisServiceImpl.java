@@ -3,21 +3,27 @@ package sum25.group03.iamservice.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import sum25.group03.iamservice.service.Interface.RedisService;
 
 @Service
 @RequiredArgsConstructor
-public class RedisServiceImpl {
+public class RedisServiceImpl implements RedisService {
     private final RedisTemplate<String, String> stringRedisTemplate;
 
-    public void saveData(String key, String value) {
+    @Override
+    public void saveValue(String key, String value, long expirationInSeconds) {
+        // Save the value with an expiration time
         stringRedisTemplate.opsForValue().set(key, value);
+        stringRedisTemplate.expire(key, java.time.Duration.ofSeconds(expirationInSeconds));
     }
 
-    public String getData(String key) {
+    @Override
+    public String getValue(String key) {
         return stringRedisTemplate.opsForValue().get(key);
     }
 
-    public void deleteData(String key) {
+    @Override
+    public void deleteValue(String key) {
         stringRedisTemplate.delete(key);
     }
 }
