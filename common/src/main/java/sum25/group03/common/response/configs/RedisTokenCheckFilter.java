@@ -52,12 +52,20 @@ public class RedisTokenCheckFilter extends OncePerRequestFilter {
             String currentAccessToken = commonRedisService.getValue(requestCognitoSub);
 
             // Token mismatch → kick out
+            log.info("-------");
+            log.info("Request token: {}", requestAccessToken);
+            log.info("Current token from Redis: {}", currentAccessToken);
+            log.info("Out-side Session kickout for user {}", requestCognitoSub);
             if (currentAccessToken != null && !requestAccessToken.equals(currentAccessToken)) {
+
+                log.info("In-side Session kickout for user {}", requestCognitoSub);
+
                 // Send custom response for front-end to detect
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json;charset=UTF-8");
                 String json = String.format("{\"code\":\"session_kickout\",\"reason\":\"Token revoked due to login from another device\"}");
                 response.getWriter().flush();
+                log.info("-------");
                 return; // stop filter chain
             }
 
