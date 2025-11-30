@@ -4,6 +4,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.response.services.interfaces.CommonRedisService;
 import sum25.group03.iamservice.dto.CognitoConfig;
 import sum25.group03.iamservice.dto.request.LoginRequest;
 import sum25.group03.iamservice.dto.response.LoginResponse;
@@ -14,7 +15,6 @@ import sum25.group03.iamservice.repository.UserRepository;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 import sum25.group03.iamservice.service.Interface.AuthService;
-import sum25.group03.iamservice.service.Interface.RedisService;
 import sum25.group03.iamservice.service.KafkaProducerService;
 
 
@@ -33,8 +33,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final SecretService secretService;
     private final KafkaProducerService kafkaProducerService;
-    private final RedisService redisService;
-
+    private final CommonRedisService commonRedisService;
 
     private final String secretName = "IAMService/CognitoConfig";
 
@@ -117,13 +116,13 @@ public class AuthServiceImpl implements AuthService {
 
             String refreshToken = response.authenticationResult().refreshToken();
 
-            // always store the latest accessToken in Redis
-            redisService.saveValue(
+            // store accessToken in redis:
+            commonRedisService.saveValue(
                     userEmail,
-                    response.authenticationResult().accessToken(),
-                    response.authenticationResult().expiresIn()
+                    loginResponse.getAccessToken(),
+                    loginResponse.getExpiresIn()
             );
-            System.out.println("Saved access token in Redis for user: " + userEmail);
+            System.out.println("Saved accessToken in Redis for user: " + userEmail);
 
             return new LoginWithRefresh(loginResponse, refreshToken);
 

@@ -1,13 +1,13 @@
-package sum25.group03.iamservice.service.impl;
+package sum25.group03.common.response.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import sum25.group03.iamservice.service.Interface.RedisService;
+import sum25.group03.common.response.services.interfaces.CommonRedisService;
 
 @Service
 @RequiredArgsConstructor
-public class RedisServiceImpl implements RedisService {
+public class CommonRedisServiceImpl implements CommonRedisService {
     private final RedisTemplate<String, String> stringRedisTemplate;
 
     @Override
