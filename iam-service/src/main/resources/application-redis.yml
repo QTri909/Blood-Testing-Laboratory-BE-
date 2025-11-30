@@ -1,0 +1,13 @@
+spring:
+  data:
+    redis:
+      host: redis-14412.crce194.ap-seast-1-1.ec2.cloud.redislabs.com  # your Redis host
+      port: 14412                     # default Redis port
+      password: cpArwsG5k0E6Ci7Rn0ilcbPUuPIF755b    # optional if your Redis has auth
+      lettuce:
+        pool:
+          max-active: 8             # max total connections
+          max-idle: 8               # max idle connections
+          min-idle: 0               # min idle connections
+          max-wait: 10000ms         # max wait time for a connection
+      timeout: 5000ms               # command timeout
