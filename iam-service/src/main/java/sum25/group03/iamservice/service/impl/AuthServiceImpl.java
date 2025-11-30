@@ -14,6 +14,7 @@ import sum25.group03.iamservice.repository.UserRepository;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.*;
 import sum25.group03.iamservice.service.Interface.AuthService;
+import sum25.group03.iamservice.service.Interface.RedisService;
 import sum25.group03.iamservice.service.KafkaProducerService;
 
 
@@ -32,6 +33,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final SecretService secretService;
     private final KafkaProducerService kafkaProducerService;
+    private final RedisService redisService;
 
 
     private final String secretName = "IAMService/CognitoConfig";
@@ -64,6 +66,7 @@ public class AuthServiceImpl implements AuthService {
         ).orElseThrow(() -> new RuntimeException("User not found"));
 
         String cognitoUsername = user.getEmail();
+        String userEmail = user.getEmail();
 
         // Kiểm tra account khóa
         if (!user.getAccountNonLocked()) {
@@ -113,6 +116,14 @@ public class AuthServiceImpl implements AuthService {
             loginResponse.setSub(user.getCognitoUserId());
 
             String refreshToken = response.authenticationResult().refreshToken();
+
+            // always store the latest accessToken in Redis
+            redisService.saveValue(
+                    userEmail,
+                    response.authenticationResult().accessToken(),
+                    response.authenticationResult().expiresIn()
+            );
+            System.out.println("Saved access token in Redis for user: " + userEmail);
 
             return new LoginWithRefresh(loginResponse, refreshToken);
 
