@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.bson.types.ObjectId;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -27,7 +28,7 @@ public class TestOrderDocument {
     private List<TemplateParameter> templateParameters;
     private String status; // e.g., "PENDING", "COMPLETED", "DELETED"
 
-    @CreationTimestamp
+    @CreatedDate
     private LocalDateTime createdAt;
     @UpdateTimestamp
     private LocalDateTime updatedAt;
