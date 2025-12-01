@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.bson.types.ObjectId;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -18,7 +19,10 @@ import java.util.List;
 @Data
 @Builder
 public class TestOrderDocument {
+
     @Id
+    private ObjectId id;
+
     private Long testOrderId;
     private List<TemplateParameter> templateParameters;
     private String status; // e.g., "PENDING", "COMPLETED", "DELETED"

@@ -80,7 +80,7 @@ spring:
               predicates:
                 - Path=/api/v1/test-orders/**       # everything under test-orders
               filters:
-                - RewritePath=/api/v1/test-orders/(?<segment>(\\d+|parameters|charts|test-result|comments|reports|config.*)), /api/v1/${segment}
+                - RewritePath=/api/v1/test-orders/(?<segment>(\\d+|parameters|charts|testorder-documents|test-result|comments|reports|config.*)), /api/v1/${segment}
 
             # for warehouse service
             - id: warehouse-service

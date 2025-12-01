@@ -423,7 +423,7 @@ public class TestResultServiceImpl implements TestResultService {
         if (isCustomTemplate) {
 
             // search testOrderDocument by testOrderId first:
-            TestOrderDocument testOrderDocument = testOrderDocumentRepo.findById(testOrderId).orElse(new TestOrderDocument());
+            TestOrderDocument testOrderDocument = testOrderDocumentRepo.findByTestOrderId(testOrderId).orElse(new TestOrderDocument());
 
             if (testOrderDocument.getTestOrderId() == null)
                 testOrderDocument.setTestOrderId(testOrderId);
