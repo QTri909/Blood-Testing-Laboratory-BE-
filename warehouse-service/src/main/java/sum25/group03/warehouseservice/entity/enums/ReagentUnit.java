@@ -7,10 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum ReagentUnit {
-    ML("mL"),
-    L("L"),
-    G("g"),
-    KG("kg");
+    ML("mL");
     private final String unit;
     ReagentUnit(String unit) {
         this.unit = unit;

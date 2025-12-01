@@ -17,6 +17,7 @@ import sum25.group03.warehouseservice.entity.Reagents;
 import sum25.group03.warehouseservice.entity.enums.ReagentInventoryStatus;
 import sum25.group03.warehouseservice.entity.enums.ReagentStatus;
 import sum25.group03.common.response.events.DeleteReagentEvent;
+import sum25.group03.warehouseservice.entity.enums.ReagentUnit;
 import sum25.group03.warehouseservice.event.ReagentCreatedEvent;
 import sum25.group03.warehouseservice.exception.DuplicateException;
 import sum25.group03.warehouseservice.exception.InvalidArgumentException;
@@ -203,7 +204,7 @@ public class ReagentServiceImpl implements ReagentService {
             double totalQty = inventoryMap.getOrDefault(reagent.getReagentId(), 0.0);
             Integer maxLevelInt = reagent.getMaxStockLevel();
             double maxLevel = maxLevelInt == null ? 0.0 : maxLevelInt.doubleValue();
-            double percentage = maxLevel > 0 ? (totalQty * 100.0) / maxLevel : 0.0;
+            double lowLevel = reagent.getMinStockLevel().doubleValue();
 
             return ReagentListItemRes.builder()
                     .reagentId(reagent.getReagentId())
@@ -212,7 +213,7 @@ public class ReagentServiceImpl implements ReagentService {
                     .totalStock(totalQty)
                     .unit(reagent.getUnit().getUnit())
                     .maxStockLevel(maxLevel)
-                    .percentage(percentage)
+                    .lowStockLevel(lowLevel)
                     .build();
         }).toList();
 
@@ -292,7 +293,7 @@ public class ReagentServiceImpl implements ReagentService {
                 .reagentName(req.getReagentName())
                 .catalogNumber(req.getCatalogNumber())
                 .casNumber(req.getCasNumber())
-                .unit(req.getUnit())
+                .unit(ReagentUnit.ML)
                 .storageConditions(req.getStorageConditions())
                 .status(ReagentStatus.ACTIVE) // default to ACTIVE
                 .maxStockLevel(req.getMaxStockLevel())
@@ -314,7 +315,7 @@ public class ReagentServiceImpl implements ReagentService {
                         "storageConditions", req.getStorageConditions(),
                         "status", "ACTIVE",
                         "maxStockLevel", req.getMaxStockLevel().toString(),
-                        "minStockLevel", req.getMinStockLevel().toString(),
+//                        "minStockLevel", req.getMinStockLevel().toString(),
                         "usageMin", req.getUsageMin() == null ? "null" : req.getUsageMin().toString(),
                         "usageMax", req.getUsageMax() == null ? "null" : req.getUsageMax().toString()
                 )
@@ -330,14 +331,14 @@ public class ReagentServiceImpl implements ReagentService {
         );
         log.info("[AUDIT] Logged creation for Reagent ID={}", saved.getReagentId());
 
-        ReagentCreatedEvent event = new ReagentCreatedEvent(
-                saved.getReagentId(),
-                saved.getReagentName(),
-                saved.getCatalogNumber(),
-                saved.getCasNumber()
-        );
-        kafkaCreateTemplate.send("reagent-created-events", event);
-        log.info("Sent reagent created event for reagent id: {}", saved.getReagentId());
+//        ReagentCreatedEvent event = new ReagentCreatedEvent(
+//                saved.getReagentId(),
+//                saved.getReagentName(),
+//                saved.getCatalogNumber(),
+//                saved.getCasNumber()
+//        );
+//        kafkaCreateTemplate.send("reagent-created-events", event);
+//        log.info("Sent reagent created event for reagent id: {}", saved.getReagentId());
 
         return ReagentRes.builder()
                 .reagentId(saved.getReagentId())

@@ -23,5 +23,5 @@ public class ConfigReq {
     @NotBlank
     private String firmwareVersion;
     @Positive
-    private int usePerRun;
+    private Double loadThreshold;
 }

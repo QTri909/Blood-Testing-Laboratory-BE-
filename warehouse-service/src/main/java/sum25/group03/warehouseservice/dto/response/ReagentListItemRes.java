@@ -13,7 +13,6 @@ public class ReagentListItemRes {
     private String catalogNumber;
     private double totalStock;
     private double maxStockLevel;
-    private String  unit;
-    private double percentage;
-
+    private double lowStockLevel;
+    private String unit;
 }

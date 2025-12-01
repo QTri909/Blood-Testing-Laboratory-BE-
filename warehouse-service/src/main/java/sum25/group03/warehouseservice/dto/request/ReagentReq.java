@@ -21,16 +21,14 @@ public class ReagentReq {
     @NotBlank
     private String casNumber;
 
-    @NotBlank
+    @NotNull
     private ReagentUnit unit;
 
     @NotBlank
     private String storageConditions;
 
-    @NotNull
     private Integer maxStockLevel;
 
-    @NotNull
     private Integer minStockLevel;
 
     @NotNull
