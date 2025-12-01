@@ -10,6 +10,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import sum25.group03.common.response.events.MonitoringLogEvent;
 import sum25.group03.patientservice.documents.AuditEntryDocument;
 import sum25.group03.patientservice.dtos.request.FilteredMedicalRecordRequest;
 import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
@@ -27,12 +28,15 @@ import sum25.group03.patientservice.helpers.MedicalRecordHelper;
 import sum25.group03.patientservice.mapper.MedicalRecordMapper;
 import sum25.group03.patientservice.repositories.postgres.MedicalRecordRepository;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
+import sum25.group03.patientservice.services.interfaces.IKafkaMonitoringLog;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordService;
 import sum25.group03.patientservice.services.interfaces.UserSnapshotService;
 import sum25.group03.patientservice.specification.MedicalRecordSpecification;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -52,6 +56,8 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
 
     private final ActionLogService actionLogService;
     private final UserSnapshotService userSnapshotService;
+
+    private final IKafkaMonitoringLog kafkaMonitoringLog;
 
     // check if a viewerId belongs to our system or not, if not, throw exception and warn to admin
     private void validateViewerExistence(Long actorId) {
@@ -86,6 +92,25 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 ActionTypeFeatures.CREATE_NEW_PATIENT_MEDICAL_RECORD,
                 entity.getRecordId()
         );
+
+        // send monitoring log event
+        try {
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.CREATE_NEW_PATIENT_MEDICAL_RECORD.toString(),
+                    "User ID: " + creatorId,
+                    "Created new Medical Record ID: " + entity.getRecordId(),
+                    "PatientService",
+                    Map.of(
+                            "creatorId", creatorId,
+                            "medicalRecordId", entity.getRecordId(),
+                            "patientId", (patientId == null) ? "Undefined" : patientId,
+                            "timestamp", System.currentTimeMillis()
+                    )
+            );
+            kafkaMonitoringLog.sendMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log event for creating medical record ID: " + entity.getRecordId(), e);
+        }
 
         return entity.getRecordId();
     }
@@ -126,6 +151,24 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 ActionTypeFeatures.CREATE_NEW_PATIENT_MEDICAL_RECORD,
                 entity.getRecordId()
         );
+
+        try {
+            // send monitoring log event
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.CREATE_NEW_PATIENT_MEDICAL_RECORD.toString(),
+                    "User ID: " + creatorId,
+                    "Created new Medical Record ID: " + entity.getRecordId(),
+                    "PatientService",
+                    Map.of(
+                            "creatorId", creatorId,
+                            "medicalRecordId", entity.getRecordId(),
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.sendMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log event for creating medical record ID: " + entity.getRecordId(), e);
+        }
 
         return medicalRecordMapper.toMedicalRecordResponse(entity);
     }
@@ -213,6 +256,27 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         String assignedUserName = userSnapshotService.getFullNameByExternalUserId(assignedUserId);
         result.setPatientName(patientName);
         result.setAssignedUserName(assignedUserName);
+
+        try {
+            // send monitoring log event
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.VIEW_PATIENT_MEDICAL_RECORD_DETAIL.toString(),
+                    "User ID: " + viewerId,
+                    "Viewed Medical Record ID: " + recordId,
+                    "PatientService",
+                    Map.of(
+                            "viewerId", viewerId,
+                            "medicalRecordId", recordId,
+                            "patientName", patientName,
+                            "assignedUserName", assignedUserName,
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.sendMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log event for viewing medical record ID: " + recordId, e);
+        }
+
         return result;
     }
 
@@ -282,6 +346,23 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
         // fill patient name and assignedUserName
         fillPatientNameAndAssignedUserName(result);
 
+        try {
+            // send monitoring log event
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.VIEW_ALL_PATIENT_MEDICAL_RECORDS.toString(),
+                    "User ID: " + viewerId,
+                    "Viewed all Medical Records",
+                    "PatientService",
+                    Map.of(
+                            "viewerId", viewerId,
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.sendMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log event for viewing all medical records", e);
+        }
+
         return result;
     }
 
@@ -332,6 +413,24 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
                 .entityType(DocumentType.MEDICAL_RECORD)
                 .build();
         auditEntryMongoService.saveAuditEntry(auditEntryStatusChange);
+
+        // send monitoring log event
+        try {
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.DELETE_PATIENT_MEDICAL_RECORD.toString(),
+                    "User ID: " + deleterId,
+                    "Deleted Medical Record ID: " + recordId,
+                    "PatientService",
+                    Map.of(
+                            "deleterId", deleterId,
+                            "medicalRecordId", recordId,
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.sendMonitoringLog(logEvent);
+        } catch(Exception ex) {
+            log.error("Failed to send monitoring log event for deleting medical record ID: " + recordId, ex);
+        }
     }
 
     @Override

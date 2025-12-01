@@ -8,6 +8,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import sum25.group03.common.response.events.MonitoringLogEvent;
 import sum25.group03.patientservice.documents.MedicalRecordDocument;
 import sum25.group03.patientservice.dtos.request.NewRecordStatusRequest;
 import sum25.group03.patientservice.dtos.request.UpdatedAssignedDoctor;
@@ -17,7 +18,11 @@ import sum25.group03.patientservice.enums.MedicalRecordStatus;
 import sum25.group03.patientservice.exception.medical.record.MedicalRecordNotFound;
 import sum25.group03.patientservice.mapper.MedicalRecordMapper;
 import sum25.group03.patientservice.repositories.mongo.MedicalRecordMongoRepository;
+import sum25.group03.patientservice.services.interfaces.IKafkaMonitoringLog;
 import sum25.group03.patientservice.services.interfaces.MedicalRecordMongoService;
+
+import java.time.LocalDateTime;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +33,7 @@ public class MedicalRecordMongoServiceImpl implements MedicalRecordMongoService 
     private final MedicalRecordMapper recordMapper;
     private final MongoTemplate mongoTemplate;
     private final ActionLogService actionLogService;
+    private final IKafkaMonitoringLog kafkaMonitoringLog;
 
     @Transactional
     public void createNewMedicalRecordInMongoDb(MedicalRecordEntity medicalRecordEntity) {
@@ -58,6 +64,24 @@ public class MedicalRecordMongoServiceImpl implements MedicalRecordMongoService 
         // log success message
         actionLogService.logAction(updatedById, ActionTypeFeatures.UPDATE_ASSIGNED_DOCTOR_DETAIL, medicalRecordId);
 
+        try {
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.UPDATE_ASSIGNED_DOCTOR_DETAIL.toString(),
+                    "User ID: " + updatedById,
+                    "Updated assigned doctor for Medical Record ID: " + medicalRecordId,
+                    "PatientService",
+                    Map.of(
+                            "updatedById", updatedById,
+                            "medicalRecordId", medicalRecordId,
+                            "newAssignedUserId", newAssignedUserId,
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.sendMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for updating assigned doctor. Error: {}", e.getMessage());
+        }
+
     }
 
     // update status to DELETED//INACTIVE/ACTIVE/HIDDEN
@@ -84,6 +108,24 @@ public class MedicalRecordMongoServiceImpl implements MedicalRecordMongoService 
 
         // log success message
         actionLogService.logAction(updatedBy, ActionTypeFeatures.AUDIT_MEDICAL_RECORD_STATUS_CHANGE, recordId);
+
+        try {
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.AUDIT_MEDICAL_RECORD_STATUS_CHANGE.toString(),
+                    "User ID: " + updatedBy,
+                    "Updated status for Medical Record ID: " + recordId + " to " + newStatus,
+                    "PatientService",
+                    Map.of(
+                            "updatedBy", updatedBy,
+                            "medicalRecordId", recordId,
+                            "newStatus", newStatus.toString(),
+                            "timestamp", LocalDateTime.now().toString()
+                    )
+            );
+            kafkaMonitoringLog.sendMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for updating medical record status. Error: {}", e.getMessage());
+        }
     }
 
 }

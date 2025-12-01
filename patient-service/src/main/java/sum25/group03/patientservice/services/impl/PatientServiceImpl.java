@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.response.events.MonitoringLogEvent;
 import sum25.group03.patientservice.dtos.response.PatientResponseDTO;
 import sum25.group03.patientservice.dtos.response.UserSnapshotResponse;
 import sum25.group03.patientservice.entities.UserSnapshotEntity;
@@ -19,9 +20,11 @@ import sum25.group03.patientservice.grpc.dtos.GrpcTestOrderDTO;
 import sum25.group03.patientservice.mapper.PatientMapper;
 import sum25.group03.patientservice.mapper.UserSnapshotMapper;
 import sum25.group03.patientservice.repositories.postgres.UserSnapshotRepository;
+import sum25.group03.patientservice.services.interfaces.IKafkaMonitoringLog;
 import sum25.group03.patientservice.services.interfaces.PatientService;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +37,7 @@ public class PatientServiceImpl implements PatientService {
     private final TestOrderGrpcClient testOrderGrpcClient;
     private final UserSnapshotRepository userSnapshotRepository;
     private final ActionLogService actionLogService;
+    private final IKafkaMonitoringLog kafkaMonitoringLog;
 
     // check if a viewerId belongs to our system or not, if not, throw exception and warn to admin
     private void validateViewerExistence(Long actorId) {
@@ -98,6 +102,25 @@ public class PatientServiceImpl implements PatientService {
 
         if (patientEntity.getRoles() == null || !patientEntity.getRoles().contains("PATIENT")) {
             throw new UserNotFoundException("User with id " + patientId + " is not a patient");
+        }
+
+        try {
+            // send to kafka monitoring log
+            MonitoringLogEvent logEvent = new MonitoringLogEvent(
+                    ActionTypeFeatures.VIEW_PATIENT_INFO_BY_ID.toString(),
+                    "Viewer ID: " + viewerId,
+                    "Viewed patient info for Patient ID: " + patientId,
+                    "PatientService",
+                    Map.of(
+                            "viewerId", viewerId,
+                            "patientId", patientId,
+                            "timestamp", System.currentTimeMillis()
+                    )
+            );
+
+            kafkaMonitoringLog.sendMonitoringLog(logEvent);
+        } catch (Exception e) {
+            log.error("Failed to send monitoring log for viewing patient info: {}", e.getMessage());
         }
 
         return userSnapshotMapper.toResponse(patientEntity);

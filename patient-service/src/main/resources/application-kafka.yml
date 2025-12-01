@@ -9,3 +9,10 @@ spring:
       properties:
         spring.json.trusted.packages: "sum25.group03.common.response.events"
         spring.json.use.type.headers: true
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+      # Keep type headers so consumers can deserialize by class
+      properties:
+        spring.json.add.type.headers: true

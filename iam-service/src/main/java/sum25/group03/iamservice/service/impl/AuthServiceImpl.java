@@ -4,6 +4,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import sum25.group03.common.response.services.interfaces.CommonRedisService;
 import sum25.group03.iamservice.dto.CognitoConfig;
 import sum25.group03.iamservice.dto.request.LoginRequest;
 import sum25.group03.iamservice.dto.response.LoginResponse;
@@ -32,7 +33,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final SecretService secretService;
     private final KafkaProducerService kafkaProducerService;
-
+    private final CommonRedisService commonRedisService;
 
     private final String secretName = "IAMService/CognitoConfig";
 
@@ -64,6 +65,7 @@ public class AuthServiceImpl implements AuthService {
         ).orElseThrow(() -> new RuntimeException("User not found"));
 
         String cognitoUsername = user.getEmail();
+        String userEmail = user.getEmail();
 
         // Kiểm tra account khóa
         if (!user.getAccountNonLocked()) {
@@ -113,6 +115,14 @@ public class AuthServiceImpl implements AuthService {
             loginResponse.setSub(user.getCognitoUserId());
 
             String refreshToken = response.authenticationResult().refreshToken();
+
+            // store accessToken in redis:
+            commonRedisService.saveValue(
+                    user.getCognitoUserId(),
+                    loginResponse.getAccessToken(),
+                    loginResponse.getExpiresIn()
+            );
+            System.out.println("Saved accessToken in Redis for user: " + user.getCognitoUserId());
 
             return new LoginWithRefresh(loginResponse, refreshToken);
 
