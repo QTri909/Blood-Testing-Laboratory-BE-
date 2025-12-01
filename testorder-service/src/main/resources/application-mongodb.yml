@@ -1,0 +1,8 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://root:12345@localhost:27019/medicalAuditDb?authSource=admin
+
+group3:
+  mongodb:
+    name: testorder_mongodb
