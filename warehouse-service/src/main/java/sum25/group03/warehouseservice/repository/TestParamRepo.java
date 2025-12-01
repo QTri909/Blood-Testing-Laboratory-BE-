@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import sum25.group03.warehouseservice.entity.TestParameter;
 import sum25.group03.warehouseservice.entity.enums.ParameterStatus;
 
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -25,4 +26,6 @@ public interface TestParamRepo extends JpaRepository<TestParameter,Long> {
     List<TestParameter> findAllByStatus(ParameterStatus parameterStatus);
 
     boolean existsByAbbreviation(String abbreviation);
+
+    List<TestParameter> findAllByIdNotIn(Collection<Long> ids);
 }
