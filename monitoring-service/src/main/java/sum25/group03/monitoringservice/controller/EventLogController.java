@@ -3,6 +3,7 @@ package sum25.group03.monitoringservice.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.monitoringservice.dto.EventLogDTO;
 import sum25.group03.monitoringservice.dto.PagedResponse;
@@ -22,6 +23,7 @@ public class EventLogController {
     }
 
 
+    @PreAuthorize("hasAuthority('LOG_VIEW')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<PagedResponse> getEventLogs(
@@ -33,6 +35,7 @@ public class EventLogController {
         return ApiResponse.add("Fetched event logs successfully", response);
     }
 
+    @PreAuthorize("hasAuthority('LOG_VIEW')")
     @GetMapping("/{id}")
     public ApiResponse<?> getEventLogById(@PathVariable String id) {
         return eventLogService.getEventLog(id)
@@ -40,6 +43,7 @@ public class EventLogController {
                 .orElse(ApiResponse.error(HttpStatus.NOT_FOUND, "Event log not found", "/api/v1/logs/" + id));
     }
 
+    @PreAuthorize("hasAuthority('LOG_VIEW')")
     @GetMapping("/search")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<PagedResponse> searchEventLogs(
