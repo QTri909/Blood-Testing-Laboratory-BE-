@@ -30,6 +30,6 @@ public class Privilege {
     @OneToMany(mappedBy = "privilege", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RolePrivilege> rolePrivileges = new HashSet<>();
 
-    @OneToMany(mappedBy = "privilege", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "privilege")
     private Set<UserPrivilege> userPrivileges = new HashSet<>();
 }

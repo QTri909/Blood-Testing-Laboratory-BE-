@@ -160,51 +160,88 @@ public class RoleServiceImpl implements RoleService {
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RuntimeException("Role not found with id: " + roleId));
 
-        if (request.getRoleName() != null) {
+        boolean changed = false;
+
+        // =================== Update basic fields ===================
+        if (request.getRoleName() != null && !request.getRoleName().equals(role.getRoleName())) {
             role.setRoleName(request.getRoleName());
+            changed = true;
         }
 
-        if (request.getRoleCode() != null) {
+        if (request.getRoleCode() != null && !request.getRoleCode().equals(role.getRoleCode())) {
             boolean exists = roleRepository.existsByRoleCodeAndIdNot(request.getRoleCode(), roleId);
             if (exists) {
                 throw new RuntimeException("Role code already exists: " + request.getRoleCode());
             }
             role.setRoleCode(request.getRoleCode());
+            changed = true;
         }
 
-        if (request.getRoleDescription() != null) {
+        if (request.getRoleDescription() != null &&
+                !request.getRoleDescription().equals(role.getRoleDescription())) {
             role.setRoleDescription(request.getRoleDescription());
+            changed = true;
         }
 
-        roleRepository.save(role);
+        // =================== Update privileges ===================
 
-        if (role.getRolePrivileges() == null) {
-            role.setRolePrivileges(new HashSet<>());
-        } else {
-            role.getRolePrivileges().clear();
-        }
+        Set<RolePrivilege> currentPrivileges = role.getRolePrivileges();
+        Set<Long> oldPrivilegeIds = currentPrivileges.stream()
+                .map(rp -> rp.getPrivilege().getId())
+                .collect(Collectors.toSet());
+
+        Set<Long> newPrivilegeIds = request.getPrivilegeIds() == null
+                ? new HashSet<>()
+                : new HashSet<>(request.getPrivilegeIds());
+
+        // Nếu không thay đổi privileges → KHÔNG động vào DB
+        boolean privilegesChanged = !oldPrivilegeIds.equals(newPrivilegeIds);
 
         Set<String> finalPrivileges = new HashSet<>();
-        List<Long> privilegeIds = request.getPrivilegeIds();
 
-        if (privilegeIds != null && !privilegeIds.isEmpty()) {
-            List<Privilege> privileges = privilegeRepository.findAllById(privilegeIds);
+        if (privilegesChanged) {
+            changed = true;
 
-            List<RolePrivilege> newPrivileges = privileges.stream()
-                    .map(p -> RolePrivilege.builder()
-                            .role(role)
-                            .privilege(p)
-                            .build())
-                    .toList();
+            currentPrivileges.clear();
 
-            rolePrivilegeRepository.saveAll(newPrivileges);
-            role.getRolePrivileges().addAll(newPrivileges);
+            if (!newPrivilegeIds.isEmpty()) {
+                List<Privilege> privileges = privilegeRepository.findAllById(newPrivilegeIds);
 
-            finalPrivileges = privileges.stream()
-                    .map(Privilege::getPrivilegeName)
+                for (Privilege p : privileges) {
+                    currentPrivileges.add(
+                            RolePrivilege.builder()
+                                    .role(role)
+                                    .privilege(p)
+                                    .build()
+                    );
+                }
+
+                finalPrivileges = privileges.stream()
+                        .map(Privilege::getPrivilegeName)
+                        .collect(Collectors.toSet());
+            }
+        } else {
+            // Không thay đổi → build lại từ dữ liệu cũ
+            finalPrivileges = currentPrivileges.stream()
+                    .map(rp -> rp.getPrivilege().getPrivilegeName())
                     .collect(Collectors.toSet());
         }
 
+        // =================== Nếu không thay đổi gì → return luôn ===================
+        if (!changed) {
+            return RoleResponse.builder()
+                    .id(role.getId())
+                    .roleName(role.getRoleName())
+                    .roleCode(role.getRoleCode())
+                    .roleDescription(role.getRoleDescription())
+                    .privileges(finalPrivileges)
+                    .build();
+        }
+
+        // =================== Save ===================
+        roleRepository.save(role);
+
+        // =================== Audit Log ===================
         auditLogService.record(
                 "UPDATE",
                 "Role",
@@ -213,6 +250,7 @@ public class RoleServiceImpl implements RoleService {
                 "Updated role info + privileges: " + role.getRoleCode()
         );
 
+        // =================== Kafka Events ===================
         try {
             RoleUpdatedEvent event = RoleUpdatedEvent.builder()
                     .Id(role.getId())
@@ -223,9 +261,7 @@ public class RoleServiceImpl implements RoleService {
                     .build();
 
             kafkaProducerService.sendRoleUpdated(event);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception ignored) {}
 
         Long operatorId = getOperatorDatabaseId();
 
@@ -257,35 +293,63 @@ public class RoleServiceImpl implements RoleService {
     }
 
 
+
     @Override
+    @Transactional
     public void cascadeRolePermissionChanges(Long roleId) {
+
         List<UserRole> userRoles = userRoleRepository.findByRoleId(roleId);
 
-
-        List<Privilege> privileges = privilegeRepository.findByRoleId(roleId);
+        List<Privilege> newPrivileges = privilegeRepository.findByRoleId(roleId);
 
         for (UserRole ur : userRoles) {
-            userPrivilegeRepository.deleteByUserId(ur.getUser().getId());
+
+            User user = ur.getUser();
+
+            List<UserPrivilege> existingList = userPrivilegeRepository.findByUserId(user.getId());
+            Set<UserPrivilege> existing = new HashSet<>(existingList);
 
 
-            List<UserPrivilege> ups = privileges.stream()
-                    .map(p -> UserPrivilege.builder()
-                            .user(ur.getUser())
-                            .privilege(p)
-                            .isActive(true)
-                            .build())
-                    .collect(Collectors.toList());
+            Set<Long> existingIds = existing.stream()
+                    .map(up -> up.getPrivilege().getId())
+                    .collect(Collectors.toSet());
 
-            userPrivilegeRepository.saveAll(ups);
+            Set<Long> newIds = newPrivileges.stream()
+                    .map(Privilege::getId)
+                    .collect(Collectors.toSet());
 
+            List<Privilege> toAdd = newPrivileges.stream()
+                    .filter(p -> !existingIds.contains(p.getId()))
+                    .toList();
 
+            List<UserPrivilege> toRemove = existing.stream()
+                    .filter(up -> !newIds.contains(up.getPrivilege().getId()))
+                    .toList();
+
+            if (!toRemove.isEmpty()) {
+                userPrivilegeRepository.deleteAll(toRemove);
+            }
+
+            // ADD chỉ những cái mới
+            if (!toAdd.isEmpty()) {
+                List<UserPrivilege> newUserPrivs = toAdd.stream()
+                        .map(p -> UserPrivilege.builder()
+                                .user(user)
+                                .privilege(p)
+                                .isActive(true)
+                                .build())
+                        .toList();
+
+                userPrivilegeRepository.saveAll(newUserPrivs);
+            }
         }
+
         auditLogService.record(
                 "SYSTEM_SYNC",
                 "UserPrivilege",
                 null,
                 "system",
-                "Synchronized privileges for users assigned to roleId=" + roleId
+                "Synced privilege changes for roleId=" + roleId
         );
     }
 
