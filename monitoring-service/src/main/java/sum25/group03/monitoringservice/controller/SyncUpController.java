@@ -2,6 +2,7 @@ package sum25.group03.monitoringservice.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.monitoringservice.service.SyncUpService;
 
@@ -15,6 +16,7 @@ public class SyncUpController {
         this.syncUpService = syncUpService;
     }
 
+    @PreAuthorize("hasAuthority('LOG_VIEW')")
     @PostMapping("/manual/{orderId}")
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<String> manualResync(@PathVariable String orderId) {

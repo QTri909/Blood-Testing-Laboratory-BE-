@@ -3,6 +3,7 @@ package sum25.group03.monitoringservice.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.monitoringservice.dto.PagedResponse;
 import sum25.group03.monitoringservice.model.RawTestResult;
@@ -18,6 +19,7 @@ public class RawTestResultController {
         this.service = service;
     }
 
+    @PreAuthorize("hasAuthority('LOG_VIEW')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<PagedResponse> getRawTests(
@@ -37,6 +39,7 @@ public class RawTestResultController {
                 PagedResponse.fromPage(pageResult));
     }
 
+    @PreAuthorize("hasAuthority('LOG_VIEW')")
     @GetMapping("/{id}")
     public ApiResponse<?> getRawTestById(@PathVariable String id) {
         return service.getById(id)
