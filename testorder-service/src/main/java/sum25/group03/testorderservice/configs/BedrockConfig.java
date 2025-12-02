@@ -16,7 +16,7 @@ public class BedrockConfig {
                 .region(Region.AP_SOUTHEAST_2)
                 .credentialsProvider(
                         StaticCredentialsProvider.create(
-                                AwsBasicCredentials.create("AKIAUAT3BD6HAAX4OYWX", "STfiX71FW2wCVp1bRJ6Ykzt0IphM8oSvxiJH2JBh")
+                                AwsBasicCredentials.create("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
                         )
                 )
                 .build();

@@ -17,6 +17,9 @@ public interface TestResultMapper {
     @Mapping(source = "parameter.id", target = "parameterId")
     @Mapping(source = "parameter.name", target = "parameterName")
 //    @Mapping( source = "status", target = "testResultStatus")
+    @Mapping(source = "parameter.min", target = "min")
+    @Mapping(source = "parameter.max", target = "max")
+    @Mapping(source = "parameter.unit", target = "unit")
     TestResultResponseDTO toResponseDto(TestResult testResult);
 
     List<TestResultResponseDTO> toResponseDtos(List<TestResult> testResults);

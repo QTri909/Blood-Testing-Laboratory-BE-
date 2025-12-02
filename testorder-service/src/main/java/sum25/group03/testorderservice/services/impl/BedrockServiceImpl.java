@@ -31,23 +31,45 @@ public class BedrockServiceImpl implements IBedrockService {
     @Autowired
     private ObjectMapper mapper;
 
+    private static final int MAX_RETRIES = 3;
+    private static final long INITIAL_DELAY_MS = 1000;
+
     public TestResultReviewDTO reviewTestResult(Long id) throws JsonProcessingException {
-        TestResult testResult = testResultRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("test result not found"));
-        Parameter parameter = testResult.getParameter();
-        ObjectNode testInfo = mapper.createObjectNode();
-        testInfo.put("name", parameter.getName());
-        testInfo.put("value", testResult.getValue());
-        testInfo.put("min", parameter.getMin());
-        testInfo.put("max", parameter.getMax());
-        testInfo.put("unit", parameter.getUnit().name());
+        List<TestResult> testResults = testResultRepository.findByTestOrderId(id);
+        if(testResults == null || testResults.size() == 0){
+            throw new IllegalArgumentException("test result not found");
+        }
+        ArrayNode testsArray = mapper.createArrayNode();
+        for (TestResult tr : testResults) {
+            System.out.println("size" + testResults.size());
+            Parameter p = tr.getParameter();
+            double value = tr.getValue();
+            String formattedValue = String.format("%.2f", value);
+            ObjectNode testInfo = mapper.createObjectNode();
+            testInfo.put("name", p.getName());
+            testInfo.put("value", formattedValue);
+            testInfo.put("min", p.getMin());
+            testInfo.put("max", p.getMax());
+            testInfo.put("unit", p.getUnit().name());
+            testsArray.add(testInfo);
+        }
 
         String prompt = """
-                You are a medical AI. Analyze the following laboratory test parameters.
-                Return ONLY a JSON with fields: abnormalities, severity, summary, recommendation.
-                
-                Test Results (JSON):
-                """ + testInfo.toString();
+You are a medical AI. Analyze the following laboratory test parameters.
+
+Return EXACTLY ONE JSON object.
+No explanation. No markdown.
+
+Format:
+{
+  "abnormalities": [],
+  "severity": "",
+  "summary": "",
+  "recommendation": ""
+}
+
+Test Results (JSON):
+""" + testsArray;
 
         ObjectNode textNode = mapper.createObjectNode();
         textNode.put("type", "text");
@@ -65,39 +87,12 @@ public class BedrockServiceImpl implements IBedrockService {
 
         ObjectNode requestBody = mapper.createObjectNode();
         requestBody.put("anthropic_version", "bedrock-2023-05-31");
-        requestBody.put("max_tokens", 800);
+        requestBody.put("max_tokens", 8000);
         requestBody.set("messages", messagesArray);
 
         String body = requestBody.toString();
 
-        InvokeModelRequest request = InvokeModelRequest.builder()
-                .modelId("anthropic.claude-3-sonnet-20240229-v1:0")
-                .contentType("application/json")
-                .accept("application/json")
-                .body(SdkBytes.fromUtf8String(body))
-                .build();
-
-        InvokeModelResponse response = bedrockClient.invokeModel(request);
-        JsonNode bedrockResponse = mapper.readTree(response.body().asUtf8String());
-        try {
-            String aiJsonString = bedrockResponse
-                    .get("content")
-                    .get(0)
-                    .get("text")
-                    .asText();
-            JsonNode result = mapper.readTree(aiJsonString);
-            TestResultReviewDTO dto = new TestResultReviewDTO();
-            List<String> abnormalList = parseAbnormalities(result);
-            dto.setAbnormalities(abnormalList);
-            dto.setSeverity(result.get("severity").asText());
-            dto.setSummary(result.get("summary").asText());
-            dto.setRecommendation(result.get("recommendation").asText());
-
-            return dto;
-
-        } catch (Exception ex) {
-            throw new RuntimeException("Failed to parse Bedrock JSON: " + ex.getMessage());
-        }
+        return invokeBedrockWithRetry(body);
     }
 
     public JsonNode extractAiResult(String responseBody) throws JsonProcessingException {
@@ -143,6 +138,67 @@ public class BedrockServiceImpl implements IBedrockService {
             }
         }
         return new ArrayList<>();
+    }
+
+    private TestResultReviewDTO invokeBedrockWithRetry(String body) throws JsonProcessingException {
+        int retries = 0;
+        long delay = INITIAL_DELAY_MS;
+
+        while (retries < MAX_RETRIES) {
+            try {
+                InvokeModelRequest request = InvokeModelRequest.builder()
+                        .modelId("anthropic.claude-3-sonnet-20240229-v1:0")
+                        .contentType("application/json")
+                        .accept("application/json")
+                        .body(SdkBytes.fromUtf8String(body))
+                        .build();
+
+                InvokeModelResponse response = bedrockClient.invokeModel(request);
+
+                // Parse response
+                JsonNode bedrockResponse = mapper.readTree(response.body().asUtf8String());
+                String aiJsonString = bedrockResponse
+                        .get("content")
+                        .get(0)
+                        .get("text")
+                        .asText();
+
+                JsonNode result = mapper.readTree(aiJsonString);
+
+                TestResultReviewDTO dto = new TestResultReviewDTO();
+                List<String> abnormalList = parseAbnormalities(result);
+                dto.setAbnormalities(abnormalList);
+                dto.setSeverity(result.get("severity").asText());
+                dto.setSummary(result.get("summary").asText());
+                dto.setRecommendation(result.get("recommendation").asText());
+
+                return dto;
+
+            } catch (software.amazon.awssdk.services.bedrockruntime.model.ThrottlingException ex) {
+                retries++;
+                if (retries >= MAX_RETRIES) {
+                    throw new RuntimeException("Max retries exceeded due to throttling", ex);
+                }
+
+                System.out.println("Throttled! Retry " + retries + "/" + MAX_RETRIES +
+                        " after " + delay + "ms");
+
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Interrupted during retry", ie);
+                }
+
+                // Exponential backoff: 1s -> 2s -> 4s
+                delay *= 2;
+
+            } catch (Exception ex) {
+                throw new RuntimeException("Failed to parse Bedrock JSON: " + ex.getMessage(), ex);
+            }
+        }
+
+        throw new RuntimeException("Failed to invoke Bedrock after retries");
     }
 
 }
