@@ -12,6 +12,7 @@ import org.springframework.data.util.Streamable;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 import sum25.group03.testorderservice.dtos.response.TestOrderResponseDTO;
+import sum25.group03.testorderservice.dtos.response.TestOrderSummaryByStatusChart;
 import sum25.group03.testorderservice.dtos.response.TestOrderSummaryChart;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 
@@ -70,5 +71,23 @@ public interface TestOrderRepository extends JpaRepository<TestOrder,Long>, JpaS
 
     // find all test orders by its status:
     List<TestOrder> findAllByStatus(TestOrderStatus status);
+
+    // summary of test orders by status between fromDate and toDate
+    @Query("""
+    SELECT new sum25.group03.testorderservice.dtos.response.TestOrderSummaryByStatusChart(
+        CAST(t.createdAt AS date), 
+        t.status, 
+        COUNT(t)
+    )
+    FROM TestOrder t
+    WHERE CAST(t.createdAt AS date) BETWEEN :fromDate AND :toDate
+    GROUP BY CAST(t.createdAt AS date), t.status
+    ORDER BY CAST(t.createdAt AS date), t.status
+""")
+    List<TestOrderSummaryByStatusChart> getTestOrderSummaryByStatusBetween(
+            @Param("fromDate") java.time.LocalDate fromDate,
+            @Param("toDate") java.time.LocalDate toDate
+    );
+
 
 }

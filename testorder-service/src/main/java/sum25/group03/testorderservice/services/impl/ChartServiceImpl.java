@@ -2,6 +2,7 @@ package sum25.group03.testorderservice.services.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import sum25.group03.testorderservice.dtos.response.TestOrderSummaryByStatusChart;
 import sum25.group03.testorderservice.dtos.response.TestOrderSummaryChart;
 import sum25.group03.testorderservice.entities.TestOrder;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
@@ -37,6 +38,11 @@ public class ChartServiceImpl implements ChartService {
                     return itemDate.isAfter(fromDate) && itemDate.isBefore(toDate);
                 })
                 .toList();
+    }
+
+    @Override
+    public List<TestOrderSummaryByStatusChart> getTestOrdersSummaryByStatus(LocalDate fromDate, LocalDate toDate) {
+        return testOrderRepository.getTestOrderSummaryByStatusBetween(fromDate, toDate);
     }
 
 }
