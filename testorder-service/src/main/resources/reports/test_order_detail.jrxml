@@ -24,7 +24,7 @@
         <field name="parameterName" class="java.lang.String"/>
         <field name="value" class="java.lang.Double"/>
         <field name="flagStatus" class="sum25.group03.testorderservice.enums.FlagStatus"/>
-        <field name="status" class="sum25.group03.testorderservice.enums.TestResultStatus"/>
+<!--        <field name="status" class="sum25.group03.testorderservice.enums.TestResultStatus"/>-->
 <!--        <field name="commentTexts" class="java.lang.String"/>-->
         <field name="reviewText" class="java.lang.String"/>
     </subDataset>
@@ -337,40 +337,48 @@
                                     <pen lineWidth="1" lineColor="#9E9E9E"/>
                                 </box>
                                 <textElement textAlignment="Center" verticalAlignment="Middle"/>
-                                <textFieldExpression><![CDATA[$F{flagStatus} != null ? $F{flagStatus}.name() : ""]]></textFieldExpression>
+                                <textFieldExpression><![CDATA[
+    $F{flagStatus} == null ? "" :
+    $F{flagStatus}.name().equals("N") ? "Normal" :
+    $F{flagStatus}.name().equals("H") ? "High" :
+    $F{flagStatus}.name().equals("L") ? "Low" :
+    $F{flagStatus}.name().equals("C") ? "Critical" :
+    $F{flagStatus}.name()
+]]></textFieldExpression>
+
                             </textField>
                         </c:detailCell>
                     </c:column>
 
-                    <!-- Column 4: Status -->
-                    <c:column width="80">
-                        <c:columnHeader height="20">
-                            <staticText>
-                                <reportElement x="0" y="0" width="80" height="20" backcolor="#1F3B63" mode="Opaque" forecolor="#FFFFFF"/>
-                                <box>
-                                    <pen lineWidth="1" lineColor="#9E9E9E"/>
-                                </box>
-                                <textElement textAlignment="Center" verticalAlignment="Middle"/>
-                                <text><![CDATA[Status]]></text>
-                            </staticText>
-                        </c:columnHeader>
-                        <c:detailCell height="20">
-                            <textField textAdjust="StretchHeight">
-                                <reportElement x="0" y="0" width="80" height="20"/>
-                                <box>
-                                    <pen lineWidth="1" lineColor="#9E9E9E"/>
-                                </box>
-                                <textElement textAlignment="Center" verticalAlignment="Middle"/>
-                                <textFieldExpression><![CDATA[$F{status} != null ? $F{status}.name() : ""]]></textFieldExpression>
-                            </textField>
-                        </c:detailCell>
-                    </c:column>
+<!--                    &lt;!&ndash; Column 4: Status &ndash;&gt;-->
+<!--                    <c:column width="80">-->
+<!--                        <c:columnHeader height="20">-->
+<!--                            <staticText>-->
+<!--                                <reportElement x="0" y="0" width="80" height="20" backcolor="#1F3B63" mode="Opaque" forecolor="#FFFFFF"/>-->
+<!--                                <box>-->
+<!--                                    <pen lineWidth="1" lineColor="#9E9E9E"/>-->
+<!--                                </box>-->
+<!--                                <textElement textAlignment="Center" verticalAlignment="Middle"/>-->
+<!--                                <text><![CDATA[Status]]></text>-->
+<!--                            </staticText>-->
+<!--                        </c:columnHeader>-->
+<!--                        <c:detailCell height="20">-->
+<!--                            <textField textAdjust="StretchHeight">-->
+<!--                                <reportElement x="0" y="0" width="80" height="20"/>-->
+<!--                                <box>-->
+<!--                                    <pen lineWidth="1" lineColor="#9E9E9E"/>-->
+<!--                                </box>-->
+<!--                                <textElement textAlignment="Center" verticalAlignment="Middle"/>-->
+<!--                                <textFieldExpression><![CDATA[$F{status} != null ? $F{status}.name() : ""]]></textFieldExpression>-->
+<!--                            </textField>-->
+<!--                        </c:detailCell>-->
+<!--                    </c:column>-->
 
                     <!-- Column 5: Comments -->
-                    <c:column width="225">
+                    <c:column width="305">
                         <c:columnHeader height="20">
                             <staticText>
-                                <reportElement x="0" y="0" width="225" height="20" backcolor="#1F3B63" mode="Opaque" forecolor="#FFFFFF"/>
+                                <reportElement x="0" y="0" width="305" height="20" backcolor="#1F3B63" mode="Opaque" forecolor="#FFFFFF"/>
                                 <box>
                                     <pen lineWidth="1" lineColor="#9E9E9E"/>
                                 </box>
@@ -380,7 +388,7 @@
                         </c:columnHeader>
                         <c:detailCell height="20">
                             <textField textAdjust="StretchHeight">
-                                <reportElement x="0" y="0" width="225" height="20"/>
+                                <reportElement x="0" y="0" width="305" height="20"/>
                                 <box>
                                     <pen lineWidth="1" lineColor="#9E9E9E"/>
                                 </box>
@@ -401,7 +409,7 @@
             <!-- Footer trang cuối -->
             <!-- ORDER COMMENTS TITLE -->
             <staticText>
-                <reportElement x="0" y="235" width="555" height="15" forecolor="#1F3B63"/>
+                <reportElement x="0" y="295" width="555" height="15" forecolor="#1F3B63"/>
                 <textElement>
                     <font isBold="true"/>
                 </textElement>
@@ -410,12 +418,12 @@
 
             <!-- ĐƯỜNG GẠCH NGANG -->
             <line>
-                <reportElement x="0" y="252" width="555" height="1" forecolor="#000000"/>
+                <reportElement x="0" y="312" width="555" height="1" forecolor="#000000"/>
             </line>
 
             <!-- NỘI DUNG ORDER COMMENTS -->
             <textField textAdjust="StretchHeight">
-                <reportElement x="0" y="258" width="555" height="20"/>
+                <reportElement x="0" y="320" width="555" height="20"/>
                 <textElement>
                     <font fontName="DejaVu Sans"
                           pdfFontName="fonts/DejaVuSans.ttf"
