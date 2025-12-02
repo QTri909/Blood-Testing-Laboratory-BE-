@@ -41,20 +41,20 @@ import java.util.stream.Collectors;
 @Transactional
 public class TestOrderServiceImpl implements TestOrderService {
 
-    private final TestOrderRepository testOrderRepository;
-    private final TestOrderKafkaProducer testOrderKafkaProducer;
+        private final TestOrderRepository testOrderRepository;
+        private final TestOrderKafkaProducer testOrderKafkaProducer;
 
-    private final PatientGrpcClient patientGrpcClient;
+        private final PatientGrpcClient patientGrpcClient;
 
-    private final TestOrderRepository repository;
-    private final TestOrderMapper testOrderMapper;
+        private final TestOrderRepository repository;
+        private final TestOrderMapper testOrderMapper;
 
-    private final TestResultMapper testResultMapper;
-    private final ActionLogService actionLogService;
+        private final TestResultMapper testResultMapper;
+        private final ActionLogService actionLogService;
 
-    private final ParameterHelpers parameterHelpers;
+        private final ParameterHelpers parameterHelpers;
 
-    private final IKafkaMonitoringLog kafkaMonitoringLog;
+        private final IKafkaMonitoringLog kafkaMonitoringLog;
 
     /*
       private String action;
@@ -636,6 +636,45 @@ public class TestOrderServiceImpl implements TestOrderService {
                 .size(size)
                 .data(barcodes)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void removeEmptyTestOrders() {
+        // search all empty test orders:
+        List<TestOrder> emptyTestOrders = testOrderRepository.findAllByStatus(TestOrderStatus.EMPTY);
+
+        if (emptyTestOrders.isEmpty()) return;
+
+        // else: filter our 2 test orders created more than 2 hours ago:
+        LocalDateTime now  = LocalDateTime.now();
+        List<TestOrder> toBeRemoved = emptyTestOrders.stream()
+                .filter(order -> (order.getCreatedAt().isBefore(now.minusHours(2))))
+                .toList();
+
+        if (toBeRemoved.isEmpty())  return;
+        // remove all found test orders:
+        testOrderRepository.deleteAll(toBeRemoved);
+    }
+
+    @Override
+    @Transactional
+    public void cancelAllWaitingPaymentTestOrders() {
+        // search all WAITING_PAYMENT test orders:
+        List<TestOrder> waitingPaymentTestOrders = testOrderRepository.findAllByStatus(TestOrderStatus.WAITING_PAYMENT);
+
+        if (waitingPaymentTestOrders.isEmpty()) return;
+
+        // else: filter our test orders created more than 2 hours ago:
+        LocalDateTime now  = LocalDateTime.now();
+        List<TestOrder> toBeCancelled = waitingPaymentTestOrders.stream()
+                .filter(order -> (order.getCreatedAt().isBefore(now.minusHours(2))))
+                .toList();
+
+        if (toBeCancelled.isEmpty())  return;
+        // cancel all found test orders:
+        toBeCancelled.forEach(order -> order.setStatus(TestOrderStatus.CANCELED));
+        testOrderRepository.saveAll(toBeCancelled);
     }
 
 
