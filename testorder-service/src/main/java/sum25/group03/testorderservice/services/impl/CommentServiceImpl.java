@@ -41,7 +41,10 @@ public class CommentServiceImpl implements CommentService {
     public CommentResponseDTO createComment(CommentRequestDTO requestDTO) {
         log.info("Creating new comment for testOrderId: {} or testResultId: {}",
                 requestDTO.getTestOrderId(), requestDTO.getTestResultId());
-
+        System.out.println(requestDTO.getAbnormalities().toString());
+        System.out.println(requestDTO.getSeverity().toString());
+        System.out.println(requestDTO.getSummary().toString());
+        System.out.println(requestDTO.getRecommendation().toString());
         Comment comment = commentMapper.toEntity(requestDTO);
 
         if (requestDTO.getTestOrderId() != null) {
@@ -58,6 +61,18 @@ public class CommentServiceImpl implements CommentService {
                             .orElseThrow(() -> new ResourceNotFoundException(
                                     "Test result not found with id: " + requestDTO.getTestResultId()))
             );
+        }
+
+        if(requestDTO.getCommentText() != null && !requestDTO.getCommentText().isEmpty()){
+            comment.setCommentText(requestDTO.getCommentText());
+        } else {
+
+            String abnor = "";
+            for(String s : requestDTO.getAbnormalities()){
+                abnor += s + ", ";
+            }
+            String newComment = "Abnormalities: " + abnor + " Severity: " + requestDTO.getSeverity() + ". " + requestDTO.getSummary() +  " " + requestDTO.getRecommendation();
+            comment.setCommentText(newComment);
         }
 
         comment.setStatus(CommentStatus.ACTIVE);
