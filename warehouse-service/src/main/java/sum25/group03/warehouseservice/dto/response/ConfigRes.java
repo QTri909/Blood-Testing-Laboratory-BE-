@@ -20,9 +20,9 @@ public class ConfigRes {
     private String communicationProtocol;
     private int mixingSpeed;
     private String firmwareVersion;
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate createdAt;
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate updatedAt;
     private int createdBy;
     private int updatedBy;

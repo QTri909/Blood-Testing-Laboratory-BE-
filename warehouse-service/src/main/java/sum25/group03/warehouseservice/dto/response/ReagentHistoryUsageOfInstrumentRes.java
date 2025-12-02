@@ -17,6 +17,6 @@ public class ReagentHistoryUsageOfInstrumentRes {
     private double quantityUsed;
     private String unit;
     private String lotNumber;
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate usedAt;
 }

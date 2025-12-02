@@ -15,6 +15,7 @@ import sum25.group03.warehouseservice.entity.ReagentInventory;
 import sum25.group03.warehouseservice.entity.Reagents;
 import sum25.group03.warehouseservice.entity.Vendors;
 import sum25.group03.warehouseservice.entity.enums.ReagentInventoryStatus;
+import sum25.group03.warehouseservice.entity.enums.ReagentUnit;
 import sum25.group03.warehouseservice.entity.enums.SupplyStatus;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.mapper.VendorMapper;
@@ -136,7 +137,7 @@ public class ReagentSupplyServiceImpl implements  ReagentSupplyService {
                             .manufactureDate(supplyReq.getManufactureDate())
                             .expiryDate(supplyReq.getExpiryDate())
                             .quantityReceived(supplyReq.getQuantityReceived())
-                            .unitOfMeasurement(supplyReq.getUnitOfMeasurement())
+                            .unitOfMeasurement(ReagentUnit.ML)
                             .notes(supplyReq.getNotes()!=null? supplyReq.getNotes() : "")
                             .reagent(reagent)
                             .vendor(vendor)

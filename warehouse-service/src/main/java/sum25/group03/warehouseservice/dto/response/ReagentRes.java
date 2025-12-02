@@ -21,6 +21,6 @@ public class ReagentRes {
     private String unit;
     private Integer quantity;
     private String storageConditions;
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate createdAt;
 }

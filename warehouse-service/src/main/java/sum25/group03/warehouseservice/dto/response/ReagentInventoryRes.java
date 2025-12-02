@@ -16,7 +16,7 @@ public class ReagentInventoryRes {
     private Long reagentInventoryId;
     private String lotNumber;
     private double quantityAvailable;
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate expiryDate;
     private ReagentInventoryStatus status;
 }

@@ -19,6 +19,6 @@ public class VendorRes {
     private String email;
     private String phoneNumber;
     private String address;
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate createdAt;
 }

@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Setter
 @Builder
 public class ReagentUsageRes {
-    @JsonFormat(pattern = "dd/MM/yyyy")
+    @JsonFormat(pattern = "dd-MM-yyyy")
     private LocalDate useDate;
     private Long instrumentId;
     private String instrumentName;
