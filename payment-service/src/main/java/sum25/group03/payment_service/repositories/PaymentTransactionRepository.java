@@ -16,4 +16,9 @@ public interface PaymentTransactionRepository extends JpaRepository<PaymentTrans
     @NonNull
     @EntityGraph(attributePaths = {"paymentRequest"})
     Page<PaymentTransaction> findAll(@NonNull Pageable pageable);
+
+    // get all payment transactions by payment request id
+    @NonNull
+    @EntityGraph(attributePaths = {"paymentRequest"}) // Eagerly load the associated PaymentRequest
+    Page<PaymentTransaction> findAllByPaymentRequest_Id(@NonNull String paymentRequestId, Pageable pageable);
 }
