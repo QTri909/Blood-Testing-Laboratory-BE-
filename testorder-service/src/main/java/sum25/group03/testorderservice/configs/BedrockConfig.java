@@ -14,11 +14,7 @@ public class BedrockConfig {
     public BedrockRuntimeClient bedrockClient() {
         return BedrockRuntimeClient.builder()
                 .region(Region.AP_SOUTHEAST_2)
-                .credentialsProvider(
-                        StaticCredentialsProvider.create(
-                                AwsBasicCredentials.create("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
-                        )
-                )
+
                 .build();
     }
 }
