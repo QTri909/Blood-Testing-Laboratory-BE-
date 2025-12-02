@@ -22,8 +22,8 @@ public class ChartController {
 
     @GetMapping("/test-orders-summary")
     public ApiResponse<List<TestOrderSummaryChart>> getTestOrdersSummary(
-            @RequestParam(required = false) String fromDateStr, // yyyy-MM-dd
-            @RequestParam(required = false) String toDateStr    // yyyy-MM-dd
+            @RequestParam(required = false, name="fromDate") String fromDateStr, // yyyy-MM-dd
+            @RequestParam(required = false, name="toDate") String toDateStr    // yyyy-MM-dd
     ) {
 
         LocalDate fromDate = (fromDateStr == null)
@@ -31,7 +31,7 @@ public class ChartController {
                 : DateUtils.getLocalDateFromYYYYMMDDStr(fromDateStr);
 
         LocalDate toDate = (toDateStr == null)
-                ? LocalDate.now()
+                ? LocalDate.now().plusDays(1)
                 : DateUtils.getLocalDateFromYYYYMMDDStr(toDateStr);
 
         return ApiResponse.add("Get test orders summary successfully", chartService.getTestOrdersSummary(fromDate, toDate));
