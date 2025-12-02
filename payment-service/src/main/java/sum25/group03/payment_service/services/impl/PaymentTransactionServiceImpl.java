@@ -160,9 +160,10 @@ public class PaymentTransactionServiceImpl implements PaymentTransactionService 
     public Page<PaymentTransactionRes> getAllTransactionsByPaymentRequestId(RequestTransactionsByRequestId request) {
         int page = request.page();
         int size = request.size();
+        String paymentRequestId = request.paymentRequestId();
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
-        Page<PaymentTransaction> transactionsPage = paymentTransactionRepository.findAll(pageable);
+        Page<PaymentTransaction> transactionsPage = paymentTransactionRepository.findAllByPaymentRequest_Id(paymentRequestId, pageable);
         return paymentTransactionMapper.toTransactionResDTOPage(transactionsPage);
     }
 }
