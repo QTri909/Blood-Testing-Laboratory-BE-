@@ -1,6 +1,7 @@
 package sum25.group03.warehouseservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.warehouseservice.service.instrumentcleanup.InstrumentCleanupService;
@@ -14,6 +15,7 @@ InstrumentStatusController {
     private final InstrumentStatusService instrumentStatusService;
     private final InstrumentCleanupService instrumentCleanupService;
 
+    @PreAuthorize("hasAuthority('LAB_UPDATE')")
     @PutMapping("/{id}/activate")
     public ApiResponse<String> activateInstrument(
             @PathVariable Long id,
@@ -21,7 +23,7 @@ InstrumentStatusController {
         instrumentStatusService.activateInstrument(id, username);
         return ApiResponse.<String>message("Instrument activated successfully").build();
     }
-
+    @PreAuthorize("hasAuthority('LAB_UPDATE')")
     @PutMapping("/{id}/deactivate")
     public ApiResponse<String> deactivateInstrument(
             @PathVariable Long id,
@@ -29,7 +31,7 @@ InstrumentStatusController {
         instrumentStatusService.deactivateInstrument(id, username);
         return ApiResponse.<String>message("Instrument deactivated successfully").build();
     }
-
+    @PreAuthorize("hasAuthority('LAB_UPDATE')")
     @PostMapping("/test-auto-delete")
     public ApiResponse<String> testAutoDeleteInactiveInstruments() {
         instrumentCleanupService.autoDeleteInactiveInstruments();

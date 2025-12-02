@@ -3,6 +3,7 @@ package sum25.group03.warehouseservice.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.warehouseservice.dto.response.HistorySupplyRes;
@@ -32,6 +33,7 @@ public class ReagentFilterController {
 //                .build();
 //    }
 
+    @PreAuthorize("hasAuthority('LAB_VIEW') or hasAuthority('SAMPLE_VIEW')")
     @GetMapping("/usage")
     public ApiResponse<PageRes<HistoryUsageRes>> filterUsage(
             @RequestParam(required = false) String reagentName,

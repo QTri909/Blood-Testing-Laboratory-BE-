@@ -1,6 +1,7 @@
 package sum25.group03.warehouseservice.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +17,7 @@ import sum25.group03.warehouseservice.service.instumentview.InstrumentViewServic
 public class InstrumentViewController {
 
     private final InstrumentViewService instrumentViewService;
-
+    @PreAuthorize("hasAuthority('LAB_VIEW')")
     @SkipAuditLog
     @GetMapping("/{id}/status")
     public ApiResponse<InternalInstrumentStatusResponse> getInternalInstrumentStatus(@PathVariable Long id) {
