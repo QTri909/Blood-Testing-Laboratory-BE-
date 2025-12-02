@@ -65,6 +65,6 @@ public class User {
     private Set<UserRole> userRoles = new HashSet<>();
 
     // Quan hệ với UserPrivilege
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<UserPrivilege> userPrivileges = new HashSet<>();
 }

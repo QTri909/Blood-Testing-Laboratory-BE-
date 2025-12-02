@@ -6,12 +6,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import sum25.group03.common.response.dtos.grpc.ParameterGrpc;
 import sum25.group03.testorder.grpc.SyncParameterResponse;
+import sum25.group03.warehouseservice.dto.request.CurrentAbbrParam;
 import sum25.group03.warehouseservice.dto.request.TestParameterReq;
 import sum25.group03.warehouseservice.dto.request.TestTemplateReq;
-import sum25.group03.warehouseservice.dto.response.GlobalTestParameterRes;
-import sum25.group03.warehouseservice.dto.response.NewTestTemplate;
-import sum25.group03.warehouseservice.dto.response.NormalRangeRes;
-import sum25.group03.warehouseservice.dto.response.TestParameterRes;
+import sum25.group03.warehouseservice.dto.request.UnusedTestParameterReq;
+import sum25.group03.warehouseservice.dto.response.*;
 import sum25.group03.warehouseservice.entity.GlobalParameterConfiguration;
 import sum25.group03.warehouseservice.entity.GlobalTest;
 import sum25.group03.warehouseservice.entity.NormalRange;
@@ -21,11 +20,14 @@ import sum25.group03.warehouseservice.entity.enums.TestType;
 import sum25.group03.warehouseservice.exception.NotFoundException;
 import sum25.group03.warehouseservice.grpc.TestOrderGrpcClient;
 import sum25.group03.warehouseservice.mapper.NormalRangeMapper;
+import sum25.group03.warehouseservice.mapper.ParameterMapper;
 import sum25.group03.warehouseservice.repository.GlobalTestParameterRepo;
 import sum25.group03.warehouseservice.repository.TestParamRepo;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -37,6 +39,7 @@ public class TestParameterServiceImpl implements  TestParameterService {
     private final TestParamRepo testParamRepo;
     private final NormalRangeMapper normalRangeMapper;
     private final TestOrderGrpcClient testOrderGrpcClient;
+    private final ParameterMapper parameterMapper;
 
     @Override
     public List<GlobalTestParameterRes> getGlobalTestParameters(TestType testType) {
@@ -189,6 +192,30 @@ public class TestParameterServiceImpl implements  TestParameterService {
                         .normalRange(normalRangeMapper.toResponse(tp.getNormalRanges()))
                         .build())
                 .toList();
+    }
+
+    @Override
+    public UnusedTestParameterRes getUnusedTestParameter(UnusedTestParameterReq unusedTestParameterReq) {
+
+        Set<Long> usedParameterIds = unusedTestParameterReq.getCurrentAbbrParams()
+                .stream()
+                .filter(param -> (param != null && param.getId() != null))
+                .map( CurrentAbbrParam::getId)
+                .collect(Collectors.toSet());
+
+        List<TestParameter> unusedParameters = testParamRepo.findAllByIdNotIn(usedParameterIds);
+
+        // persist old testOrderId in response & map to TestParameterRes list:
+        Long testOrderId = unusedTestParameterReq.getTestOrderId();
+        List<TestParameterRes> listRes = unusedParameters.stream()
+                .map(parameterMapper::toTestParameterRes)
+                .toList();
+
+        return UnusedTestParameterRes.builder()
+                .testOrderId(testOrderId)
+                .unusedTestParameters(listRes)
+                .build();
+
     }
 
 }

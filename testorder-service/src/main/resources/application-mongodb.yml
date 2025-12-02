@@ -1,0 +1,8 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://${TEST_ORDER_MONGODB_USERNAME:hhc9104_db_user}:${TEST_ORDER_MONGODB_PASSWORD:ClojeU2Oqh0l4Pvd}@${TEST_ORDER_MONGODB_HOST:darkernel-mongodb-001.gdytip4.mongodb.net}/${TEST_ORDER_MONGODB_DATABASE:darkernel-mongodb-001}
+
+#group3:
+#  mongodb:
+#    name: testorder_mongodb

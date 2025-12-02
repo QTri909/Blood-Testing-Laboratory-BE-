@@ -33,7 +33,7 @@ public class TestOrderResponseDTO {
     private LocalDate runDate;
     private TestOrderStatus status;
     private Long globalTestParameterId;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy 'at' HH:mm:ss")
     private LocalDateTime createdAt;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "MM-dd-yyyy")
     private LocalDateTime updatedAt;

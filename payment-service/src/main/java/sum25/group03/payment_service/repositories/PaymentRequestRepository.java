@@ -25,4 +25,7 @@ public interface PaymentRequestRepository extends JpaRepository<PaymentRequest,S
 
     // find by order code with status:
     Optional<List<PaymentRequest>> findAllByOrderCodeAndStatus(String orderCode, PaymentRequestStatus status);
+
+    // get all pending payment requests:
+    List<PaymentRequest> findAllByStatus(PaymentRequestStatus status);
 }

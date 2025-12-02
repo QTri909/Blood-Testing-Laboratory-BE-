@@ -11,15 +11,19 @@ import sum25.group03.testorderservice.dtos.response.TestResultResponseDTO;
 import sum25.group03.testorderservice.entities.Parameter;
 import sum25.group03.testorderservice.entities.TestOrder;
 import sum25.group03.testorderservice.entities.TestResult;
+import sum25.group03.testorderservice.entities.mongodb.TemplateParameter;
+import sum25.group03.testorderservice.entities.mongodb.TestOrderDocument;
 import sum25.group03.testorderservice.enums.ActionTypeFeatures;
 import sum25.group03.testorderservice.enums.FlagStatus;
 import sum25.group03.testorderservice.enums.TestOrderStatus;
 import sum25.group03.testorderservice.enums.TestResultStatus;
 import sum25.group03.testorderservice.exception.ResourceNotFoundException;
+import sum25.group03.testorderservice.mapper.TestOrderDocumentMapper;
 import sum25.group03.testorderservice.mapper.TestResultMapper;
 import sum25.group03.testorderservice.repositories.ParameterRepository;
 import sum25.group03.testorderservice.repositories.TestOrderRepository;
 import sum25.group03.testorderservice.repositories.TestResultRepository;
+import sum25.group03.testorderservice.repositories.mongodb.TestOrderDocumentRepo;
 import sum25.group03.testorderservice.services.interfaces.IKafkaMonitoringLog;
 import sum25.group03.testorderservice.services.interfaces.TestResultService;
 import sum25.group03.testorderservice.utils.SetUtils;
@@ -41,6 +45,8 @@ public class TestResultServiceImpl implements TestResultService {
     private final ParameterRepository parameterRepository;
     private final ActionLogService actionLogService;
     private final IKafkaMonitoringLog kafkaMonitoringLog;
+    private final TestOrderDocumentMapper testOrderDocumentMapper;
+    private final TestOrderDocumentRepo testOrderDocumentRepo;
 
     // Tai
     @Override
@@ -407,6 +413,33 @@ public class TestResultServiceImpl implements TestResultService {
         // Step 3: Rebuild test results
         List<TestResult> newTestResults =
                 createTestResults(parameters, testOrder, requestDTO, creatorId);
+
+        // Step 4: Check if the request is a custom template request:
+        Boolean isCustomTemplate = requestDTO.getIsCustomTemplate();
+        isCustomTemplate = (isCustomTemplate != null && isCustomTemplate);
+
+        // Step 5: if is custom template then store it to mongodb also:
+        System.out.println("[IS_CUSTOM_TEMPLATE]" + isCustomTemplate);
+        if (isCustomTemplate) {
+
+            // search testOrderDocument by testOrderId first:
+            TestOrderDocument testOrderDocument = testOrderDocumentRepo.findByTestOrderId(testOrderId).orElse(new TestOrderDocument());
+
+            if (testOrderDocument.getTestOrderId() == null)
+                testOrderDocument.setTestOrderId(testOrderId);
+
+            List<TemplateParameter> templateParameters = parameters.stream()
+                    .map(testOrderDocumentMapper::toTemplateParameter)
+                    .toList();
+            testOrderDocument.setTemplateParameters(templateParameters);
+            testOrderDocument.setStatus("ACTIVE");
+
+            // reset global test parameter id to 0 (custom template)
+            testOrder.setGlobalTestParameterId(0L);
+
+            // explicitly save testOrderDocument:
+            testOrderDocumentRepo.save(testOrderDocument);
+        }
 
         // Return DTOs
         return testResultMapper.toResponseDtos(newTestResults);

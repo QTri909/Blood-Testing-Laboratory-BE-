@@ -13,6 +13,8 @@ import java.util.Set;
 @NoArgsConstructor
 public class TestResultBulkedRequestDTO implements Serializable {
 
+    private Boolean isCustomTemplate;
+
     @NotNull(message = "Test order id is required for inserting new test results")
     private Long testOrderId;
 

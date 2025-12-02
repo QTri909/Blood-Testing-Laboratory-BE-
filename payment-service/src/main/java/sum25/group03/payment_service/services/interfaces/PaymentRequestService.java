@@ -19,4 +19,6 @@ public interface PaymentRequestService {
 
     void deletePendingPayment(String orderCode);
 
+    void cancelAllPendingPaymentRequests();
+
 }

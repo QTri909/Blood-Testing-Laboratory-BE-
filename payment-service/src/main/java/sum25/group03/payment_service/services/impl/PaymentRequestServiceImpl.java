@@ -1,5 +1,6 @@
 package sum25.group03.payment_service.services.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -18,6 +19,7 @@ import sum25.group03.payment_service.repositories.PaymentRequestRepository;
 import sum25.group03.payment_service.repositories.PaymentTransactionRepository;
 import sum25.group03.payment_service.services.interfaces.PaymentRequestService;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -87,5 +89,25 @@ public class PaymentRequestServiceImpl implements PaymentRequestService {
         requests.stream()
                 .filter(r -> r.getStatus() == PaymentRequestStatus.PENDING)
                 .forEach(paymentRequestRepository::delete);
+    }
+
+    @Override
+    @Transactional
+    public void cancelAllPendingPaymentRequests() {
+
+        // get all pending payment requests:
+        List<PaymentRequest> pendingRequests = paymentRequestRepository.findAllByStatus(PaymentRequestStatus.PENDING);
+        if (pendingRequests.isEmpty())
+            return;
+
+        // else: filter out all payment requests which created more than 15 minutes ago:
+        LocalDateTime now = LocalDateTime.now();
+        List<PaymentRequest> toBeCancelled = pendingRequests.stream()
+                .filter(r -> r.getCreatedAt().isBefore(now.minusMinutes(15)))
+                .toList();
+
+        // update status to CANCELLED:
+        toBeCancelled.forEach(pr -> pr.setStatus(PaymentRequestStatus.CANCELLED));
+        paymentRequestRepository.saveAll(toBeCancelled);
     }
 }

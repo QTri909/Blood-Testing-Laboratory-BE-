@@ -74,6 +74,10 @@ public class TestResultController {
             @RequestHeader("X-User-Id") Long creatorId
     ) {
         List<TestResultResponseDTO> createdResults = testResultService.createTestResultByBulk(requestDTO, creatorId);
+
+        // debug:
+        System.out.println("[BULK_REQUEST_DTO] " + requestDTO);
+
         return ApiResponse.add("Bulk Create Test Results successfully", createdResults);
     }
 

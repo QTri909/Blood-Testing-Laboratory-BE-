@@ -6,8 +6,13 @@ import org.springframework.web.bind.annotation.*;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.warehouseservice.dto.request.TestParameterReq;
 import sum25.group03.warehouseservice.dto.request.TestTemplateReq;
+import sum25.group03.warehouseservice.dto.request.UnusedTestParameterReq;
+import sum25.group03.warehouseservice.dto.response.ParameterRes;
+import sum25.group03.warehouseservice.dto.response.UnusedTestParameterRes;
 import sum25.group03.warehouseservice.entity.enums.TestType;
 import sum25.group03.warehouseservice.service.testparameter.TestParameterService;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/test-parameters")
@@ -33,4 +38,14 @@ public class TestParameterController {
     public ApiResponse<?> getAllTestParameter() {
         return ApiResponse.ok(testParameterService.getAllTestParameter());
     }
+
+    // get all test parameter which is not using for current test templates
+    @PostMapping("/unused")
+    public ApiResponse<UnusedTestParameterRes> getUnusedTestParameter(
+            @RequestBody UnusedTestParameterReq unusedTestParameterReq
+            ) {
+        return ApiResponse.add("Get unused test parameters successfully",
+                testParameterService.getUnusedTestParameter(unusedTestParameterReq));
+    }
+
 }
