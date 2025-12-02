@@ -68,4 +68,7 @@ public interface TestOrderRepository extends JpaRepository<TestOrder,Long>, JpaS
 """)
     List<TestOrderSummaryChart> getTestOrderSummaryByType();
 
+    // find all test orders by its status:
+    List<TestOrder> findAllByStatus(TestOrderStatus status);
+
 }

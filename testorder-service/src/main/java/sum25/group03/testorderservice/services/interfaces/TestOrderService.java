@@ -38,4 +38,9 @@ public interface TestOrderService{
 
     void updateTestOrderStatusByTestOrderCode(UUID testOrderCode, TestOrderStatus testOrderStatus);
     CustomPaginationDTO<List<String>> getBarcodesOfOngoingTestOrders(Integer page, Integer size);
+
+    // remove all EMPTY test orders
+    void removeEmptyTestOrders();
+    // cancel all WAITING_PAYMENT test orders
+    void cancelAllWaitingPaymentTestOrders();
 }
