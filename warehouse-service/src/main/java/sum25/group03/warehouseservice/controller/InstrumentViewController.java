@@ -17,7 +17,7 @@ import sum25.group03.warehouseservice.service.instumentview.InstrumentViewServic
 public class InstrumentViewController {
 
     private final InstrumentViewService instrumentViewService;
-    @PreAuthorize("hasAuthority('LAB_VIEW')")
+    //@PreAuthorize("hasAuthority('LAB_VIEW')")
     @SkipAuditLog
     @GetMapping("/{id}/status")
     public ApiResponse<InternalInstrumentStatusResponse> getInternalInstrumentStatus(@PathVariable Long id) {

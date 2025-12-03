@@ -13,7 +13,7 @@ import sum25.group03.warehouseservice.service.vendor.VendorService;
 public class VendorController {
     private final VendorService vendorService;
 
-    @PreAuthorize("hasAuthority('LAB_VIEW')")
+   // @PreAuthorize("hasAuthority('LAB_VIEW')")
     @GetMapping("")
     public ApiResponse<?> getVendors(
             @RequestParam(defaultValue = "0") int page,
@@ -21,7 +21,7 @@ public class VendorController {
     ) {
         return ApiResponse.ok(vendorService.getVendors(page, size));
     }
-    @PreAuthorize("hasAuthority('LAB_UPDATE')")
+    //@PreAuthorize("hasAuthority('LAB_UPDATE')")
     @PostMapping("")
     public ApiResponse<?> createVendor(@RequestBody VendorReq req) {
         return ApiResponse.ok(vendorService.createVendor(req));

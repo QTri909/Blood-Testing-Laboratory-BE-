@@ -33,7 +33,7 @@ public class ReagentFilterController {
 //                .build();
 //    }
 
-    @PreAuthorize("hasAuthority('LAB_VIEW') or hasAuthority('SAMPLE_VIEW')")
+   // @PreAuthorize("hasAuthority('LAB_VIEW') or hasAuthority('SAMPLE_VIEW')")
     @GetMapping("/usage")
     public ApiResponse<PageRes<HistoryUsageRes>> filterUsage(
             @RequestParam(required = false) String reagentName,

@@ -27,4 +27,5 @@ public class ConfigRes {
     private int createdBy;
     private int updatedBy;
     private String instrumentName;
+    private Double loadThreshold;
 }

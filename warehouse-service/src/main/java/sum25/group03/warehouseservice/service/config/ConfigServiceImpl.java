@@ -107,6 +107,7 @@ public class ConfigServiceImpl implements ConfigService {
                 .communicationProtocol(c.getCommunicationProtocol())
                 .mixingSpeed(c.getMixingSpeed())
                 .firmwareVersion(c.getFirmwareVersion())
+                        .loadThreshold(c.getLoadThreshold())
                 .build())
                 .toList();
     }

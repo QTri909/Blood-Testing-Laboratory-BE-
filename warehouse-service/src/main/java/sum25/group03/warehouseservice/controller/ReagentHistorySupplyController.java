@@ -16,12 +16,12 @@ import sum25.group03.warehouseservice.service.reagentsupply.ReagentSupplyService
 public class ReagentHistorySupplyController {
     private final ReagentSupplyService reagentSupplyService;
 
-    @PreAuthorize("hasAuthority('LAB_VIEW') or hasAuthority('SAMPLE_VIEW')")
+    //@PreAuthorize("hasAuthority('LAB_VIEW') or hasAuthority('SAMPLE_VIEW')")
     @GetMapping("")
     public ApiResponse<?> getAllReagentSupplyHistory(@RequestParam int page, @RequestParam int size) {
         return ApiResponse.ok(reagentSupplyService.getAll(page,size));
     }
-    @PreAuthorize("hasAuthority('LAB_UPDATE') or hasAuthority('SAMPLE_RECEIVE')")
+    //@PreAuthorize("hasAuthority('LAB_UPDATE') or hasAuthority('SAMPLE_RECEIVE')")
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<?> addReagentSupply(@RequestBody ReagentSupplyReq reagentSupplyReq) {
