@@ -251,7 +251,7 @@
 
     <!-- ==================== SUMMARY (TABLE) ==================== -->
     <summary>
-        <band height="500" splitType="Stretch">
+        <band height="100" splitType="Stretch">
             <staticText>
                 <reportElement x="0" y="0" width="555" height="20" forecolor="#1F3B63"/>
                 <textElement textAlignment="Center">
@@ -261,7 +261,7 @@
             </staticText>
 
             <componentElement>
-                <reportElement x="0" y="25" width="555" height="260"/>
+                <reportElement x="0" y="25" width="555" height="1" positionType="Float"  />
 
                 <c:table>
                     <datasetRun subDataset="TestResultDataset">
@@ -283,7 +283,7 @@
                             </staticText>
                         </c:columnHeader>
                         <c:detailCell height="20">
-                            <textField textAdjust="StretchHeight" >
+                            <textField isStretchWithOverflow="true" >
                                 <reportElement x="0" y="0" width="100" height="20"/>
                                 <box>
                                     <pen lineWidth="1" lineColor="#9E9E9E"/>
@@ -307,7 +307,7 @@
                             </staticText>
                         </c:columnHeader>
                         <c:detailCell height="20">
-                            <textField textAdjust="StretchHeight">
+                            <textField isStretchWithOverflow="true">
                                 <reportElement x="0" y="0" width="70" height="20"/>
                                 <box>
                                     <pen lineWidth="1" lineColor="#9E9E9E"/>
@@ -331,7 +331,7 @@
                             </staticText>
                         </c:columnHeader>
                         <c:detailCell height="20">
-                            <textField textAdjust="StretchHeight">
+                            <textField isStretchWithOverflow="true">
                                 <reportElement x="0" y="0" width="80" height="20"/>
                                 <box>
                                     <pen lineWidth="1" lineColor="#9E9E9E"/>
@@ -374,34 +374,34 @@
 <!--                        </c:detailCell>-->
 <!--                    </c:column>-->
 
-                    <!-- Column 5: Comments -->
-                    <c:column width="305">
-                        <c:columnHeader height="20">
-                            <staticText>
-                                <reportElement x="0" y="0" width="305" height="20" backcolor="#1F3B63" mode="Opaque" forecolor="#FFFFFF"/>
-                                <box>
-                                    <pen lineWidth="1" lineColor="#9E9E9E"/>
-                                </box>
-                                <textElement textAlignment="Center" verticalAlignment="Middle"/>
-                                <text><![CDATA[Comments]]></text>
-                            </staticText>
-                        </c:columnHeader>
-                        <c:detailCell height="20">
-                            <textField textAdjust="StretchHeight">
-                                <reportElement x="0" y="0" width="305" height="20"/>
-                                <box>
-                                    <pen lineWidth="1" lineColor="#9E9E9E"/>
-                                </box>
-                                <textElement textAlignment="Center" verticalAlignment="Middle">
-                                    <font fontName="DejaVu Sans"
-                                          pdfFontName="fonts/DejaVuSans.ttf"
-                                          pdfEncoding="Identity-H"
-                                          isPdfEmbedded="true"/>
-                                </textElement>
-                                <textFieldExpression><![CDATA[$F{reviewText} != null ? $F{reviewText} : ""]]></textFieldExpression>
-                            </textField>
-                        </c:detailCell>
-                    </c:column>
+<!--                    <c:column width="305">-->
+<!--                        <c:columnHeader height="20">-->
+<!--                            <staticText>-->
+<!--                                &lt;!&ndash; Column 5: Comments &ndash;&gt;-->
+<!--                                <reportElement x="0" y="0" width="305" height="20" backcolor="#1F3B63" mode="Opaque" forecolor="#FFFFFF"/>-->
+<!--                                <box>-->
+<!--                                    <pen lineWidth="1" lineColor="#9E9E9E"/>-->
+<!--                                </box>-->
+<!--                                <textElement textAlignment="Center" verticalAlignment="Middle"/>-->
+<!--                                <text><![CDATA[Comments]]></text>-->
+<!--                            </staticText>-->
+<!--                        </c:columnHeader>-->
+<!--                        <c:detailCell height="20">-->
+<!--                            <textField textAdjust="StretchHeight">-->
+<!--                                <reportElement x="0" y="0" width="305" height="20"/>-->
+<!--                                <box>-->
+<!--                                    <pen lineWidth="1" lineColor="#9E9E9E"/>-->
+<!--                                </box>-->
+<!--                                <textElement textAlignment="Center" verticalAlignment="Middle">-->
+<!--                                    <font fontName="DejaVu Sans"-->
+<!--                                          pdfFontName="fonts/DejaVuSans.ttf"-->
+<!--                                          pdfEncoding="Identity-H"-->
+<!--                                          isPdfEmbedded="true"/>-->
+<!--                                </textElement>-->
+<!--                                <textFieldExpression><![CDATA[$F{reviewText} != null ? $F{reviewText} : ""]]></textFieldExpression>-->
+<!--                            </textField>-->
+<!--                        </c:detailCell>-->
+<!--                    </c:column>-->
 
                 </c:table>
             </componentElement>
@@ -409,7 +409,7 @@
             <!-- Footer trang cuối -->
             <!-- ORDER COMMENTS TITLE -->
             <staticText>
-                <reportElement x="0" y="295" width="555" height="15" forecolor="#1F3B63"/>
+                <reportElement x="0" y="0" width="555" height="15" forecolor="#1F3B63" positionType="Float"/>
                 <textElement>
                     <font isBold="true"/>
                 </textElement>
@@ -418,12 +418,12 @@
 
             <!-- ĐƯỜNG GẠCH NGANG -->
             <line>
-                <reportElement x="0" y="312" width="555" height="1" forecolor="#000000"/>
+                <reportElement x="0" y="0" width="555" height="1" forecolor="#000000" positionType="Float"/>
             </line>
 
             <!-- NỘI DUNG ORDER COMMENTS -->
-            <textField textAdjust="StretchHeight">
-                <reportElement x="0" y="320" width="555" height="20"/>
+            <textField isStretchWithOverflow="true">
+                <reportElement x="0" y="0" width="555" height="20" positionType="Float"/>
                 <textElement>
                     <font fontName="DejaVu Sans"
                           pdfFontName="fonts/DejaVuSans.ttf"
@@ -434,12 +434,12 @@
             </textField>
 
             <image>
-                <reportElement x="0" y="400" width="80" height="80" forecolor="#566573"/>
+                <reportElement x="0" y="0" width="80" height="80" forecolor="#566573" positionType="Float"/>
                 <imageExpression><![CDATA["images/QR-Code.png"]]></imageExpression>
             </image>
 
             <staticText>
-                <reportElement x="370" y="400" width="200" height="20"/>
+                <reportElement x="370" y="0" width="200" height="20" positionType="Float"/>
                 <textElement textAlignment="Center">
                     <font fontName="DejaVu Sans"
                           pdfFontName="fonts/DejaVuSans.ttf"
@@ -451,12 +451,12 @@
             </staticText>
 
             <image>
-                <reportElement x="410" y="430" width="150" height="40" />
+                <reportElement x="410" y="0" width="150" height="40" positionType="Float" />
                 <imageExpression><![CDATA["images/doctor-signature.png"]]></imageExpression>
             </image>
 
             <staticText>
-                <reportElement x="0" y="474" width="555" height="15"/>
+                <reportElement x="0" y="0" width="555" height="15" positionType="Float"/>
                 <textElement textAlignment="Center">
                     <font fontName="DejaVu Sans"
                           pdfFontName="fonts/DejaVuSans.ttf"
