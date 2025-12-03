@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Data
 @Builder
@@ -24,6 +25,6 @@ public class ReagentUsageHistoryEvent implements Serializable {
     private String reagentName;
     private String lotNumber;
     private Integer usedBy;
-    private LocalDate usedAt;
+    private LocalDateTime usedAt;
     private String notes;
 }

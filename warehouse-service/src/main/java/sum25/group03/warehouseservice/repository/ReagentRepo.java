@@ -3,6 +3,7 @@ package sum25.group03.warehouseservice.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -42,6 +43,7 @@ public interface ReagentRepo extends JpaRepository<Reagents, Long> {
 """)
     Page<Reagents> filterReagents(@Param("reagentName") String reagentName, Pageable pageable);
 
+    @EntityGraph(attributePaths = {"reagentInventories"})
     List<Reagents> findAllByStatus(ReagentStatus status);
 
     @Query("SELECT DISTINCT r FROM Reagents r")

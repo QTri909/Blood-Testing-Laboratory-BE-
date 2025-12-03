@@ -2,6 +2,8 @@ package sum25.group03.warehouseservice.dto.response;
 
 import lombok.*;
 
+import java.util.List;
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -15,4 +17,5 @@ public class ReagentListItemRes {
     private double maxStockLevel;
     private double lowStockLevel;
     private String unit;
+    private List<ReagentInventoryRes> inventories;
 }

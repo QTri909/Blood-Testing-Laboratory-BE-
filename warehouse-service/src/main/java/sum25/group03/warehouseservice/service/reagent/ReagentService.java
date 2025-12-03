@@ -19,9 +19,14 @@ public interface ReagentService {
 
     List<ReagentRes> getAllReagents();
     PageRes<ReagentListItemRes> getReagentListItems(int page, int size);
+    List<ReagentListItemRes> getReagentListItems();
+
     ReagentDetailRes getReagentDetail(Long reagentId);
     //add reagents
     ReagentRes createReagent(ReagentReq req);
     ReagentRes getReagentById(Long reagentId);
     List<ReagentInventoryRes> getListLotNumberByReagentId(Long reagentId);
+
+    void updateInventoryStatusesScheduler();
+
 }

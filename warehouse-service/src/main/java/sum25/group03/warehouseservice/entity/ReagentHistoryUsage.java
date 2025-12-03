@@ -2,8 +2,10 @@ package sum25.group03.warehouseservice.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -33,8 +35,9 @@ public class ReagentHistoryUsage {
     @Column(name = "used_by", nullable = true)
     private Integer usedBy;
 
-    @Column(name = "used_at", nullable = true)
-    private LocalDate usedAt;
+    @CreationTimestamp
+    @Column(name = "used_at", nullable = false)
+    private LocalDateTime usedAt;
 
     @Column(name = "notes", nullable = true, columnDefinition = "TEXT")
     private String notes;

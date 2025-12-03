@@ -21,17 +21,17 @@ import java.util.List;
 public class TestParameterController {
     private final TestParameterService testParameterService;
 
-    @PreAuthorize("hasAuthority('LAB_VIEW')")
+    @PreAuthorize("hasAuthority('LAB_VIEW') ")
     @GetMapping("")
     public ApiResponse<?> testParameter(@RequestParam TestType testType) {
         return ApiResponse.ok(testParameterService.getGlobalTestParameters(testType));
     }
-    @PreAuthorize("hasAuthority('LAB_UPDATE')")
+    @PreAuthorize("hasAuthority('LAB_UPDATE') ")
     @PostMapping("")
     public ApiResponse<?> createTestTemplate(@RequestBody TestTemplateReq request) {
         return ApiResponse.ok(testParameterService.addTestTemplate(request));
     }
-    @PreAuthorize("hasAuthority('LAB_UPDATE')")
+    @PreAuthorize("hasAuthority('LAB_UPDATE') ")
     @PostMapping("/parameter")
     public ApiResponse<?> createTestParameter(@RequestBody TestParameterReq request) {
         return ApiResponse.ok(testParameterService.addTestParameter(request));

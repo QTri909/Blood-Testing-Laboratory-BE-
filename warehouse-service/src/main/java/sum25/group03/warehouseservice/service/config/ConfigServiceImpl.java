@@ -63,6 +63,7 @@ public class ConfigServiceImpl implements ConfigService {
                     .mixingSpeed(existingConfig.getMixingSpeed())
                     .supportedTests(existingConfig.getSupportedTests())
                     .firmwareVersion(existingConfig.getFirmwareVersion())
+                    .loadThreshold(existingConfig.getLoadThreshold())
                     .build();
             UpdateConfigEvent updateConfigEvent = UpdateConfigEvent.builder()
                     .instrumentId(updateConfig.getInstrument().getInstrumentId())

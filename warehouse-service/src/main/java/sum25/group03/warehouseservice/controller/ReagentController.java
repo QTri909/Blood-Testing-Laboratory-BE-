@@ -60,14 +60,21 @@ public class ReagentController {
     public ApiResponse<?> getReagentUsageDashboard() {
         return ApiResponse.ok(usageService.getReagentUsageDashboard());
     }
+
+//    @PreAuthorize("hasAuthority('LAB_VIEW')")
+//    @GetMapping("listItem")
+//    public ApiResponse<?> getReagentListItem(
+//            @RequestParam (defaultValue = "0") int page,
+//            @RequestParam (defaultValue = "20") int size
+//    ) {
+//        return ApiResponse.ok(reagentService.getReagentListItems(page, size));
+//    }
     @PreAuthorize("hasAuthority('LAB_VIEW')")
     @GetMapping("listItem")
-    public ApiResponse<?> getReagentListItem(
-            @RequestParam (defaultValue = "0") int page,
-            @RequestParam (defaultValue = "20") int size
-    ) {
-        return ApiResponse.ok(reagentService.getReagentListItems(page, size));
+    public ApiResponse<?> getReagentListItem() {
+        return ApiResponse.ok(reagentService.getReagentListItems());
     }
+
     @PreAuthorize("hasAuthority('LAB_VIEW') or hasAuthority('SAMPLE_VIEW')")
     @GetMapping("/{reagentId}")
     public ApiResponse<?> getReagentDetail(
@@ -83,6 +90,7 @@ public class ReagentController {
     ) {
         return ApiResponse.ok(usageService.getInstrumentsByReagentId(page, size));
     }
+
     @PreAuthorize("hasAuthority('LAB_UPDATE') or hasAuthority('SAMPLE_UPDATE') ")
     @PostMapping
     public ApiResponse<?> createReagent(@Valid @RequestBody ReagentReq req ) {

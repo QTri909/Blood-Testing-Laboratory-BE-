@@ -46,4 +46,8 @@ public interface ReagentInventoryRepo extends JpaRepository<ReagentInventory, Lo
 
     @Query("SELECT ri FROM ReagentInventory ri WHERE ri.reagent.reagentId = :reagentId AND COALESCE(ri.quantityAvailable, 0) > 0 AND ri.status = :status ORDER BY ri.expiryDate ASC ")
     List<ReagentInventory> findAllByReagentId(@Param("reagentId") Long reagentId, @Param("status")ReagentInventoryStatus status);
+
+    List<ReagentInventory> findByExpiryDateBetween(LocalDate from, LocalDate to);
+
+    List<ReagentInventory> findByExpiryDateBefore(LocalDate date);
 }

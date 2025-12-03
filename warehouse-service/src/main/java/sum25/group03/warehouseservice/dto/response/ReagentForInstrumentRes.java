@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -22,5 +23,5 @@ public class ReagentForInstrumentRes {
     private String unit;
     private String lotNumber;
     @JsonFormat(pattern = "dd-MM-yyyy")
-    private LocalDate usedAt;
+    private LocalDateTime usedAt;
 }

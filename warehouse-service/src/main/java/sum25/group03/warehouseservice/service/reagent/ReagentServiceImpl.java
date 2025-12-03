@@ -228,6 +228,43 @@ public class ReagentServiceImpl implements ReagentService {
     }
 
     @Override
+    public List<ReagentListItemRes> getReagentListItems() {
+        List<Reagents> reagentsPage = reagentRepo.findAllByStatus(ReagentStatus.ACTIVE);
+
+        List<ReagentListItemRes> items = reagentsPage.stream().map(reagent -> {
+            List<ReagentInventory> inventory = reagent.getReagentInventories();
+            double totalQty = inventory.stream().mapToDouble(ReagentInventory::getQuantityAvailable).sum();
+            List<ReagentInventoryRes> inventories = inventory.stream().map(inv -> {
+                return ReagentInventoryRes.builder()
+                        .reagentInventoryId(inv.getReagentInventoryId())
+                        .lotNumber(inv.getLotNumber())
+                        .quantityAvailable(inv.getQuantityAvailable())
+                        .expiryDate(inv.getExpiryDate())
+                        .status(inv.getStatus())
+                        .build();
+            }).toList();
+           // double totalQty = inventoryMap.getOrDefault(reagent.getReagentId(), 0.0);
+//            Integer maxLevelInt = reagent.getMaxStockLevel();
+//            double maxLevel = maxLevelInt == null ? 0.0 : maxLevelInt.doubleValue();
+//            double lowLevel = reagent.getMinStockLevel().doubleValue();
+
+            return ReagentListItemRes.builder()
+                    .reagentId(reagent.getReagentId())
+                    .reagentName(reagent.getReagentName())
+                    .catalogNumber(reagent.getCatalogNumber())
+                    .totalStock(totalQty)
+                    .unit(reagent.getUnit().getUnit())
+                    .maxStockLevel(reagent.getMaxStockLevel())
+                    .lowStockLevel(reagent.getMinStockLevel())
+                    .inventories(inventories)
+                    .build();
+        }).toList();
+
+        // Build PageRes from reagentsPage metadata
+        return items;
+    }
+
+    @Override
     public ReagentDetailRes getReagentDetail(Long reagentId) {
         // Load reagent, throw if not found
         Reagents reagent = reagentRepo.findById(reagentId)
@@ -252,8 +289,8 @@ public class ReagentServiceImpl implements ReagentService {
         }).toList();
 
         // min / max stock level with null-safety
-        Integer maxLevelInt = reagent.getMaxStockLevel();
-        double maxStock = maxLevelInt == null ? 0.0 : maxLevelInt.doubleValue();
+//        Integer maxLevelInt = reagent.getMaxStockLevel();
+//        double maxStock = maxLevelInt == null ? 0.0 : maxLevelInt.doubleValue();
 
         return ReagentDetailRes.builder()
                 .reagentId(reagent.getReagentId())
@@ -375,8 +412,33 @@ public class ReagentServiceImpl implements ReagentService {
                         .reagentInventoryId(r.getReagentInventoryId())
                         .lotNumber(r.getLotNumber())
                         .quantityAvailable(r.getQuantityAvailable())
+
                         .build())
                 .toList();
     }
 
+    public void updateInventoryStatusesScheduler() {
+        LocalDate today = LocalDate.now();
+        LocalDate soonDate = today.plusDays(15);
+
+        // 1. Expiring soon
+        List<ReagentInventory> expiringSoon =
+                reagentInventoryRepo.findByExpiryDateBetween(today, soonDate);
+
+        expiringSoon.forEach(inv -> {
+            inv.setStatus(ReagentInventoryStatus.EXPIRING_SOON);
+        });
+
+        // 2. Expired
+        List<ReagentInventory> expired =
+                reagentInventoryRepo.findByExpiryDateBefore(today);
+
+        expired.forEach(inv -> {
+            inv.setStatus(ReagentInventoryStatus.EXPIRED);
+        });
+
+        // Save
+        reagentInventoryRepo.saveAll(expiringSoon);
+        reagentInventoryRepo.saveAll(expired);
+    }
 }
