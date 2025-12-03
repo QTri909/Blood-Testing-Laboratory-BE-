@@ -1,7 +1,6 @@
 // AuthController.java
 package sum25.group03.iamservice.controller;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +13,10 @@ import sum25.group03.iamservice.dto.request.*;
 import sum25.group03.iamservice.dto.response.LoginResponse;
 import sum25.group03.iamservice.dto.response.LoginWithRefresh;
 import sum25.group03.iamservice.service.Interface.AuthService;
-
-import jakarta.validation.Valid;
 import sum25.group03.iamservice.service.Interface.UserService;
 
+import jakarta.validation.Valid;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -29,27 +28,26 @@ public class AuthController {
     private final AuthService authService;
     private final UserService userService;
 
-
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request,
                                             HttpServletResponse response) {
 
         LoginWithRefresh loginWithRefresh = authService.login(request);
 
-        // Set refresh token vào cookie nếu có
         if (loginWithRefresh.refreshToken() != null) {
-            Cookie refreshCookie = new Cookie("refreshToken", loginWithRefresh.refreshToken());
-            refreshCookie.setHttpOnly(true);
-            refreshCookie.setPath("/");
-            refreshCookie.setMaxAge(30 * 24 * 60 * 60); // 30 ngày
-            response.addCookie(refreshCookie);
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", loginWithRefresh.refreshToken())
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(Duration.ofDays(30))
+                    .sameSite("None")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
         }
 
         return ApiResponse.data(loginWithRefresh.loginResponse())
                 .message("Login successful")
                 .build();
     }
-
 
     @PostMapping("/first-login-change-password")
     public ApiResponse<LoginResponse> firstLoginChangePassword(
@@ -62,22 +60,20 @@ public class AuthController {
                 req.getNewPassword()
         );
 
-        // Set refresh token vào cookie nếu có
         if (loginWithRefresh.refreshToken() != null) {
-            Cookie refreshCookie = new Cookie("refreshToken", loginWithRefresh.refreshToken());
-            refreshCookie.setHttpOnly(true);
-            refreshCookie.setPath("/");
-            refreshCookie.setMaxAge(30 * 24 * 60 * 60);
-            response.addCookie(refreshCookie);
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", loginWithRefresh.refreshToken())
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(Duration.ofDays(30))
+                    .sameSite("None")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
         }
 
         return ApiResponse.data(loginWithRefresh.loginResponse())
                 .message("First login password changed successfully")
                 .build();
     }
-
-
-
 
     @GetMapping("/privileges")
     @ResponseStatus(HttpStatus.OK)
@@ -125,46 +121,45 @@ public class AuthController {
         String accessToken = authHeader.replace("Bearer ", "");
         authService.logout(accessToken);
 
-        // Xóa refresh token cookie
-        Cookie deleteCookie = new Cookie("refreshToken", null);
-        deleteCookie.setHttpOnly(true);
-        deleteCookie.setPath("/");
-        deleteCookie.setMaxAge(0); // Xóa cookie ngay lập tức
-        response.addCookie(deleteCookie);
+        ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .sameSite("None")
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, deleteCookie.toString());
 
         return ApiResponse.data("User logged out successfully")
                 .message("Logout completed")
                 .build();
     }
 
-
     @PostMapping("/refresh-token")
     public ApiResponse<LoginResponse> refreshToken(HttpServletRequest request,
                                                    HttpServletResponse response) {
 
-        // Lấy token mới từ service
         LoginWithRefresh loginWithRefresh = authService.refreshToken(request);
 
-        // Set refresh token vào cookie (nếu có)
         if (loginWithRefresh.refreshToken() != null) {
-            Cookie refreshCookie = new Cookie("refreshToken", loginWithRefresh.refreshToken());
-            refreshCookie.setHttpOnly(true);
-            refreshCookie.setPath("/");
-            refreshCookie.setMaxAge(30 * 24 * 60 * 60); // 30 ngày
-            response.addCookie(refreshCookie);
+            ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", loginWithRefresh.refreshToken())
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(Duration.ofDays(30))
+                    .sameSite("None")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-            // Set sub/cognitoUserId vào cookie để dùng lần sau
-            Cookie subCookie = new Cookie("cognitoUserId", loginWithRefresh.loginResponse().getSub());
-            subCookie.setHttpOnly(true);
-            subCookie.setPath("/");
-            subCookie.setMaxAge(30 * 24 * 60 * 60);
-            response.addCookie(subCookie);
+            ResponseCookie subCookie = ResponseCookie.from("cognitoUserId", loginWithRefresh.loginResponse().getSub())
+                    .httpOnly(true)
+                    .path("/")
+                    .maxAge(Duration.ofDays(30))
+                    .sameSite("None")
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, subCookie.toString());
         }
 
         return ApiResponse.data(loginWithRefresh.loginResponse())
                 .message("Token refreshed successfully")
                 .build();
     }
-
-
 }

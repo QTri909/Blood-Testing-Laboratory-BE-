@@ -10,11 +10,10 @@ import org.apache.hc.client5.http.fluent.Request;
 
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 
 public class PreTokenGenerationHandler implements RequestHandler<Map<String, Object>, Map<String, Object>> {
 
-    private static final String IAM_SERVICE_URL = "http://13.239.30.25:8080/auth/privileges?email=";
+    private static final String IAM_SERVICE_URL = "http://3.107.191.9:8080/api/v1/auth/privileges?username=";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -23,29 +22,36 @@ public class PreTokenGenerationHandler implements RequestHandler<Map<String, Obj
             JsonNode root = objectMapper.convertValue(event, JsonNode.class);
             ObjectNode responseNode = (ObjectNode) root.with("response");
             JsonNode requestNode = root.path("request");
-            String email = requestNode.path("userAttributes").path("email").asText();
+            String username = requestNode.path("userAttributes").path("email").asText();
+            // Cognito thường dùng email làm username, nhưng param phải là "username"
 
-            context.getLogger().log("PreTokenGeneration (V2) started for: " + email + "\n");
+            context.getLogger().log("PreTokenGeneration (V2) started for: " + username + "\n");
 
             // 1 Gọi IAM service
-            String url = IAM_SERVICE_URL + email;
+            String url = IAM_SERVICE_URL + username;
             String resp = Request.get(url)
                     .addHeader("Accept", "application/json")
                     .execute()
                     .returnContent()
                     .asString();
 
-            Map<String, List<String>> data = objectMapper.readValue(resp, new TypeReference<>() {});
+            // 2 Parse JSON đúng: lấy "data" node
+            JsonNode respRoot = objectMapper.readTree(resp);
+            JsonNode dataNode = respRoot.path("data");
+
+            Map<String, List<String>> data = objectMapper.convertValue(
+                    dataNode, new TypeReference<Map<String, List<String>>>() {}
+            );
+
             List<String> roles = data.getOrDefault("roles", List.of());
             List<String> privileges = data.getOrDefault("privileges", List.of());
 
-            // 2 Tạo claims
+            // 3 Tạo claims
             ObjectNode claims = objectMapper.createObjectNode();
             claims.put("roles", String.join(",", roles));
             claims.put("privileges", String.join(",", privileges));
 
-            // 3 Chuẩn bị cấu trúc chuẩn V2:
-            // response.claimsAndScopeOverrideDetails.accessTokenGeneration.claimsToAddOrOverride
+            // 4 Chuẩn bị cấu trúc chuẩn V2
             ObjectNode claimsAndScope = objectMapper.createObjectNode();
             ObjectNode accessTokenGen = objectMapper.createObjectNode();
             accessTokenGen.set("claimsToAddOrOverride", claims);
@@ -56,7 +62,7 @@ public class PreTokenGenerationHandler implements RequestHandler<Map<String, Obj
             claimsAndScope.set("accessTokenGeneration", accessTokenGen);
             claimsAndScope.set("idTokenGeneration", idTokenGen);
 
-            // 4 Add vào response
+            // 5 Add vào response
             responseNode.set("claimsAndScopeOverrideDetails", claimsAndScope);
 
             context.getLogger().log(" Added custom claims to tokens: " + claims.toPrettyString() + "\n");

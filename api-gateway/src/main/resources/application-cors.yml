@@ -2,6 +2,7 @@ app:
   cors:
     allowed-origins:
       - http://localhost:5173
+      - http://ec2-100-27-242-198.compute-1.amazonaws.com:5173
       # - https://your-production-domain.com
     allowed-methods:
       - GET
