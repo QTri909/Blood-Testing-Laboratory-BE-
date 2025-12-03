@@ -3,6 +3,7 @@ package sum25.group03.monitoringservice.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import sum25.group03.common.response.ApiResponse;
 import sum25.group03.monitoringservice.dto.PagedResponse;
 import sum25.group03.monitoringservice.model.HealthCheckLog;
@@ -18,6 +19,7 @@ public class HealthCheckLogController {
     }
 
 
+    @PreAuthorize("hasAuthority('LOG_VIEW')")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public ApiResponse<PagedResponse> getHealthCheckLogs(
@@ -28,6 +30,7 @@ public class HealthCheckLogController {
         PagedResponse response = PagedResponse.fromPage(pageResult);
         return ApiResponse.add("Fetched health check logs successfully", response);
     }
+    @PreAuthorize("hasAuthority('LOG_VIEW')")
     @GetMapping("/latest")
     public ApiResponse<?> getLatestHealthCheckLog() {
         return healthCheckLogService.getLatestLog()

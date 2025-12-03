@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,6 +20,13 @@ public class CommentRequestDTO {
     @NotNull(message = "User ID cannot be null")
     private Long userId;
 
-    @NotBlank(message = "Comment text cannot be blank")
     private String commentText;
+
+    private List<String> abnormalities;
+
+    private String severity;
+
+    private String summary;
+
+    private String recommendation;
 }
